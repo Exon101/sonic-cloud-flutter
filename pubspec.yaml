@@ -10,20 +10,20 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  google_fonts: ^6.1.0
+  google_fonts: ^8.1.0
   cupertino_icons: ^1.0.6
   # Real audio playback engine — used by NowPlayingScreen.
-  just_audio: ^0.9.37
+  just_audio: ^0.10.6
   # Background audio + lock-screen controls (optional but pairs naturally with just_audio).
   # Commented out to keep the demo minimal; uncomment and wire up MediaController if needed.
   # audio_service: ^0.9.39
 
 dev_dependencies:
-  flutter_lints: ^3.0.0
+  flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
   # Generates launcher icons for Android + iOS from a single source PNG.
-  flutter_launcher_icons: ^0.13.1
+  flutter_launcher_icons: ^0.14.4
   # Mocking library for unit/widget tests.
   mocktail: ^1.0.3
 
