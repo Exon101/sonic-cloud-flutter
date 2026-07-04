@@ -1,0 +1,356 @@
+     1→     1→<!DOCTYPE html>
+     2→     2→
+     3→     3→<html class="dark" lang="en"><head>
+     4→     4→<meta charset="utf-8"/>
+     5→     5→<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+     6→     6→<title>Sonic Cloud - Music Library</title>
+     7→     7→<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+     8→     8→<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+     9→     9→<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    10→    10→<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    11→    11→<style type="text/tailwindcss">
+    12→    12→        @layer utilities {
+    13→    13→            .scrollbar-hide::-webkit-scrollbar {
+    14→    14→                display: none;
+    15→    15→            }
+    16→    16→            .scrollbar-hide {
+    17→    17→                -ms-overflow-style: none;
+    18→    18→                scrollbar-width: none;
+    19→    19→            }
+    20→    20→        }
+    21→    21→    </style>
+    22→    22→<script id="tailwind-config">
+    23→    23→        tailwind.config = {
+    24→    24→            darkMode: "class",
+    25→    25→            theme: {
+    26→    26→                extend: {
+    27→    27→                    "colors": {
+    28→    28→                        "surface-container-lowest": "#0e0e13",
+    29→    29→                        "surface": "#131318",
+    30→    30→                        "on-tertiary-fixed-variant": "#441cc8",
+    31→    31→                        "on-primary-fixed-variant": "#444460",
+    32→    32→                        "inverse-on-surface": "#303036",
+    33→    33→                        "surface-container-low": "#1b1b20",
+    34→    34→                        "on-tertiary": "#2e009c",
+    35→    35→                        "on-secondary-fixed-variant": "#004f53",
+    36→    36→                        "on-secondary": "#003739",
+    37→    37→                        "outline": "#928f98",
+    38→    38→                        "surface-tint": "#c5c3e5",
+    39→    39→                        "surface-container-highest": "#35343a",
+    40→    40→                        "error-container": "#93000a",
+    41→    41→                        "tertiary": "#c9bfff",
+    42→    42→                        "primary-fixed-dim": "#c5c3e5",
+    43→    43→                        "primary-fixed": "#e2dfff",
+    44→    44→                        "on-secondary-container": "#006c71",
+    45→    45→                        "on-secondary-fixed": "#002021",
+    46→    46→                        "background": "#131318",
+    47→    47→                        "on-primary-fixed": "#191932",
+    48→    48→                        "secondary": "#e6feff",
+    49→    49→                        "on-primary": "#2e2e48",
+    50→    50→                        "on-error": "#690005",
+    51→    51→                        "surface-container": "#1f1f25",
+    52→    52→                        "surface-container-high": "#2a292f",
+    53→    53→                        "inverse-surface": "#e4e1e9",
+    54→    54→                        "on-tertiary-container": "#7f66ff",
+    55→    55→                        "on-background": "#e4e1e9",
+    56→    56→                        "surface-dim": "#131318",
+    57→    57→                        "error": "#ffb4ab",
+    58→    58→                        "on-surface": "#e4e1e9",
+    59→    59→                        "secondary-fixed": "#63f7ff",
+    60→    60→                        "inverse-primary": "#5c5c79",
+    61→    61→                        "secondary-container": "#00f4fe",
+    62→    62→                        "on-primary-container": "#7d7c9b",
+    63→    63→                        "secondary-fixed-dim": "#00dce5",
+    64→    64→                        "on-tertiary-fixed": "#1a0063",
+    65→    65→                        "surface-bright": "#39383e",
+    66→    66→                        "tertiary-container": "#130051",
+    67→    67→                        "tertiary-fixed": "#e5deff",
+    68→    68→                        "primary-container": "#12122b",
+    69→    69→                        "primary": "#c5c3e5",
+    70→    70→                        "surface-variant": "#35343a",
+    71→    71→                        "on-error-container": "#ffdad6",
+    72→    72→                        "tertiary-fixed-dim": "#c9bfff",
+    73→    73→                        "on-surface-variant": "#c8c5ce",
+    74→    74→                        "outline-variant": "#47464d"
+    75→    75→                    },
+    76→    76→                    "borderRadius": {
+    77→    77→                        "DEFAULT": "0.25rem",
+    78→    78→                        "lg": "0.5rem",
+    79→    79→                        "xl": "0.75rem",
+    80→    80→                        "full": "9999px"
+    81→    81→                    },
+    82→    82→                    "spacing": {
+    83→    83→                        "base": "4px",
+    84→    84→                        "xl": "48px",
+    85→    85→                        "xs": "8px",
+    86→    86→                        "md": "24px",
+    87→    87→                        "gutter": "16px",
+    88→    88→                        "sm": "16px",
+    89→    89→                        "lg": "32px",
+    90→    90→                        "edge-margin": "20px"
+    91→    91→                    },
+    92→    92→                    "fontFamily": {
+    93→    93→                        "headline-md": ["Montserrat"],
+    94→    94→                        "label-md": ["Inter"],
+    95→    95→                        "body-lg": ["Inter"],
+    96→    96→                        "label-sm": ["Inter"],
+    97→    97→                        "body-md": ["Inter"],
+    98→    98→                        "headline-lg": ["Montserrat"],
+    99→    99→                        "headline-xl": ["Montserrat"]
+   100→   100→                    },
+   101→   101→                    "fontSize": {
+   102→   102→                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+   103→   103→                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+   104→   104→                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+   105→   105→                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+   106→   106→                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+   107→   107→                        "headline-lg": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+   108→   108→                        "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+   109→   109→                    }
+   110→   110→                }
+   111→   111→            }
+   112→   112→        }
+   113→   113→    </script>
+   114→   114→<style>
+   115→   115→    body {
+   116→   116→      min-height: max(884px, 100dvh);
+   117→   117→    }
+   118→   118→  </style>
+   119→   119→  </head>
+   120→   120→<body class="bg-background text-on-surface antialiased min-h-screen pb-[100px] md:pb-0 overflow-x-hidden">
+   121→   121→<!-- TopAppBar -->
+   122→   122→<header class="bg-surface/80 dark:bg-surface/80 backdrop-blur-xl fixed top-0 w-full z-50 border-b border-white/10 flat no shadows flex justify-between items-center px-edge-margin h-16 md:hidden">
+   123→   123→<div class="flex items-center gap-sm">
+   124→   124→<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high border border-outline-variant/30 flex-shrink-0 cursor-pointer active:scale-95 transition-transform">
+   125→   125→<img alt="User profile photo" class="w-full h-full object-cover" data-alt="A macro shot of a sleek, futuristic avatar icon with a vibrant cyan and deep indigo gradient background, reminiscent of neon lights reflecting on wet pavement. The overall feel is premium, high-tech, and ethereal." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAD2_dO4NWXXQeEg4EVt52nGQSGvNlaxPtH6bSoHgwe6ay8Ux5Df9R5JYRElczPgzGHskO_JlzlYnk6RuFIUgYEwpWNbanSXOjaf6KCA_RK1hYMM3-8EsB3UOEJzSqRIjhQM6aYHdi-oNMkEKCmeBW4lLHvhX5C31gV--W3Ihb6plC9hcDsDs3lFauW7JKm-39Ned0AqMyav-45zFSjRtKkOTp2NU0qcwdYeTYuOcTTZeho2iVh5aU"/>
+   126→   126→</div>
+   127→   127→<span class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">Sonic Cloud</span>
+   128→   128→</div>
+   129→   129→<button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 transition-transform rounded-full hover:bg-surface-variant/30">
+   130→   130→<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 300;">search</span>
+   131→   131→</button>
+   132→   132→</header>
+   133→   133→<!-- Top Navigation Web -->
+   134→   134→<header class="hidden md:flex bg-surface/80 backdrop-blur-xl fixed top-0 w-full z-50 border-b border-white/10 flat no shadows justify-between items-center px-xl h-20">
+   135→   135→<div class="flex items-center gap-md">
+   136→   136→<span class="font-headline-lg text-headline-lg font-bold text-primary">Sonic Cloud</span>
+   137→   137→</div>
+   138→   138→<nav class="flex items-center gap-lg">
+   139→   139→<button class="text-secondary-container drop-shadow-[0_0_8px_rgba(0,244,254,0.5)] flex flex-col items-center justify-center font-label-md text-label-md group hover:opacity-100 transition-all active:scale-90 transition-transform duration-200">
+   140→   140→<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'wght' 300;">library_music</span>
+   141→   141→                Library
+   142→   142→            </button>
+   143→   143→<button class="text-on-surface-variant opacity-60 flex flex-col items-center justify-center font-label-md text-label-md group hover:opacity-100 transition-all active:scale-90 transition-transform duration-200">
+   144→   144→<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'wght' 300;">play_circle</span>
+   145→   145→                Player
+   146→   146→            </button>
+   147→   147→<button class="text-on-surface-variant opacity-60 flex flex-col items-center justify-center font-label-md text-label-md group hover:opacity-100 transition-all active:scale-90 transition-transform duration-200">
+   148→   148→<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'wght' 300;">cloud_sync</span>
+   149→   149→                Cloud
+   150→   150→            </button>
+   151→   151→<button class="text-on-surface-variant opacity-60 flex flex-col items-center justify-center font-label-md text-label-md group hover:opacity-100 transition-all active:scale-90 transition-transform duration-200">
+   152→   152→<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'wght' 300;">settings</span>
+   153→   153→                Settings
+   154→   154→            </button>
+   155→   155→</nav>
+   156→   156→<div class="flex items-center gap-sm">
+   157→   157→<button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 transition-transform rounded-full hover:bg-surface-variant/30">
+   158→   158→<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 300;">search</span>
+   159→   159→</button>
+   160→   160→<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container-high border border-outline-variant/30 flex-shrink-0 cursor-pointer active:scale-95 transition-transform">
+   161→   161→<img alt="User profile photo" class="w-full h-full object-cover" data-alt="A macro shot of a sleek, futuristic avatar icon with a vibrant cyan and deep indigo gradient background, reminiscent of neon lights reflecting on wet pavement. The overall feel is premium, high-tech, and ethereal." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIHq5SeOIrCzHu403jnZQMnPqaMLw6C-apBx48azajJaTrmT4YZlyGTDw1L-muOWjDwKXH1huBKPm9JFE6Redh1zjWtrwzndx5Aw5K5g3U_f2W0aa_06AQv8Y83lQSFWWDQC_9OQxMyEAQTmaY2NaNUJPbe3lGv8b6EFnYba-ddnO1HgrrDkJyvV1b_TYjMCBvhoG8Ii2FAXlWvSuMfAYgQVDY4Nh4u4-BP1kuCHNND-fF3HsCX6E"/>
+   162→   162→</div>
+   163→   163→</div>
+   164→   164→</header>
+   165→   165→<main class="pt-20 md:pt-28 px-edge-margin md:px-xl max-w-[1440px] mx-auto">
+   166→   166→<!-- Search and Filter Section -->
+   167→   167→<div class="mb-lg flex flex-col md:flex-row gap-sm md:items-center md:justify-between">
+   168→   168→<div class="relative w-full md:w-96">
+   169→   169→<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" style="font-variation-settings: 'wght' 300;">search</span>
+   170→   170→<input class="w-full bg-surface-container/50 border border-white/10 rounded-full py-2 pl-10 pr-4 text-body-md font-body-md text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:border-secondary-container/50 focus:ring-1 focus:ring-secondary-container/50 transition-all backdrop-blur-md" placeholder="Search your library..." type="text"/>
+   171→   171→</div>
+   172→   172→<div class="flex overflow-x-auto scrollbar-hide gap-xs py-1">
+   173→   173→<button class="px-4 py-1.5 rounded-full border border-secondary-container bg-secondary-container/10 text-secondary-container font-label-md text-label-md whitespace-nowrap transition-colors">
+   174→   174→                    All
+   175→   175→                </button>
+   176→   176→<button class="px-4 py-1.5 rounded-full border border-white/10 bg-surface-container/30 text-on-surface-variant hover:bg-white/5 hover:text-on-surface font-label-md text-label-md whitespace-nowrap transition-colors backdrop-blur-sm">
+   177→   177→                    Artists
+   178→   178→                </button>
+   179→   179→<button class="px-4 py-1.5 rounded-full border border-white/10 bg-surface-container/30 text-on-surface-variant hover:bg-white/5 hover:text-on-surface font-label-md text-label-md whitespace-nowrap transition-colors backdrop-blur-sm">
+   180→   180→                    Albums
+   181→   181→                </button>
+   182→   182→<button class="px-4 py-1.5 rounded-full border border-white/10 bg-surface-container/30 text-on-surface-variant hover:bg-white/5 hover:text-on-surface font-label-md text-label-md whitespace-nowrap transition-colors backdrop-blur-sm">
+   183→   183→                    Playlists
+   184→   184→                </button>
+   185→   185→</div>
+   186→   186→</div>
+   187→   187→<!-- Recently Played -->
+   188→   188→<section class="mb-lg">
+   189→   189→<h2 class="font-headline-md text-headline-md text-on-surface mb-md">Recently Played</h2>
+   190→   190→<div class="flex overflow-x-auto scrollbar-hide gap-md pb-4 -mx-edge-margin px-edge-margin md:mx-0 md:px-0">
+   191→   191→<!-- Album Card 1 -->
+   192→   192→<div class="min-w-[140px] md:min-w-[180px] group cursor-pointer">
+   193→   193→<div class="relative aspect-square rounded-lg overflow-hidden mb-sm border-t border-l border-white/20 shadow-lg bg-surface-container">
+   194→   194→<img alt="Album Art" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A moody, high-contrast album cover featuring a minimal geometric abstract shape in vibrant cyan against a deep indigo and black textured background. The aesthetic is futuristic and ethereal, fitting a glassmorphic music app context." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAyK7GlCdOBKx-21yFbwFUicyPQq0rGx3jfNe6RS1kBYd7zXyzSPiYAxctvWY7jtpTEf52vCSoX4dbneQoLr2TkrXzEjHIScVGxFKce625RmzvZ1Dh7ffH_wTJWo0SUIC6oCrSI8G2N8KVHICc3f3pJZpUTBJITGMj5vukP1rTHC_jCtNWYh-0VMQcwszbuGLVJBLGMd_kkRiN8dYwV81beYziBMP4i92nqv7hjTXTdLtamFapsqbg"/>
+   195→   195→<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+   196→   196→<button class="w-12 h-12 rounded-full bg-gradient-to-br from-secondary-container to-blue-500 flex items-center justify-center text-primary-container shadow-[0_0_15px_rgba(0,244,254,0.6)] transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+   197→   197→<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+   198→   198→</button>
+   199→   199→</div>
+   200→   200→</div>
+   201→   201→<h3 class="font-label-md text-label-md text-on-surface truncate">Neon Pulse</h3>
+   202→   202→<p class="font-label-sm text-label-sm text-on-surface-variant truncate mt-1">Synthwave Collective</p>
+   203→   203→</div>
+   204→   204→<!-- Album Card 2 -->
+   205→   205→<div class="min-w-[140px] md:min-w-[180px] group cursor-pointer">
+   206→   206→<div class="relative aspect-square rounded-lg overflow-hidden mb-sm border-t border-l border-white/20 shadow-lg bg-surface-container">
+   207→   207→<img alt="Album Art" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="Album artwork depicting a serene, stylized cloud formation rendered in thin, glowing neon blue lines on a dark void background. The style is clean, modern, and tech-oriented, matching a high-fidelity cloud music streaming interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMkGZ8plkJ52Cr-4nU-RA4ewUWc7mMMn4v1yhh7zmEp7bc9sBFtwT15F1serKgPllT1v64uQsElWc0hpb6VdmXvJSsE2XCpvLfqEC_o3mjcKejcNGYCEhk9ma6_ksppJEpEi8cRete5qfnKtUN1VXd45SSKkROQJMfRYAFXM-t4ggXTgGngxKzIWGmxFNrF8i8itZHidUT6x4os1cTkg0a227L9tYT41NpSgqHlfEm72dLOguKUKA"/>
+   208→   208→<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+   209→   209→<button class="w-12 h-12 rounded-full bg-gradient-to-br from-secondary-container to-blue-500 flex items-center justify-center text-primary-container shadow-[0_0_15px_rgba(0,244,254,0.6)] transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+   210→   210→<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+   211→   211→</button>
+   212→   212→</div>
+   213→   213→</div>
+   214→   214→<h3 class="font-label-md text-label-md text-on-surface truncate">Ethereal Clouds</h3>
+   215→   215→<p class="font-label-sm text-label-sm text-on-surface-variant truncate mt-1">Ambient Echoes</p>
+   216→   216→</div>
+   217→   217→<!-- Album Card 3 -->
+   218→   218→<div class="min-w-[140px] md:min-w-[180px] group cursor-pointer">
+   219→   219→<div class="relative aspect-square rounded-lg overflow-hidden mb-sm border-t border-l border-white/20 shadow-lg bg-surface-container">
+   220→   220→<img alt="Album Art" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A cinematic, abstract visualization of soundwaves in electric cyan and deep violet, suspended in a dark, atmospheric void with subtle light flares. Perfect for a premium, futuristic music player aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0TCSjYoLf2Wg-AoVairCltEwCCWGZcoDwddU1jAyGO4QOeldfAOVKdLKPuHynTrXa5utAX4G5FdXZF2jvmr-x0twrdRp1c71iGhlzxbBRuux2gyjnHm1-wWs76PRVV9OQK_5o4uHDrJagxODvqWu2Zr71KEP3jVC7GWdzeJoE3p9Gp028nXWHVL1dFXcHkIRr2F8kTCkSHIgKjGfuRYMYTHA_lPk7l_u0Zio47D6kRogUGqwpLYQ"/>
+   221→   221→<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+   222→   222→<button class="w-12 h-12 rounded-full bg-gradient-to-br from-secondary-container to-blue-500 flex items-center justify-center text-primary-container shadow-[0_0_15px_rgba(0,244,254,0.6)] transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+   223→   223→<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+   224→   224→</button>
+   225→   225→</div>
+   226→   226→</div>
+   227→   227→<h3 class="font-label-md text-label-md text-on-surface truncate">Frequency Response</h3>
+   228→   228→<p class="font-label-sm text-label-sm text-on-surface-variant truncate mt-1">Audio Dynamics</p>
+   229→   229→</div>
+   230→   230→<!-- Album Card 4 -->
+   231→   231→<div class="min-w-[140px] md:min-w-[180px] group cursor-pointer">
+   232→   232→<div class="relative aspect-square rounded-lg overflow-hidden mb-sm border-t border-l border-white/20 shadow-lg bg-surface-container">
+   233→   233→<img alt="Album Art" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" data-alt="A minimalist and premium album cover featuring a sleek, metallic sphere reflecting a neon cyan light source in a dark, smoky environment. The mood is sophisticated and electronic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOQoSbhY04q9HjF4hOvJpPf1MdghPmfwOP5Egsv2RwI-me0fEKVgoPx0TIM4Vox1gJkQ5Tsply-qVIlQSuzah3pUEkIJx14W9pQpZUph41WDBHe1-UtPaTBQHPXMhtoR-H561SShVd9MwfgmiQKdLYyIq2y3S0L47N5ODzVGq7t8oayxvzSV6a80C8WujbeW24duvyaRD0blMyFCRRI5avJbIpd1f0x0FSfHBwoE38bYk_0eSHVPs"/>
+   234→   234→<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+   235→   235→<button class="w-12 h-12 rounded-full bg-gradient-to-br from-secondary-container to-blue-500 flex items-center justify-center text-primary-container shadow-[0_0_15px_rgba(0,244,254,0.6)] transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+   236→   236→<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+   237→   237→</button>
+   238→   238→</div>
+   239→   239→</div>
+   240→   240→<h3 class="font-label-md text-label-md text-on-surface truncate">Metallic Soul</h3>
+   241→   241→<p class="font-label-sm text-label-sm text-on-surface-variant truncate mt-1">The Androids</p>
+   242→   242→</div>
+   243→   243→</div>
+   244→   244→</section>
+   245→   245→<!-- All Songs List -->
+   246→   246→<section>
+   247→   247→<div class="flex items-center justify-between mb-sm">
+   248→   248→<h2 class="font-headline-md text-headline-md text-on-surface">All Songs</h2>
+   249→   249→<button class="text-secondary-container hover:text-secondary-fixed font-label-sm text-label-sm flex items-center gap-1 transition-colors">
+   250→   250→                    Sort <span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'wght' 300;">sort</span>
+   251→   251→</button>
+   252→   252→</div>
+   253→   253→<div class="flex flex-col gap-2">
+   254→   254→<!-- Song Item 1 (Active) -->
+   255→   255→<div class="group flex items-center gap-md p-3 rounded-lg bg-secondary-container/5 border border-secondary-container/30 hover:bg-surface-container-high transition-colors cursor-pointer relative overflow-hidden backdrop-blur-md">
+   256→   256→<!-- Subtle active indicator -->
+   257→   257→<div class="absolute left-0 top-0 bottom-0 w-1 bg-secondary-container shadow-[0_0_8px_rgba(0,244,254,0.8)]"></div>
+   258→   258→<div class="relative w-12 h-12 rounded bg-surface-container flex-shrink-0 overflow-hidden">
+   259→   259→<img alt="Track Art" class="w-full h-full object-cover" data-alt="Thumbnail showing a close-up of abstract digital sound waves in bright cyan on a dark background. High-tech, clean, minimalist aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2Jb8NXjnW8090GBDO9F7i1lEknIKQCP1GyxTQxY3vxpmnmhfpNOv6JbS4lW5-tMVThO5LY6KnCpBUPnT2OdctEqYDnvmwkgPos6KfPe5A2KiGkCfv2toQGlx0P-uLAXFWJDfq6uDD9ndGXPsTnTgeXQXvtE1Kx8Rpt-f1KiOEXDhORjo16SQY746h4Ktfh9GcXBGb1jq7B2i5Y6UUw0Th32aBZkAOR7GJs5R4luOqnrCjHnhaZgc"/>
+   260→   260→<div class="absolute inset-0 bg-black/50 flex items-center justify-center">
+   261→   261→<div class="flex items-end justify-center gap-[2px] h-4">
+   262→   262→<div class="w-1 bg-secondary-container animate-[pulse_1s_ease-in-out_infinite] h-2"></div>
+   263→   263→<div class="w-1 bg-secondary-container animate-[pulse_1.2s_ease-in-out_infinite] h-4"></div>
+   264→   264→<div class="w-1 bg-secondary-container animate-[pulse_0.8s_ease-in-out_infinite] h-3"></div>
+   265→   265→</div>
+   266→   266→</div>
+   267→   267→</div>
+   268→   268→<div class="flex-1 min-w-0">
+   269→   269→<div class="flex items-center gap-2">
+   270→   270→<h4 class="font-label-md text-label-md text-secondary-container truncate">Starlight Drift</h4>
+   271→   271→<span class="material-symbols-outlined text-[14px] text-secondary-container" style="font-variation-settings: 'wght' 300;" title="Cloud Track">cloud</span>
+   272→   272→</div>
+   273→   273→<p class="font-body-sm text-[13px] text-on-surface-variant truncate">Neon Pulse • 2024</p>
+   274→   274→</div>
+   275→   275→<div class="flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
+   276→   276→<button class="text-on-surface-variant hover:text-on-surface transition-colors">
+   277→   277→<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 300;">favorite</span>
+   278→   278→</button>
+   279→   279→<button class="text-on-surface-variant hover:text-on-surface transition-colors">
+   280→   280→<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 300;">more_vert</span>
+   281→   281→</button>
+   282→   282→</div>
+   283→   283→<span class="font-body-sm text-[13px] text-on-surface-variant w-12 text-right group-hover:hidden md:group-hover:block transition-all">4:12</span>
+   284→   284→</div>
+   285→   285→<!-- Song Item 2 -->
+   286→   286→<div class="group flex items-center gap-md p-3 rounded-lg bg-surface-container/20 border border-white/5 hover:bg-surface-container-high transition-colors cursor-pointer relative overflow-hidden backdrop-blur-sm">
+   287→   287→<div class="relative w-12 h-12 rounded bg-surface-container flex-shrink-0 overflow-hidden group-hover:opacity-80 transition-opacity">
+   288→   288→<img alt="Track Art" class="w-full h-full object-cover" data-alt="Thumbnail art featuring a smooth, dark gradient sphere floating in a minimalist black space, illuminated by a subtle blue rim light. Premium, tech-focused design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWPmHLvWIpEtGsjaMcq1NLfOlQ0b-zJeT2ZIG4NtQe8Eg58D0P-xZqrdt0SyEo1QklmewE39tyA657cxYsvdjHZX0c6eDK9tcviYPc6udVJO_8x5YY3cGDAlbqgvWB6xIvaYyB6uQp7-QCwAmtWVYpVTF4wEd35O-DhqndBPlqnR-DQ3gmT4ZY8yZ2jcAh5ep4NSn614qRIMVSFEXoYwzIHBggPfBJU89Xo2jR70KUGOf06Mew3WQ"/>
+   289→   289→<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+   290→   290→<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+   291→   291→</div>
+   292→   292→</div>
+   293→   293→<div class="flex-1 min-w-0">
+   294→   294→<div class="flex items-center gap-2">
+   295→   295→<h4 class="font-label-md text-label-md text-on-surface truncate">Midnight Horizon</h4>
+   296→   296→</div>
+   297→   297→<p class="font-body-sm text-[13px] text-on-surface-variant truncate">Ambient Echoes • 2023</p>
+   298→   298→</div>
+   299→   299→<div class="flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
+   300→   300→<button class="text-on-surface-variant hover:text-on-surface transition-colors">
+   301→   301→<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 300;">favorite</span>
+   302→   302→</button>
+   303→   303→<button class="text-on-surface-variant hover:text-on-surface transition-colors">
+   304→   304→<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 300;">more_vert</span>
+   305→   305→</button>
+   306→   306→</div>
+   307→   307→<span class="font-body-sm text-[13px] text-on-surface-variant w-12 text-right group-hover:hidden md:group-hover:block transition-all">3:45</span>
+   308→   308→</div>
+   309→   309→<!-- Song Item 3 -->
+   310→   310→<div class="group flex items-center gap-md p-3 rounded-lg bg-surface-container/20 border border-white/5 hover:bg-surface-container-high transition-colors cursor-pointer relative overflow-hidden backdrop-blur-sm">
+   311→   311→<div class="relative w-12 h-12 rounded bg-surface-container flex-shrink-0 overflow-hidden group-hover:opacity-80 transition-opacity">
+   312→   312→<img alt="Track Art" class="w-full h-full object-cover" data-alt="Thumbnail of a high-contrast futuristic cityscape at night, abstract and minimalist, using only deep purples and bright cyan highlights. Matches the app's dark mode visual identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrd91B3cie4w3ch0ilR446bR17kttAYwzPJVxSfOs0B7a16vtVQYWsxXiWKsLNisz2jpwE9jbOglQXVWLGU9EXH0o5Vyc5SGwpHEWvyhBJVr0bNPGIt9T5a9BDuGAA3Wv_2308h-Mne_pm4DkYoUVDGb2JgOJ7QbE9eftrRXfvn7dk74FtftbVej-9fjxy0sL4HCKmqnH-3haJp4TV6z7bZshhNHAwo990FD0Frct9t7LEmX22HK4"/>
+   313→   313→<div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+   314→   314→<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+   315→   315→</div>
+   316→   316→</div>
+   317→   317→<div class="flex-1 min-w-0">
+   318→   318→<div class="flex items-center gap-2">
+   319→   319→<h4 class="font-label-md text-label-md text-on-surface truncate">Velocity</h4>
+   320→   320→<span class="material-symbols-outlined text-[14px] text-on-surface-variant" style="font-variation-settings: 'wght' 300;" title="Cloud Track">cloud</span>
+   321→   321→</div>
+   322→   322→<p class="font-body-sm text-[13px] text-on-surface-variant truncate">Audio Dynamics • 2024</p>
+   323→   323→</div>
+   324→   324→<div class="flex items-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity">
+   325→   325→<button class="text-on-surface-variant hover:text-on-surface transition-colors">
+   326→   326→<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 300;">favorite</span>
+   327→   327→</button>
+   328→   328→<button class="text-on-surface-variant hover:text-on-surface transition-colors">
+   329→   329→<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 300;">more_vert</span>
+   330→   330→</button>
+   331→   331→</div>
+   332→   332→<span class="font-body-sm text-[13px] text-on-surface-variant w-12 text-right group-hover:hidden md:group-hover:block transition-all">5:20</span>
+   333→   333→</div>
+   334→   334→</div>
+   335→   335→</section>
+   336→   336→</main>
+   337→   337→<!-- BottomNavBar -->
+   338→   338→<nav class="md:hidden bg-surface-container/90 dark:bg-surface-container/90 backdrop-blur-2xl fixed bottom-0 w-full z-50 rounded-t-xl border-t border-white/10 shadow-lg fixed bottom-0 left-0 w-full h-20 flex justify-around items-center px-4 pb-safe">
+   339→   339→<button class="flex flex-col items-center justify-center text-secondary-container drop-shadow-[0_0_8px_rgba(0,244,254,0.5)] hover:opacity-100 transition-all active:scale-90 transition-transform duration-200 w-16">
+   340→   340→<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'wght' 300, 'FILL' 1;">library_music</span>
+   341→   341→<span class="font-label-sm text-label-sm">Library</span>
+   342→   342→</button>
+   343→   343→<button class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:opacity-100 transition-all active:scale-90 transition-transform duration-200 w-16">
+   344→   344→<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'wght' 300;">play_circle</span>
+   345→   345→<span class="font-label-sm text-label-sm">Player</span>
+   346→   346→</button>
+   347→   347→<button class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:opacity-100 transition-all active:scale-90 transition-transform duration-200 w-16">
+   348→   348→<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'wght' 300;">cloud_sync</span>
+   349→   349→<span class="font-label-sm text-label-sm">Cloud</span>
+   350→   350→</button>
+   351→   351→<button class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:opacity-100 transition-all active:scale-90 transition-transform duration-200 w-16">
+   352→   352→<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'wght' 300;">settings</span>
+   353→   353→<span class="font-label-sm text-label-sm">Settings</span>
+   354→   354→</button>
+   355→   355→</nav>
+   356→   356→</body></html>

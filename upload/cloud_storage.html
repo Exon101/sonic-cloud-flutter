@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<title>Cloud Explorer - Sonic Cloud</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#0e0e13",
+                        "surface": "#131318",
+                        "on-tertiary-fixed-variant": "#441cc8",
+                        "on-primary-fixed-variant": "#444460",
+                        "inverse-on-surface": "#303036",
+                        "surface-container-low": "#1b1b20",
+                        "on-tertiary": "#2e009c",
+                        "on-secondary-fixed-variant": "#004f53",
+                        "on-secondary": "#003739",
+                        "outline": "#928f98",
+                        "surface-tint": "#c5c3e5",
+                        "surface-container-highest": "#35343a",
+                        "error-container": "#93000a",
+                        "tertiary": "#c9bfff",
+                        "primary-fixed-dim": "#c5c3e5",
+                        "primary-fixed": "#e2dfff",
+                        "on-secondary-container": "#006c71",
+                        "on-secondary-fixed": "#002021",
+                        "background": "#131318",
+                        "on-primary-fixed": "#191932",
+                        "secondary": "#e6feff",
+                        "on-primary": "#2e2e48",
+                        "on-error": "#690005",
+                        "surface-container": "#1f1f25",
+                        "surface-container-high": "#2a292f",
+                        "inverse-surface": "#e4e1e9",
+                        "on-tertiary-container": "#7f66ff",
+                        "on-background": "#e4e1e9",
+                        "surface-dim": "#131318",
+                        "error": "#ffb4ab",
+                        "on-surface": "#e4e1e9",
+                        "secondary-fixed": "#63f7ff",
+                        "inverse-primary": "#5c5c79",
+                        "secondary-container": "#00f4fe",
+                        "on-primary-container": "#7d7c9b",
+                        "secondary-fixed-dim": "#00dce5",
+                        "on-tertiary-fixed": "#1a0063",
+                        "surface-bright": "#39383e",
+                        "tertiary-container": "#130051",
+                        "tertiary-fixed": "#e5deff",
+                        "primary-container": "#12122b",
+                        "primary": "#c5c3e5",
+                        "surface-variant": "#35343a",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#c9bfff",
+                        "on-surface-variant": "#c8c5ce",
+                        "outline-variant": "#47464d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "4px",
+                        "xl": "48px",
+                        "xs": "8px",
+                        "md": "24px",
+                        "gutter": "16px",
+                        "sm": "16px",
+                        "lg": "32px",
+                        "edge-margin": "20px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Montserrat"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Montserrat"],
+                        "headline-xl": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background: linear-gradient(180deg, #12122B 0%, #0A0A0F 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .thin-icon {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+        }
+        .sonic-glow {
+            filter: drop-shadow(0 0 8px rgba(0, 244, 254, 0.5));
+        }
+        .progress-glow {
+            box-shadow: 0 0 12px rgba(0, 244, 254, 0.6);
+        }
+        
+        /* Custom Toggle Switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #00f4fe;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: rgba(0, 244, 254, 0.2);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-surface antialiased overflow-x-hidden pb-24 pt-16">
+<!-- TopAppBar (From JSON) -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl border-b border-white/10 flat no shadows hidden md:flex">
+<div class="flex justify-between items-center px-edge-margin h-16 w-full max-w-7xl mx-auto">
+<div class="flex items-center gap-sm">
+<img class="w-8 h-8 rounded-full object-cover border border-white/20" data-alt="A small circular user profile photo showing a person wearing futuristic headphones, styled in a cyberpunk neon aesthetic with deep indigo and cyan lighting, indicating a premium music service user." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwiA79emCfDLzbZzsJF64pDrh-rx5hEn3M350D7xgZSQIuEGfAOkTufE9u7ExL4ojWO20QO1y8ZyMxa99jpBzPDSFvT8Fy8M6mxFI8rkoi5lb2yHElCw1g9Cxz3G2if-BuKKJPWVHuR7xBohmksKpKi7atc8YzlSCDWp1_t-gEseXX5Mi_inI2fGoLyyoHLeIByJGU0kpJlrGeZtMS73MOnehYyaF-BRUb1F6fEcShKI5n1aqw1O0"/>
+</div>
+<div class="font-headline-lg text-headline-lg font-bold text-primary">Sonic Cloud</div>
+<div class="text-primary hover:opacity-80 transition-opacity active:scale-95 transition-transform cursor-pointer">
+<span class="material-symbols-outlined thin-icon">search</span>
+</div>
+</div>
+</header>
+<!-- Mobile TopAppBar (From JSON) -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl border-b border-white/10 flat no shadows flex md:hidden">
+<div class="flex justify-between items-center px-edge-margin h-16 w-full">
+<div class="flex items-center gap-sm">
+<img class="w-8 h-8 rounded-full object-cover border border-white/20" data-alt="A small circular user profile photo showing a person wearing futuristic headphones, styled in a cyberpunk neon aesthetic with deep indigo and cyan lighting, indicating a premium music service user." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEmDHg1uyWKNry240JZ1eJWlm8Amfwyl68i3QNxDjz2uVxdLKFbqjPVkNdI9D6L0LvVN1AnJQSuZyDrUb5keziBrsXFlKebvxnRjX-nV1OmONvh21Hv0V_UF4e_tu0fD2DQ3hunhGVC88uhL1duJY48SkM7xY0p3fj9GyKJDdPESncIAUoUO9-gTPVqhd7TCoDjhO4PcjAtv1VTAOvvvX1QmGw1efsQy0fnfsge43c-JOUtRm7aKA"/>
+</div>
+<div class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">Sonic Cloud</div>
+<div class="text-primary hover:opacity-80 transition-opacity active:scale-95 transition-transform cursor-pointer">
+<span class="material-symbols-outlined thin-icon">search</span>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="w-full max-w-7xl mx-auto px-edge-margin pt-md">
+<!-- Storage Overview -->
+<section class="mb-lg">
+<div class="glass-card rounded-xl p-md">
+<div class="flex justify-between items-end mb-xs">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Cloud Storage</h2>
+<p class="font-body-md text-body-md text-on-surface-variant opacity-80">45 GB / 100 GB Used</p>
+</div>
+<span class="material-symbols-outlined text-secondary-container thin-icon text-3xl sonic-glow">cloud_done</span>
+</div>
+<!-- Sonic Seeker Progress -->
+<div class="h-2 bg-surface-container-highest rounded-full mt-sm relative overflow-hidden">
+<div class="absolute top-0 left-0 h-full bg-gradient-to-r from-on-tertiary-container to-secondary-container w-[45%] rounded-full progress-glow"></div>
+</div>
+<div class="flex gap-4 mt-sm">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-secondary-container"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Music (30 GB)</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-on-tertiary-container"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Other (15 GB)</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Connected Services Grid -->
+<section>
+<div class="flex justify-between items-center mb-md">
+<h3 class="font-headline-md text-headline-md text-on-surface">Connected Drives</h3>
+<button class="flex items-center gap-2 font-label-md text-label-md text-secondary-container hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined thin-icon text-sm">add</span> Add Service
+                </button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-sm">
+<!-- Drive Item 1 -->
+<div class="glass-card rounded-xl p-md flex flex-col justify-between h-48 relative overflow-hidden group cursor-pointer hover:bg-white/10 transition-colors duration-300">
+<div class="absolute top-0 right-0 w-32 h-32 bg-secondary-container/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
+<div class="flex justify-between items-start z-10">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-secondary-container text-4xl thin-icon">folder_special</span>
+<div>
+<h4 class="font-body-lg text-body-lg text-on-surface">Google Drive</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant opacity-60">High-Res Audio Library</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant thin-icon">more_vert</span>
+</div>
+<div class="z-10 mt-auto">
+<div class="flex justify-between items-center bg-surface-container-low/50 rounded-lg p-2 border border-white/5">
+<span class="font-label-md text-label-md text-on-surface-variant">Stream Mode</span>
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-surface appearance-none cursor-pointer transition-all duration-300 z-10" id="toggle1" name="toggle1" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-surface-container-highest cursor-pointer transition-colors duration-300" for="toggle1"></label>
+</div>
+</div>
+</div>
+</div>
+<!-- Drive Item 2 -->
+<div class="glass-card rounded-xl p-md flex flex-col justify-between h-48 relative overflow-hidden group cursor-pointer hover:bg-white/10 transition-colors duration-300">
+<div class="absolute top-0 right-0 w-32 h-32 bg-on-tertiary-container/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
+<div class="flex justify-between items-start z-10">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-on-surface text-4xl thin-icon">folder_zip</span>
+<div>
+<h4 class="font-body-lg text-body-lg text-on-surface">Dropbox</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant opacity-60">DJ Mixes &amp; Stems</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant thin-icon">more_vert</span>
+</div>
+<div class="z-10 mt-auto">
+<div class="flex justify-between items-center bg-surface-container-low/50 rounded-lg p-2 border border-white/5">
+<span class="font-label-md text-label-md text-on-surface-variant">Download for Offline</span>
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+<input class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 border-surface appearance-none cursor-pointer transition-all duration-300 z-10" id="toggle2" name="toggle2" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-surface-container-highest cursor-pointer transition-colors duration-300" for="toggle2"></label>
+</div>
+</div>
+</div>
+</div>
+<!-- Drive Item 3 (Add New/Empty State style) -->
+<div class="glass-card rounded-xl p-md flex flex-col items-center justify-center h-48 border-dashed border-2 border-white/10 hover:border-secondary-container/50 transition-colors duration-300 cursor-pointer group">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center mb-xs group-hover:bg-secondary-container/20 transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-secondary-container thin-icon">cloud_upload</span>
+</div>
+<h4 class="font-body-md text-body-md text-on-surface opacity-80">Link New Storage</h4>
+</div>
+</div>
+</section>
+<!-- Recent Cloud Activity -->
+<section class="mt-lg mb-20 md:mb-0">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-md">Recent Sync Activity</h3>
+<div class="glass-card rounded-xl overflow-hidden">
+<div class="p-xs hover:bg-white/5 border-b border-white/5 flex items-center gap-md cursor-pointer transition-colors">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center flex-shrink-0 relative">
+<span class="material-symbols-outlined thin-icon text-on-surface">audio_file</span>
+<div class="absolute -top-1 -right-1 w-3 h-3 bg-secondary-container rounded-full animate-pulse"></div>
+</div>
+<div class="flex-grow">
+<h5 class="font-body-md text-body-md text-on-surface line-clamp-1">Midnight City Remaster (FLAC).zip</h5>
+<p class="font-label-sm text-label-sm text-on-surface-variant opacity-60">Downloading to local cache...</p>
+</div>
+<div class="text-right">
+<span class="font-label-md text-label-md text-secondary-container block">68%</span>
+</div>
+</div>
+<div class="p-xs hover:bg-white/5 flex items-center gap-md cursor-pointer transition-colors">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined thin-icon text-on-surface opacity-60">library_music</span>
+</div>
+<div class="flex-grow">
+<h5 class="font-body-md text-body-md text-on-surface opacity-80 line-clamp-1">Ambient Soundscapes Vol. 4</h5>
+<p class="font-label-sm text-label-sm text-on-surface-variant opacity-60">Synced from Google Drive</p>
+</div>
+<div class="text-right opacity-60">
+<span class="material-symbols-outlined thin-icon text-sm">check_circle</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (From JSON) -->
+<nav class="fixed bottom-0 left-0 w-full h-20 flex justify-around items-center px-4 pb-safe bg-surface-container/90 dark:bg-surface-container/90 backdrop-blur-2xl rounded-t-xl border-t border-white/10 shadow-lg z-50 md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:opacity-100 transition-all active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined thin-icon">library_music</span>
+<span class="font-label-sm text-label-sm mt-1">Library</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:opacity-100 transition-all active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined thin-icon">play_circle</span>
+<span class="font-label-sm text-label-sm mt-1">Player</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary-container drop-shadow-[0_0_8px_rgba(0,244,254,0.5)] hover:opacity-100 transition-all active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined thin-icon" style="font-variation-settings: 'FILL' 1;">cloud_sync</span>
+<span class="font-label-sm text-label-sm mt-1">Cloud</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:opacity-100 transition-all active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined thin-icon">settings</span>
+<span class="font-label-sm text-label-sm mt-1">Settings</span>
+</a>
+</nav>
+</body></html>
