@@ -176,6 +176,9 @@ jobs:
       - name: Precache macOS artifacts
         run: flutter precache --macos
 
+      - name: Disable Swift Package Manager (compatibility)
+        run: flutter config --no-enable-swift-package-manager
+
       - name: Regenerate macOS project files
         run: flutter create --platforms=macos --project-name=sonic_cloud .
 
@@ -211,11 +214,14 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Regenerate Windows project files
+        run: flutter create --platforms=windows --project-name=sonic_cloud .
+
       - name: Install dependencies
         run: flutter pub get
 
       - name: Build Windows
-        run: flutter build windows --release
+        run: flutter build windows --release --no-tree-shake-icons
 
       - name: Zip Windows build
         shell: pwsh
@@ -251,6 +257,9 @@ jobs:
 
       - name: Precache Linux artifacts
         run: flutter precache --linux
+
+      - name: Regenerate Linux project files
+        run: flutter create --platforms=linux --project-name=sonic_cloud .
 
       - name: Install dependencies
         run: flutter pub get
