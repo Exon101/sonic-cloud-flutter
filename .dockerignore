@@ -1,0 +1,37 @@
+# Build artifacts
+build/
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets / signing keys
+*.keystore
+*.jks
+android/key.properties
+.env
+.env.*
+
+# Flutter / Gradle caches (built fresh in image)
+.flutter-plugins
+.flutter-plugins-dependencies
+android/.gradle/
+ios/Pods/
+ios/.symlinks/
+
+# Git
+.git
+.gitignore
+
+# Documentation (not needed in container)
+README.md
+*.md

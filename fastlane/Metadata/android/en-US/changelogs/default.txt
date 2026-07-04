@@ -1,0 +1,1 @@
+Initial release: 4-screen Flutter implementation of the Sonic Cloud design system (My Library, Now Playing, Cloud Storage, Settings).

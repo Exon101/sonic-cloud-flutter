@@ -1,0 +1,50 @@
+# Dependabot — keeps dependencies fresh across the Flutter app, GitHub Actions,
+# Docker, and Fastlane.
+#
+# Docs: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+
+updates:
+  # ── pubspec.yaml (Flutter / Dart deps) ──────────────────────────────────────
+  - package-ecosystem: "pub"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "dart"]
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      flutter-packages:
+        patterns: ["*"]
+
+  # ── GitHub Actions workflows ────────────────────────────────────────────────
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "ci"]
+    commit-message:
+      prefix: "chore(ci)"
+
+  # ── Docker base images ──────────────────────────────────────────────────────
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels: ["dependencies", "docker"]
+    commit-message:
+      prefix: "chore(docker)"
+
+  # ── Fastlane Ruby gems ──────────────────────────────────────────────────────
+  - package-ecosystem: "bundler"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels: ["dependencies", "fastlane"]
+    commit-message:
+      prefix: "chore(fastlane)"
