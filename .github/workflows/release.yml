@@ -69,10 +69,10 @@ jobs:
           EOF
 
       - name: Build release APK
-        run: flutter build apk --release
+        run: flutter build apk --release --no-tree-shake-icons
 
       - name: Build release AAB
-        run: flutter build appbundle --release
+        run: flutter build appbundle --release --no-tree-shake-icons
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
@@ -135,14 +135,14 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Precache iOS artifacts
+        run: flutter precache --ios
+
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Install pods
-        run: (cd ios && pod install --repo-update) || true
-
       - name: Build iOS (no codesign)
-        run: flutter build ios --release --no-codesign
+        run: flutter build ios --release --no-codesign --no-tree-shake-icons
 
       - name: Upload iOS build artifact
         uses: actions/upload-artifact@v4
@@ -167,11 +167,14 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Precache macOS artifacts
+        run: flutter precache --macos
+
       - name: Install dependencies
         run: flutter pub get
 
       - name: Build macOS
-        run: flutter build macos --release
+        run: flutter build macos --release --no-tree-shake-icons
 
       - name: Tarball macOS app
         run: tar -czf macos-release.tar.gz -C build/macos/Build/Products/Release "Sonic Cloud.app"
@@ -229,7 +232,7 @@ jobs:
       - name: Install Linux build deps
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y ninja-build libgtk-3-dev libblkid-dev liblzma-dev libstdc++-12-dev clang cmake
+          sudo apt-get install -y ninja-build libgtk-3-dev libblkid-dev liblzma-dev libstdc++-12-dev clang cmake pkg-config
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -237,11 +240,14 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Precache Linux artifacts
+        run: flutter precache --linux
+
       - name: Install dependencies
         run: flutter pub get
 
       - name: Build Linux
-        run: flutter build linux --release
+        run: flutter build linux --release --no-tree-shake-icons
 
       - name: Tarball Linux build
         run: tar -czf linux-release.tar.gz -C build/linux/x64/release/bundle .
