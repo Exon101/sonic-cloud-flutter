@@ -69,10 +69,10 @@ jobs:
           EOF
 
       - name: Build release APK
-        run: flutter build apk --release
+        run: flutter build apk --release --no-tree-shake-icons
 
       - name: Build release AAB
-        run: flutter build appbundle --release
+        run: flutter build appbundle --release --no-tree-shake-icons
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
@@ -135,14 +135,20 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Precache iOS artifacts
+        run: flutter precache --ios
+
+      - name: Disable Swift Package Manager (compatibility)
+        run: flutter config --no-enable-swift-package-manager
+
+      - name: Regenerate iOS project files
+        run: flutter create --platforms=ios --project-name=sonic_cloud .
+
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Install pods
-        run: (cd ios && pod install --repo-update) || true
-
       - name: Build iOS (no codesign)
-        run: flutter build ios --release --no-codesign
+        run: flutter build ios --release --no-codesign --no-tree-shake-icons
 
       - name: Upload iOS build artifact
         uses: actions/upload-artifact@v4
@@ -167,11 +173,20 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Precache macOS artifacts
+        run: flutter precache --macos
+
+      - name: Disable Swift Package Manager (compatibility)
+        run: flutter config --no-enable-swift-package-manager
+
+      - name: Regenerate macOS project files
+        run: flutter create --platforms=macos --project-name=sonic_cloud .
+
       - name: Install dependencies
         run: flutter pub get
 
       - name: Build macOS
-        run: flutter build macos --release
+        run: flutter build macos --release --no-tree-shake-icons
 
       - name: Tarball macOS app
         run: tar -czf macos-release.tar.gz -C build/macos/Build/Products/Release "Sonic Cloud.app"
@@ -199,11 +214,14 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Regenerate Windows project files
+        run: flutter create --platforms=windows --project-name=sonic_cloud .
+
       - name: Install dependencies
         run: flutter pub get
 
       - name: Build Windows
-        run: flutter build windows --release
+        run: flutter build windows --release --no-tree-shake-icons
 
       - name: Zip Windows build
         shell: pwsh
@@ -229,7 +247,7 @@ jobs:
       - name: Install Linux build deps
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y ninja-build libgtk-3-dev libblkid-dev liblzma-dev libstdc++-12-dev clang cmake
+          sudo apt-get install -y ninja-build libgtk-3-dev libblkid-dev liblzma-dev libstdc++-12-dev clang cmake pkg-config
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -237,11 +255,17 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Precache Linux artifacts
+        run: flutter precache --linux
+
+      - name: Regenerate Linux project files
+        run: flutter create --platforms=linux --project-name=sonic_cloud .
+
       - name: Install dependencies
         run: flutter pub get
 
       - name: Build Linux
-        run: flutter build linux --release
+        run: flutter build linux --release --no-tree-shake-icons
 
       - name: Tarball Linux build
         run: tar -czf linux-release.tar.gz -C build/linux/x64/release/bundle .
@@ -258,6 +282,7 @@ jobs:
   publish-release:
     name: Publish GitHub Release
     needs: [build-android, build-web, build-ios, build-macos, build-windows, build-linux]
+    if: always()  # Run even if some platform builds fail — release with available artifacts
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -281,14 +306,14 @@ jobs:
       - name: Stage release files
         run: |
           mkdir -p release
-          cp artifacts/android-apk-release/app-release.apk release/sonic-cloud-${{ steps.ver.outputs.version }}-android.apk
-          cp artifacts/android-aab-release/app-release.aab release/sonic-cloud-${{ steps.ver.outputs.version }}-android.aab
-          cp artifacts/web-release/web-release.tar.gz release/sonic-cloud-${{ steps.ver.outputs.version }}-web.tar.gz
-          cp artifacts/ios-build/Runner.app release/sonic-cloud-${{ steps.ver.outputs.version }}-ios.app || true
-          cp artifacts/macos-release/macos-release.tar.gz release/sonic-cloud-${{ steps.ver.outputs.version }}-macos.tar.gz
-          cp artifacts/windows-release/windows-release.zip release/sonic-cloud-${{ steps.ver.outputs.version }}-windows.zip
-          cp artifacts/linux-release/linux-release.tar.gz release/sonic-cloud-${{ steps.ver.outputs.version }}-linux.tar.gz
-          ls -la release/
+          cp artifacts/android-apk-release/app-release.apk release/sonic-cloud-${{ steps.ver.outputs.version }}-android.apk || echo "Android APK not available"
+          cp artifacts/android-aab-release/app-release.aab release/sonic-cloud-${{ steps.ver.outputs.version }}-android.aab || echo "Android AAB not available"
+          cp artifacts/web-release/web-release.tar.gz release/sonic-cloud-${{ steps.ver.outputs.version }}-web.tar.gz || echo "Web bundle not available"
+          cp artifacts/ios-build/Runner.app release/sonic-cloud-${{ steps.ver.outputs.version }}-ios.app || echo "iOS build not available"
+          cp artifacts/macos-release/macos-release.tar.gz release/sonic-cloud-${{ steps.ver.outputs.version }}-macos.tar.gz || echo "macOS build not available"
+          cp artifacts/windows-release/windows-release.zip release/sonic-cloud-${{ steps.ver.outputs.version }}-windows.zip || echo "Windows build not available"
+          cp artifacts/linux-release/linux-release.tar.gz release/sonic-cloud-${{ steps.ver.outputs.version }}-linux.tar.gz || echo "Linux build not available"
+          ls -la release/ || true
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
