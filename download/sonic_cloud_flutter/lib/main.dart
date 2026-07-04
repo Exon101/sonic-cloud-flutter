@@ -4,6 +4,7 @@ import 'screens/cloud_storage_screen.dart';
 import 'screens/my_library_screen.dart';
 import 'screens/now_playing_screen.dart';
 import 'screens/settings_screen.dart';
+import 'services/playback_service.dart';
 import 'theme/app_colors.dart';
 import 'theme/app_theme.dart';
 import 'widgets/glass_card.dart';
@@ -40,6 +41,13 @@ class _HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<_HomeShell> {
   int _index = 0;
+  final PlaybackService _playback = PlaybackService();
+
+  @override
+  void dispose() {
+    _playback.dispose();
+    super.dispose();
+  }
 
   void _go(int i) => setState(() => _index = i);
 
@@ -49,6 +57,7 @@ class _HomeShellState extends State<_HomeShell> {
         builder: (_) => NowPlayingScreen(
           track: MockData.allSongs.first,
           onClose: () => Navigator.of(context).pop(),
+          playback: _playback,
         ),
         fullscreenDialog: true,
       ),

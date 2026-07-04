@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/models.dart';
+import '../services/playback_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart' as r;
 import '../theme/app_spacing.dart';
@@ -17,25 +18,49 @@ import '../widgets/waveform_progress.dart';
 ///   - Track title + cloud_sync icon + artist subtitle
 ///   - Waveform seek bar with timestamps
 ///   - Glassmorphic playback control pill: shuffle / prev / play-pause / next / repeat
+///
+/// Playback wiring:
+///   - Receives a [PlaybackService] (typically shared across the app).
+///   - Loads the track's audio URL on first build via `service.load(...)`.
+///   - Listens to the service via [ListenableBuilder] so the UI updates
+///     whenever position / playing state changes.
+///   - Waveform drag → `service.seekToProgress(...)`.
+///   - Play/pause button → `service.togglePlayPause()`.
 class NowPlayingScreen extends StatefulWidget {
   final Track track;
   final VoidCallback onClose;
+  final PlaybackService playback;
 
-  const NowPlayingScreen({super.key, required this.track, required this.onClose});
+  const NowPlayingScreen({
+    super.key,
+    required this.track,
+    required this.onClose,
+    required this.playback,
+  });
 
   @override
   State<NowPlayingScreen> createState() => _NowPlayingScreenState();
 }
 
 class _NowPlayingScreenState extends State<NowPlayingScreen> {
-  bool _isPlaying = true;
-  double _progress = 0.35; // matches the HTML mockup playhead
+  @override
+  void initState() {
+    super.initState();
+    // Load the audio source asynchronously. The widget rebuilds when the
+    // service notifies listeners (position/duration/isPlaying).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.playback.load(widget.track.audioUrl).then((_) {
+        if (mounted) widget.playback.play();
+      });
+    });
+  }
 
-  Duration get _total => widget.track.duration;
-  Duration get _position => Duration(
-        seconds: (_total.inSeconds * _progress).round(),
-      );
-  Duration get _remaining => _total - _position;
+  @override
+  void dispose() {
+    // Pause (but don't dispose — the service is owned higher up).
+    widget.playback.pause();
+    super.dispose();
+  }
 
   String _fmt(Duration d) {
     final m = d.inMinutes.abs();
@@ -47,30 +72,44 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.edgeMargin),
-          child: Column(
-            children: [
-              _TopBar(onClose: widget.onClose),
-              const Spacer(),
-              _VinylArt(artUrl: widget.track.artUrl),
-              const SizedBox(height: AppSpacing.md),
-              _TrackInfo(track: widget.track),
-              const Spacer(),
-              _WaveformSection(
-                progress: _progress,
-                position: _fmt(_position),
-                remaining: _fmt(_remaining),
-                onSeek: (p) => setState(() => _progress = p),
+        child: AnimatedBuilder(
+          animation: widget.playback,
+          builder: (context, _) {
+            final pos = widget.playback.position;
+            final dur = widget.playback.duration > Duration.zero
+                ? widget.playback.duration
+                : widget.track.duration;
+            final remaining = dur - pos;
+            final progress = widget.playback.duration > Duration.zero
+                ? widget.playback.progress
+                : 0.35; // fallback mock position before audio loads
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.edgeMargin),
+              child: Column(
+                children: [
+                  _TopBar(onClose: widget.onClose),
+                  const Spacer(),
+                  _VinylArt(artUrl: widget.track.artUrl),
+                  const SizedBox(height: AppSpacing.md),
+                  _TrackInfo(track: widget.track),
+                  const Spacer(),
+                  _WaveformSection(
+                    progress: progress,
+                    position: _fmt(pos),
+                    remaining: _fmt(remaining),
+                    onSeek: (p) => widget.playback.seekToProgress(p),
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  _Controls(
+                    isPlaying: widget.playback.isPlaying,
+                    onPlayPause: () => widget.playback.togglePlayPause(),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                ],
               ),
-              const SizedBox(height: AppSpacing.xs),
-              _Controls(
-                isPlaying: _isPlaying,
-                onPlayPause: () => setState(() => _isPlaying = !_isPlaying),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -139,9 +178,7 @@ class _VinylArt extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Outer glassmorphic ring with sonic glow pulse
           _PulsingRing(),
-          // Inner art (vinyl)
           Container(
             width: 295,
             height: 295,
@@ -159,7 +196,6 @@ class _VinylArt extends StatelessWidget {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                // Center spindle
                 Container(
                   width: 48,
                   height: 48,

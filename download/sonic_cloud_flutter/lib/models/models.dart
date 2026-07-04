@@ -7,6 +7,7 @@ class Track {
   final int year;
   final Duration duration;
   final String artUrl;
+  final String audioUrl;
   final bool isCloudOnly;
   final bool isFavorite;
 
@@ -18,6 +19,7 @@ class Track {
     required this.year,
     required this.duration,
     required this.artUrl,
+    required this.audioUrl,
     this.isCloudOnly = false,
     this.isFavorite = false,
   });
@@ -30,6 +32,7 @@ class Track {
     int? year,
     Duration? duration,
     String? artUrl,
+    String? audioUrl,
     bool? isCloudOnly,
     bool? isFavorite,
   }) =>
@@ -41,6 +44,7 @@ class Track {
         year: year ?? this.year,
         duration: duration ?? this.duration,
         artUrl: artUrl ?? this.artUrl,
+        audioUrl: audioUrl ?? this.audioUrl,
         isCloudOnly: isCloudOnly ?? this.isCloudOnly,
         isFavorite: isFavorite ?? this.isFavorite,
       );

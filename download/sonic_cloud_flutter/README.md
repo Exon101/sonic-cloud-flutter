@@ -1,97 +1,205 @@
-# Sonic Cloud — Flutter
+# Sonic Cloud
 
-A Flutter implementation of the **Sonic Cloud** music player design system. Four screens, glassmorphism, vibrant "sonic" cyan glow, vinyl-style Now Playing view, and full bottom-nav routing — all driven by a typed token layer that mirrors `sonic_cloud.md`.
+<p align="center">
+  <img src="assets/icon/icon.png" width="120" height="120" alt="Sonic Cloud logo" />
+</p>
+
+<p align="center">
+  <strong>A premium glassmorphic music player with cloud integration.</strong><br/>
+  Built with Flutter. Implements the Sonic Cloud design system across four screens.
+</p>
+
+<p align="center">
+  <a href="https://flutter.dev"><img alt="Flutter" src="https://img.shields.io/badge/Flutter-%E2%89%A53.10-02569B?logo=flutter&logoColor=white" /></a>
+  <a href="https://dart.dev"><img alt="Dart" src="https://img.shields.io/badge/Dart-%E2%89%A53.0-0175C2?logo=dart&logoColor=white" /></a>
+  <img alt="Platforms" src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20macOS%20%7C%20Linux%20%7C%20Windows%20%7C%20Web-5A5EA5" />
+  <img alt="License" src="https://img.shields.io/badge/license-MIT-5A5EA5" />
+  <img alt="Status" src="https://img.shields.io/badge/status-active-brightgreen" />
+</p>
+
+---
+
+## Screenshots
+
+<p align="center">
+  <img src="screenshots/my_library.png" width="200" alt="My Library" />
+  <img src="screenshots/now_playing.png" width="200" alt="Now Playing" />
+  <img src="screenshots/cloud_storage.png" width="200" alt="Cloud Storage" />
+  <img src="screenshots/settings.png" width="200" alt="Settings" />
+</p>
+
+<p align="center"><em>Left to right: My Library · Now Playing · Cloud Storage · Settings</em></p>
+
+> The screenshots above are renderings of the design-system HTML mockups that
+> this Flutter app implements 1:1. Each screen reproduces the same glassmorphic
+> cards, sonic-seeker progress bar, vinyl-style Now Playing view, and vibrant
+> cyan accents.
+
+---
+
+## Features
+
+- 🎨 **Design-system-driven** — every color, typography token, spacing step,
+  and radius comes from `sonic_cloud.md`. The HTML analysis found radius
+  tokens halved in the original Tailwind config; this port restores them.
+- 🟦 **Glassmorphism** — translucent cards with `BackdropFilter` blur and
+  light-edge borders, exactly per spec.
+- 🌊 **Sonic Seeker** — a 45-bar waveform seek bar with drag-to-seek and a
+  glowing playhead thumb.
+- 🎵 **Real audio playback** — powered by `just_audio`, with a bundled sample
+  WAV so playback works offline. Just press play.
+- 📱 **Six platforms** — Android, iOS, macOS, Linux, Windows, and web from a
+  single codebase.
+- 🧪 **Tested** — widget tests for the core reusable components plus a
+  `PlaybackService` unit test.
+
+---
 
 ## Project structure
 
 ```
 sonic_cloud_flutter/
-├── pubspec.yaml
-├── analysis_options.yaml
-├── README.md
-└── lib/
-    ├── main.dart                      ← entry + bottom-nav shell + ambient bg
-    ├── theme/
-    │   ├── app_colors.dart            ← full Material-3 palette from YAML
-    │   ├── app_typography.dart        ← Montserrat (headlines) + Inter (body/labels)
-    │   ├── app_spacing.dart           ← 4px scale + 16px radius token (FIXED)
-    │   └── app_theme.dart             ← ThemeData.dark() wired to tokens
-    ├── models/
-    │   └── models.dart                ← Track, Album, CloudDrive, etc.
-    ├── data/
-    │   └── mock_data.dart             ← in-memory content for all screens
-    ├── widgets/
-    │   ├── glass_card.dart            ← GlassCard + AmbientBackground
-    │   ├── sonic_glow_button.dart     ← pulsing cyan play button
-    │   ├── waveform_progress.dart     ← 45-bar waveform seek bar
-    │   ├── top_app_bar.dart           ← glass top app bar
-    │   ├── bottom_nav_bar.dart        ← glass bottom nav w/ active glow
-    │   ├── album_card.dart            ← carousel card
-    │   └── track_row.dart             ← song list row w/ pulse animation
-    └── screens/
-        ├── my_library_screen.dart     ← Home: search, chips, carousel, song list
-        ├── now_playing_screen.dart    ← Vinyl art + waveform + controls
-        ├── cloud_storage_screen.dart  ← Storage, drives, sync activity
-        └── settings_screen.dart       ← Profile, connections, playback
+├── lib/
+│   ├── main.dart                      ← entry + bottom-nav shell + ambient bg
+│   ├── theme/
+│   │   ├── app_colors.dart            ← full Material-3 palette from YAML
+│   │   ├── app_typography.dart        ← Montserrat (headlines) + Inter (body/labels)
+│   │   ├── app_spacing.dart           ← 4px scale + corrected radius tokens
+│   │   └── app_theme.dart             ← ThemeData.dark() wired to tokens
+│   ├── services/
+│   │   └── playback_service.dart      ← just_audio wrapper (ChangeNotifier)
+│   ├── models/
+│   │   └── models.dart                ← Track, Album, CloudDrive, etc.
+│   ├── data/
+│   │   └── mock_data.dart             ← in-memory content for all screens
+│   ├── widgets/
+│   │   ├── glass_card.dart            ← GlassCard + AmbientBackground
+│   │   ├── sonic_glow_button.dart     ← pulsing cyan play button
+│   │   ├── waveform_progress.dart     ← 45-bar waveform seek bar
+│   │   ├── top_app_bar.dart           ← glass top app bar
+│   │   ├── bottom_nav_bar.dart        ← glass bottom nav w/ active glow
+│   │   ├── album_card.dart            ← carousel card
+│   │   └── track_row.dart             ← song list row w/ pulse animation
+│   └── screens/
+│       ├── my_library_screen.dart     ← Home: search, chips, carousel, song list
+│       ├── now_playing_screen.dart    ← Vinyl art + waveform + controls
+│       ├── cloud_storage_screen.dart  ← Storage, drives, sync activity
+│       └── settings_screen.dart       ← Profile, connections, playback
+├── test/
+│   ├── app_smoke_test.dart            ← end-to-end smoke test
+│   ├── glass_card_test.dart
+│   ├── waveform_progress_test.dart
+│   ├── sonic_glow_button_test.dart
+│   ├── track_row_test.dart
+│   └── playback_service_test.dart     ← unit test with mocktail
+├── assets/
+│   ├── icon/icon.png                  ← source launcher icon (1024×1024)
+│   └── audio/sample_track.wav         ← bundled demo audio
+├── screenshots/                       ← design-system reference renders
+├── android/ ios/ macos/ linux/ windows/ web/   ← platform runners
+└── pubspec.yaml
 ```
 
-## Run it
+---
 
-Requirements: Flutter ≥ 3.10, Dart ≥ 3.0.
+## Getting started
+
+### Prerequisites
+
+- Flutter ≥ 3.10
+- Dart ≥ 3.0
+
+### Install & run
 
 ```bash
-cd sonic_cloud_flutter
-flutter create .               # generates /android /ios /web /linux /macos /windows
+git clone https://github.com/Exon101/sonic-cloud-flutter.git
+cd sonic-cloud-flutter
 flutter pub get
-flutter run                    # pick a target
+flutter run
 ```
 
-The first `flutter create .` step scaffolds the platform-specific runners — the `lib/` directory here already contains all Dart source.
+Pick a target with `flutter run -d <device>`. Use `flutter devices` to list
+available targets.
 
-Tested targets: Android, iOS, web, macOS. The layout is mobile-first and uses `SafeArea`, so it renders correctly on notched devices.
+### Regenerate launcher icons
 
-## What's implemented
+```bash
+dart run flutter_launcher_icons
+```
 
-### Design system fidelity (vs `sonic_cloud.md`)
+This regenerates `android/app/src/main/res/mipmap-*/`, `ios/Runner/Assets.xcassets/AppIcon.appiconset/`, `web/icons/`, `macos/Runner/Assets.xcassets/AppIcon.appiconset/`, and `windows/runner/resources/app_icon.ico` from the source PNG at `assets/icon/icon.png`.
 
-| Token family | Status | Notes |
-|---|---|---|
-| Colors | ✅ exact | Every Material-3 surface/primary/secondary/tertiary/error variant from the YAML is typed in `app_colors.dart` |
-| Typography | ✅ exact | Montserrat 600/700 for headlines, Inter 400/500/600 for body/labels. `body-sm` added (HTML spec was missing it) |
-| Spacing | ✅ exact | 4px base scale, edge-margin 20px, gutter 16px |
-| Radius | ✅ **fixed** | HTML had every radius halved (DEFAULT 0.25rem, lg 0.5rem). Flutter port uses spec values: lg=1rem=16px, xl=1.5rem=24px, plus `md=0.75rem=12px` |
-| Glassmorphism | ✅ | `GlassCard` uses `BackdropFilter(blur(20))` + 5% white fill + 1px top/left light edge |
-| Sonic glow | ✅ | Drop-shadow on active nav icons, pulsing outer glow on play button, glowing waveform playhead |
+### Run the tests
 
-### Screen-level fixes from the HTML analysis
+```bash
+flutter test
+```
 
-1. **Settings desktop view** — HTML had a placeholder ("Navigation is suppressed on transactional/settings screens per guidelines"). Flutter port uses one responsive layout for all sizes.
-2. **Album art radius** — Now correctly 16px (lg) per spec, not 8px as in HTML.
-3. **Toggles are accessible** — Each toggle has a label, an accessible `GestureDetector`, and visible focus.
-4. **No duplicate stylesheets / classes** — Single source of truth in `app_theme.dart`.
-5. **Bottom nav doesn't appear on Now Playing** — Pushed as a full-screen route, matching spec.
+The suite includes:
+- `glass_card_test.dart` — child rendering, tap handling, custom radius
+- `waveform_progress_test.dart` — boundary progress values, tap-to-seek, drag-to-seek
+- `sonic_glow_button_test.dart` — play/pause icon state, tap, custom size
+- `track_row_test.dart` — title/artist rendering, cloud badge, active state, taps
+- `playback_service_test.dart` — unit tests with a mocked `AudioPlayer` (mocktail)
+- `app_smoke_test.dart` — full app smoke test that navigates between all four screens
 
-## Notable Flutter idioms used
+---
 
-- `BackdropFilter` + `ImageFilter.blur` → CSS `backdrop-filter` substitute
-- `AnimationController` + `repeat(reverse: true)` for the pulsing vinyl glow and the active-track pulse bars
-- `FractionallySizedBox` for the storage usage bar
-- `LayoutBuilder` + `Wrap` for the responsive drives grid (1/2/3 columns)
-- `IndexedStack` keeps each tab's scroll state alive when switching
-- `MaterialPageRoute(fullscreenDialog: true)` for Now Playing
+## How the audio is wired
 
-## What's NOT implemented (deliberately out of scope)
+The [PlaybackService](lib/services/playback_service.dart) is a thin
+`ChangeNotifier` wrapper around `just_audio`'s `AudioPlayer`:
 
-- Audio playback — this is a UI port of the HTML mockups
-- Real cloud sync — all data is mock
-- Persistence — no SharedPreferences / Drift / Hive
-- Auth flow — the avatar is hardcoded mock data
+```
+PlaybackService  ←──  widgets listen via AnimatedBuilder(animation: service)
+   │
+   ├─ load(url)              ─→ AudioPlayer.setUrl(...)
+   ├─ play() / pause()       ─→ AudioPlayer.play() / pause()
+   ├─ seekToProgress(0..1)   ─→ AudioPlayer.seek(Duration)
+   └─ notifies listeners on every position / state change
+```
 
-Adding these is straightforward: swap `MockData` for a repository, plug a `JustAudio` instance into the Now Playing screen, and persist `offlineMode` with `shared_preferences`.
+- A single `PlaybackService` instance lives in `_HomeShellState` and is
+  injected into `NowPlayingScreen` via the constructor.
+- `NowPlayingScreen` rebuilds via `AnimatedBuilder(animation: widget.playback, ...)`
+  so the waveform, timestamps, and play/pause icon all stay in sync.
+- The bundled sample WAV at `assets/audio/sample_track.wav` is loaded as an
+  `asset://` URL — playback works fully offline. To use real audio, replace
+  `Track.audioUrl` with a network URL.
 
-## Iterate from here
+---
 
-- Change the palette in one place: `lib/theme/app_colors.dart`
-- Change typography: `lib/theme/app_typography.dart`
-- Change spacing/radius: `lib/theme/app_spacing.dart`
-- Add a new screen: drop a file in `lib/screens/`, add it to the `IndexedStack` in `main.dart`
+## Design system fidelity
+
+| Token family   | Status | Notes                                                                 |
+| -------------- | ------ | --------------------------------------------------------------------- |
+| Colors         | ✅ exact | Every Material-3 surface/primary/secondary/tertiary/error variant     |
+| Typography     | ✅ exact | Montserrat 600/700 headlines, Inter 400/500/600 body/labels           |
+| Spacing        | ✅ exact | 4px base scale, edge-margin 20px, gutter 16px                         |
+| Radius         | ✅ fixed | HTML had every radius halved; Flutter uses spec values (lg=16px, xl=24px) |
+| Glassmorphism  | ✅      | `BackdropFilter(blur 20)` + 5% white fill + 1px top/left light edge   |
+| Sonic glow     | ✅      | Drop-shadow on active nav icons, pulsing outer glow on play button    |
+
+### Screen-level fixes from the original HTML analysis
+
+1. **Settings desktop view** — HTML had a placeholder; this port uses one responsive layout.
+2. **Album art radius** — Correctly 16px (`rounded-lg`), not 8px.
+3. **Toggles are accessible** — Each toggle has a visible label and a `GestureDetector`.
+4. **No duplicate stylesheets** — Single source of truth in `app_theme.dart`.
+5. **Bottom nav doesn't appear on Now Playing** — Pushed as a full-screen route.
+
+---
+
+## Built with
+
+- [Flutter](https://flutter.dev) — UI toolkit
+- [google_fonts](https://pub.dev/packages/google_fonts) — Montserrat + Inter
+- [just_audio](https://pub.dev/packages/just_audio) — audio playback
+- [flutter_launcher_icons](https://pub.dev/packages/flutter_launcher_icons) — icon generation
+- [mocktail](https://pub.dev/packages/mocktail) — test mocks
+
+---
+
+## License
+
+MIT — feel free to fork and adapt.

@@ -60,3 +60,40 @@ Stage Summary:
 - Visibility: public
 - Includes complete Flutter project skeleton for all 6 target platforms (Android, iOS, macOS, Linux, Windows, web)
 - User can clone and run immediately: `git clone https://github.com/Exon101/sonic-cloud-flutter.git && cd sonic-cloud-flutter && flutter pub get && flutter run`
+
+---
+Task ID: 3
+Agent: main
+Task: Add launcher icons via flutter_launcher_icons package, wire up just_audio for real playback, add widget tests in test/ directory, add screenshots to the README.
+
+Work Log:
+- Updated pubspec.yaml: added just_audio ^0.9.37, flutter_launcher_icons ^0.13.1, mocktail ^1.0.3, flutter_test (sdk), and flutter_launcher_icons config block (android/ios/web/macos/windows all enabled, image_path: assets/icon/icon.png)
+- Generated 1024x1024 launcher icon PNG at assets/icon/icon.png via scripts/gen_launcher_icon.py — uses PIL to compose the brand's deep indigo background, vinyl disc, and cyan sound-wave arcs with simulated glow
+- Created PlaybackService (lib/services/playback_service.dart) — a ChangeNotifier wrapping just_audio's AudioPlayer, exposing load/play/pause/togglePlayPause/seek/seekToProgress with stream subscriptions for playerState, position, and duration
+- Refactored NowPlayingScreen to take a PlaybackService via constructor and rebuild via AnimatedBuilder when the service notifies; waveform drag now calls service.seekToProgress; play/pause button calls service.togglePlayPause
+- Updated _HomeShellState in main.dart to own a single PlaybackService instance and dispose it on teardown
+- Added Track.audioUrl field to models; updated all 4 mock tracks to point at a bundled sample WAV (assets/audio/sample_track.wav, 5s 220Hz tone generated via scripts/gen_sample_audio.py)
+- Generated 5-second 16-bit/44.1kHz WAV sample audio (441 KB)
+- Created 6 test files in test/:
+  - app_smoke_test.dart: end-to-end smoke test (renders library, navigates to cloud/settings, opens now playing)
+  - glass_card_test.dart: child rendering, tap, custom radius
+  - waveform_progress_test.dart: boundary progress values, tap-to-seek, drag-to-seek
+  - sonic_glow_button_test.dart: play/pause icon state, tap, custom size; GhostButton label + tap
+  - track_row_test.dart: title/artist/year rendering, cloud badge, active state, tap
+  - playback_service_test.dart: unit test with mocktail stubbing AudioPlayer (load idempotency, togglePlayPause, seekToProgress math, no-op when duration is zero)
+- Rendered 4 screenshots from the original HTML mockups via scripts/render_screenshots.py using Playwright + headless Chromium at iPhone 14 Pro viewport (393x852 @ 3x DPR):
+  - screenshots/my_library.png (607 KB)
+  - screenshots/now_playing.png (1.1 MB)
+  - screenshots/cloud_storage.png (262 KB)
+  - screenshots/settings.png (273 KB)
+- Also copied icon.png to screenshots/ for README use
+- Rewrote README.md with: Flutter/Dart/platform/license/status badges, embedded screenshots side-by-side, project structure tree, getting started instructions (clone, pub get, run, regenerate icons, run tests), audio wiring diagram, design-system fidelity table, screen-level bug fix list, and 'Built with' dependencies
+- Staged all changes (20 files modified/added), committed with detailed message, pushed to https://github.com/Exon101/sonic-cloud-flutter.git (commit 6f487b2)
+
+Stage Summary:
+- Two commits on main branch now: initial (a48ce6a) + this feature commit (6f487b2)
+- 20 files added/modified: 1 icon, 1 WAV, 6 test files, 1 PlaybackService, 5 screenshots, plus modifications to README, pubspec, models, mock_data, main, NowPlayingScreen
+- Test suite covers: GlassCard, WaveformProgress, SonicGlowButton, GhostButton, TrackRow, PlaybackService (unit), and end-to-end app smoke test
+- Audio playback works fully offline via bundled sample WAV
+- README now has badges, 4 embedded screenshots, full instructions, and a fidelity table
+- All pushed to https://github.com/Exon101/sonic-cloud-flutter
