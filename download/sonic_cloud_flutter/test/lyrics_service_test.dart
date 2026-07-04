@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sonic_cloud/models/models.dart';
 import 'package:sonic_cloud/services/lyrics_service.dart';
 
 void main() {
@@ -93,7 +94,7 @@ Goodbye
           LyricLine(timestamp: Duration(seconds: 10), text: 'second'),
         ],
       );
-      expect(svc.activeLineIndex(lyrics, Duration(seconds: 2)), -1);
+      expect(svc.activeLineIndex(lyrics, const Duration(seconds: 2)), -1);
     });
 
     test('returns the index of the most recent timestamp', () {
@@ -105,9 +106,9 @@ Goodbye
           LyricLine(timestamp: Duration(seconds: 15), text: 'third'),
         ],
       );
-      expect(svc.activeLineIndex(lyrics, Duration(seconds: 7)), 0);
-      expect(svc.activeLineIndex(lyrics, Duration(seconds: 12)), 1);
-      expect(svc.activeLineIndex(lyrics, Duration(seconds: 100)), 2);
+      expect(svc.activeLineIndex(lyrics, const Duration(seconds: 7)), 0);
+      expect(svc.activeLineIndex(lyrics, const Duration(seconds: 12)), 1);
+      expect(svc.activeLineIndex(lyrics, const Duration(seconds: 100)), 2);
     });
   });
 }

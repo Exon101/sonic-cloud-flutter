@@ -3,14 +3,17 @@ import 'package:sonic_cloud/security/security_service.dart';
 
 void main() {
   group('ProviderPermissions', () {
-    test('defaults to read/stream/offline-download allowed, write/delete denied', () {
-      const p = ProviderPermissions();
-      expect(p.canRead, true);
-      expect(p.canStream, true);
-      expect(p.canOfflineDownload, true);
-      expect(p.canWrite, false);
-      expect(p.canDelete, false);
-    });
+    test(
+      'defaults to read/stream/offline-download allowed, write/delete denied',
+      () {
+        const p = ProviderPermissions();
+        expect(p.canRead, true);
+        expect(p.canStream, true);
+        expect(p.canOfflineDownload, true);
+        expect(p.canWrite, false);
+        expect(p.canDelete, false);
+      },
+    );
 
     test('toJson round-trips through fromJson', () {
       const original = ProviderPermissions(

@@ -18,7 +18,12 @@ class TrackRow extends StatelessWidget {
   final bool isActive;
   final VoidCallback? onTap;
 
-  const TrackRow({super.key, required this.track, this.isActive = false, this.onTap});
+  const TrackRow({
+    super.key,
+    required this.track,
+    this.isActive = false,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +77,9 @@ class TrackRow extends StatelessWidget {
                       child: Stack(
                         children: [
                           ClipRRect(
-                            borderRadius: BorderRadius.circular(r.AppRadius.def),
+                            borderRadius: BorderRadius.circular(
+                              r.AppRadius.def,
+                            ),
                             child: Image.network(
                               track.artUrl,
                               width: 48,
@@ -80,7 +87,11 @@ class TrackRow extends StatelessWidget {
                               fit: BoxFit.cover,
                               errorBuilder: (_, __, ___) => Container(
                                 color: AppColors.surfaceContainerHigh,
-                                child: const Icon(Icons.music_note, color: AppColors.onSurfaceVariant, size: 20),
+                                child: const Icon(
+                                  Icons.music_note,
+                                  color: AppColors.onSurfaceVariant,
+                                  size: 20,
+                                ),
                               ),
                             ),
                           ),
@@ -130,7 +141,9 @@ class TrackRow extends StatelessWidget {
                           const SizedBox(height: 2),
                           Text(
                             '${track.artist} • ${track.year}',
-                            style: AppTypography.bodySm.copyWith(color: AppColors.onSurfaceVariant),
+                            style: AppTypography.bodySm.copyWith(
+                              color: AppColors.onSurfaceVariant,
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -140,7 +153,9 @@ class TrackRow extends StatelessWidget {
                     // Duration
                     Text(
                       track.formattedDuration,
-                      style: AppTypography.bodySm.copyWith(color: AppColors.onSurfaceVariant),
+                      style: AppTypography.bodySm.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
@@ -168,9 +183,18 @@ class _PulseBarsState extends State<_PulseBars> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _controllers = [
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 1000))..repeat(reverse: true),
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))..repeat(reverse: true),
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 800))..repeat(reverse: true),
+      AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 1000),
+      )..repeat(reverse: true),
+      AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 1200),
+      )..repeat(reverse: true),
+      AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 800),
+      )..repeat(reverse: true),
     ];
   }
 

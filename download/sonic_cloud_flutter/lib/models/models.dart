@@ -106,33 +106,32 @@ class Track {
     double? replayGainTrackGain,
     double? replayGainAlbumGain,
     String? embeddedLyrics,
-  }) =>
-      Track(
-        id: id ?? this.id,
-        title: title ?? this.title,
-        artist: artist ?? this.artist,
-        albumArtist: albumArtist ?? this.albumArtist,
-        album: album ?? this.album,
-        genre: genre ?? this.genre,
-        composer: composer ?? this.composer,
-        year: year ?? this.year,
-        trackNumber: trackNumber ?? this.trackNumber,
-        discNumber: discNumber ?? this.discNumber,
-        duration: duration ?? this.duration,
-        artUrl: artUrl ?? this.artUrl,
-        audioUrl: audioUrl ?? this.audioUrl,
-        fileSystemPath: fileSystemPath ?? this.fileSystemPath,
-        format: format ?? this.format,
-        isCloudOnly: isCloudOnly ?? this.isCloudOnly,
-        isFavorite: isFavorite ?? this.isFavorite,
-        rating: rating ?? this.rating,
-        playCount: playCount ?? this.playCount,
-        lastPlayedAt: lastPlayedAt ?? this.lastPlayedAt,
-        dateAdded: dateAdded ?? this.dateAdded,
-        replayGainTrackGain: replayGainTrackGain ?? this.replayGainTrackGain,
-        replayGainAlbumGain: replayGainAlbumGain ?? this.replayGainAlbumGain,
-        embeddedLyrics: embeddedLyrics ?? this.embeddedLyrics,
-      );
+  }) => Track(
+    id: id ?? this.id,
+    title: title ?? this.title,
+    artist: artist ?? this.artist,
+    albumArtist: albumArtist ?? this.albumArtist,
+    album: album ?? this.album,
+    genre: genre ?? this.genre,
+    composer: composer ?? this.composer,
+    year: year ?? this.year,
+    trackNumber: trackNumber ?? this.trackNumber,
+    discNumber: discNumber ?? this.discNumber,
+    duration: duration ?? this.duration,
+    artUrl: artUrl ?? this.artUrl,
+    audioUrl: audioUrl ?? this.audioUrl,
+    fileSystemPath: fileSystemPath ?? this.fileSystemPath,
+    format: format ?? this.format,
+    isCloudOnly: isCloudOnly ?? this.isCloudOnly,
+    isFavorite: isFavorite ?? this.isFavorite,
+    rating: rating ?? this.rating,
+    playCount: playCount ?? this.playCount,
+    lastPlayedAt: lastPlayedAt ?? this.lastPlayedAt,
+    dateAdded: dateAdded ?? this.dateAdded,
+    replayGainTrackGain: replayGainTrackGain ?? this.replayGainTrackGain,
+    replayGainAlbumGain: replayGainAlbumGain ?? this.replayGainAlbumGain,
+    embeddedLyrics: embeddedLyrics ?? this.embeddedLyrics,
+  );
 
   String get formattedDuration {
     final m = duration.inMinutes;
@@ -189,7 +188,11 @@ class Genre {
   final String name;
   final int trackCount;
   final List<String> trackIds;
-  const Genre({required this.name, this.trackCount = 0, this.trackIds = const []});
+  const Genre({
+    required this.name,
+    this.trackCount = 0,
+    this.trackIds = const [],
+  });
 }
 
 /// Composer aggregate.
@@ -204,7 +207,11 @@ class YearBucket {
   final int year;
   final int albumCount;
   final int trackCount;
-  const YearBucket({required this.year, this.albumCount = 0, this.trackCount = 0});
+  const YearBucket({
+    required this.year,
+    this.albumCount = 0,
+    this.trackCount = 0,
+  });
 }
 
 /// Folder in the file-system library view.
@@ -264,18 +271,17 @@ class Playlist {
     DateTime? createdAt,
     DateTime? updatedAt,
     String? artUrl,
-  }) =>
-      Playlist(
-        id: id ?? this.id,
-        name: name ?? this.name,
-        description: description ?? this.description,
-        kind: kind ?? this.kind,
-        trackIds: trackIds ?? this.trackIds,
-        rules: rules ?? this.rules,
-        createdAt: createdAt ?? this.createdAt,
-        updatedAt: updatedAt ?? this.updatedAt,
-        artUrl: artUrl ?? this.artUrl,
-      );
+  }) => Playlist(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    description: description ?? this.description,
+    kind: kind ?? this.kind,
+    trackIds: trackIds ?? this.trackIds,
+    rules: rules ?? this.rules,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    artUrl: artUrl ?? this.artUrl,
+  );
 
   static String newId() => const Uuid().v4();
 }
@@ -300,8 +306,10 @@ class SmartPlaylistRule {
       SmartPlaylistField.composer => track.composer,
       SmartPlaylistField.year => track.year.toString(),
       SmartPlaylistField.playCount => track.playCount.toString(),
-      SmartPlaylistField.lastPlayed => track.lastPlayedAt?.millisecondsSinceEpoch.toString() ?? '0',
-      SmartPlaylistField.dateAdded => track.dateAdded?.millisecondsSinceEpoch.toString() ?? '0',
+      SmartPlaylistField.lastPlayed =>
+        track.lastPlayedAt?.millisecondsSinceEpoch.toString() ?? '0',
+      SmartPlaylistField.dateAdded =>
+        track.dateAdded?.millisecondsSinceEpoch.toString() ?? '0',
       SmartPlaylistField.rating => track.rating.toString(),
       SmartPlaylistField.mood => track.genre, // mood mapped to genre for v2
     };
@@ -329,11 +337,26 @@ class SmartPlaylistRule {
 }
 
 enum SmartPlaylistField {
-  artist, album, genre, composer, year, playCount, lastPlayed, dateAdded, rating, mood
+  artist,
+  album,
+  genre,
+  composer,
+  year,
+  playCount,
+  lastPlayed,
+  dateAdded,
+  rating,
+  mood,
 }
 
 enum SmartPlaylistOperator {
-  equals, contains, greaterThan, lessThan, inLast, notPlayed, mostPlayed
+  equals,
+  contains,
+  greaterThan,
+  lessThan,
+  inLast,
+  notPlayed,
+  mostPlayed,
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -393,17 +416,63 @@ class EqualizerPreset {
     this.isBuiltIn = false,
   });
 
-  static const flat = EqualizerPreset(name: 'Flat', gains: [0,0,0,0,0,0,0,0,0,0], isBuiltIn: true);
-  static const bassBoost = EqualizerPreset(name: 'Bass Boost', gains: [6,5,4,2,0,0,0,0,0,0], isBuiltIn: true);
-  static const trebleBoost = EqualizerPreset(name: 'Treble Boost', gains: [0,0,0,0,0,2,4,5,6,6], isBuiltIn: true);
-  static const vocal = EqualizerPreset(name: 'Vocal', gains: [-2,-1,0,2,4,4,3,1,0,-1], isBuiltIn: true);
-  static const rock = EqualizerPreset(name: 'Rock', gains: [4,3,2,0,-1,0,2,3,4,4], isBuiltIn: true);
-  static const pop = EqualizerPreset(name: 'Pop', gains: [-1,0,2,3,3,2,1,0,-1,-2], isBuiltIn: true);
-  static const jazz = EqualizerPreset(name: 'Jazz', gains: [3,2,1,2,-1,-1,0,1,2,3], isBuiltIn: true);
-  static const classical = EqualizerPreset(name: 'Classical', gains: [4,3,2,1,-1,-1,0,2,3,4], isBuiltIn: true);
-  static const electronic = EqualizerPreset(name: 'Electronic', gains: [5,4,1,0,-2,2,1,1,3,4], isBuiltIn: true);
+  static const flat = EqualizerPreset(
+    name: 'Flat',
+    gains: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    isBuiltIn: true,
+  );
+  static const bassBoost = EqualizerPreset(
+    name: 'Bass Boost',
+    gains: [6, 5, 4, 2, 0, 0, 0, 0, 0, 0],
+    isBuiltIn: true,
+  );
+  static const trebleBoost = EqualizerPreset(
+    name: 'Treble Boost',
+    gains: [0, 0, 0, 0, 0, 2, 4, 5, 6, 6],
+    isBuiltIn: true,
+  );
+  static const vocal = EqualizerPreset(
+    name: 'Vocal',
+    gains: [-2, -1, 0, 2, 4, 4, 3, 1, 0, -1],
+    isBuiltIn: true,
+  );
+  static const rock = EqualizerPreset(
+    name: 'Rock',
+    gains: [4, 3, 2, 0, -1, 0, 2, 3, 4, 4],
+    isBuiltIn: true,
+  );
+  static const pop = EqualizerPreset(
+    name: 'Pop',
+    gains: [-1, 0, 2, 3, 3, 2, 1, 0, -1, -2],
+    isBuiltIn: true,
+  );
+  static const jazz = EqualizerPreset(
+    name: 'Jazz',
+    gains: [3, 2, 1, 2, -1, -1, 0, 1, 2, 3],
+    isBuiltIn: true,
+  );
+  static const classical = EqualizerPreset(
+    name: 'Classical',
+    gains: [4, 3, 2, 1, -1, -1, 0, 2, 3, 4],
+    isBuiltIn: true,
+  );
+  static const electronic = EqualizerPreset(
+    name: 'Electronic',
+    gains: [5, 4, 1, 0, -2, 2, 1, 1, 3, 4],
+    isBuiltIn: true,
+  );
 
-  static const builtIns = [flat, bassBoost, trebleBoost, vocal, rock, pop, jazz, classical, electronic];
+  static const builtIns = [
+    flat,
+    bassBoost,
+    trebleBoost,
+    vocal,
+    rock,
+    pop,
+    jazz,
+    classical,
+    electronic,
+  ];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -411,7 +480,16 @@ class EqualizerPreset {
 // ─────────────────────────────────────────────────────────────────────────────
 
 enum CloudProviderKind {
-  googleDrive, dropbox, oneDrive, nextcloud, webdav, smb, ftp, sftp, nas, localNetwork
+  googleDrive,
+  dropbox,
+  oneDrive,
+  nextcloud,
+  webdav,
+  smb,
+  ftp,
+  sftp,
+  nas,
+  localNetwork,
 }
 
 enum CloudProviderStatus { disconnected, connecting, connected, error }
@@ -445,18 +523,17 @@ class CloudProviderConfig {
     bool? streamMode,
     bool? downloadForOffline,
     DateTime? lastSyncedAt,
-  }) =>
-      CloudProviderConfig(
-        id: id,
-        kind: kind,
-        displayName: displayName,
-        account: account,
-        rootPath: rootPath,
-        status: status ?? this.status,
-        streamMode: streamMode ?? this.streamMode,
-        downloadForOffline: downloadForOffline ?? this.downloadForOffline,
-        lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
-      );
+  }) => CloudProviderConfig(
+    id: id,
+    kind: kind,
+    displayName: displayName,
+    account: account,
+    rootPath: rootPath,
+    status: status ?? this.status,
+    streamMode: streamMode ?? this.streamMode,
+    downloadForOffline: downloadForOffline ?? this.downloadForOffline,
+    lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -465,11 +542,31 @@ class CloudProviderConfig {
 
 enum SyncState { idle, syncing, success, error, offline }
 
+/// A recent cloud sync activity entry (shown on the Cloud Storage screen).
+class SyncActivity {
+  final String id;
+  final String fileName;
+  final String status;
+  final SyncState state;
+  final double? progress; // 0..1, only for [SyncState.downloading]
+
+  const SyncActivity({
+    required this.id,
+    required this.fileName,
+    required this.status,
+    required this.state,
+    this.progress,
+  });
+}
+
 /// A user account (for cross-device sync).
 class UserAccount {
   final String id;
   final String email;
   final bool isAnonymous;
+  final String name;
+  final String tier;
+  final String avatarUrl;
   final List<DeviceInfo> devices;
   final List<SessionInfo> sessions;
 
@@ -477,6 +574,9 @@ class UserAccount {
     required this.id,
     required this.email,
     this.isAnonymous = false,
+    this.name = '',
+    this.tier = '',
+    this.avatarUrl = '',
     this.devices = const [],
     this.sessions = const [],
   });
@@ -487,7 +587,12 @@ class DeviceInfo {
   final String name;
   final String platform;
   final DateTime lastSeen;
-  const DeviceInfo({required this.id, required this.name, required this.platform, required this.lastSeen});
+  const DeviceInfo({
+    required this.id,
+    required this.name,
+    required this.platform,
+    required this.lastSeen,
+  });
 }
 
 class SessionInfo {
@@ -495,7 +600,12 @@ class SessionInfo {
   final String deviceName;
   final DateTime createdAt;
   final DateTime? lastActiveAt;
-  const SessionInfo({required this.id, required this.deviceName, required this.createdAt, this.lastActiveAt});
+  const SessionInfo({
+    required this.id,
+    required this.deviceName,
+    required this.createdAt,
+    this.lastActiveAt,
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

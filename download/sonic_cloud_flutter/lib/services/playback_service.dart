@@ -22,8 +22,8 @@ import 'audio_handler.dart';
 ///   - Position / duration / state streams surfaced as a ChangeNotifier API
 class PlaybackService extends ChangeNotifier {
   PlaybackService({AudioPlayer? player, SonicAudioHandler? handler})
-      : _player = player ?? AudioPlayer(),
-        _handler = handler;
+    : _player = player ?? AudioPlayer(),
+      _handler = handler;
 
   final AudioPlayer _player;
   SonicAudioHandler? _handler;
@@ -73,16 +73,18 @@ class PlaybackService extends ChangeNotifier {
   // ── Stream subscriptions ───────────────────────────────────────────────────
   StreamSubscription<PlayerState>? _playerStateSub;
   StreamSubscription<Duration>? _positionSub;
-  StreamSubscription<Duration>? _durationSub;
-  StreamSubscription<int?> _currentIndexSub;
-  StreamSubscription<SequenceState?> _sequenceSub;
-  StreamSubscription<int?> _effectiveIndexSub;
+  StreamSubscription<Duration?>? _durationSub;
+  StreamSubscription<int?>? _currentIndexSub;
+  StreamSubscription<SequenceState?>? _sequenceSub;
+  StreamSubscription<int?>? _effectiveIndexSub;
 
   // ── Public getters ─────────────────────────────────────────────────────────
   List<Track> get queue => List.unmodifiable(_queue);
   int get currentIndex => _currentIndex;
   Track? get currentTrack =>
-      (_currentIndex >= 0 && _currentIndex < _queue.length) ? _queue[_currentIndex] : null;
+      (_currentIndex >= 0 && _currentIndex < _queue.length)
+      ? _queue[_currentIndex]
+      : null;
   bool get isPlaying => _isPlaying;
   Duration get position => _position;
   Duration get duration => _duration;
@@ -131,10 +133,10 @@ class PlaybackService extends ChangeNotifier {
   }
 
   LoopMode _repeatModeToLoopMode(RepeatMode mode) => switch (mode) {
-        RepeatMode.off => LoopMode.off,
-        RepeatMode.all => LoopMode.all,
-        RepeatMode.one => LoopMode.one,
-      };
+    RepeatMode.off => LoopMode.off,
+    RepeatMode.all => LoopMode.all,
+    RepeatMode.one => LoopMode.one,
+  };
 
   // ── Queue management ───────────────────────────────────────────────────────
 
@@ -247,9 +249,10 @@ class PlaybackService extends ChangeNotifier {
 
   Future<void> seekToProgress(double progress) async {
     if (_duration.inMilliseconds == 0) return;
-    final ms = (_duration.inMilliseconds * progress)
-        .round()
-        .clamp(0, _duration.inMilliseconds);
+    final ms = (_duration.inMilliseconds * progress).round().clamp(
+      0,
+      _duration.inMilliseconds,
+    );
     await seek(Duration(milliseconds: ms));
   }
 
@@ -302,7 +305,10 @@ class PlaybackService extends ChangeNotifier {
 
   // ── Sleep timer ────────────────────────────────────────────────────────────
 
-  Future<void> startSleepTimer(Duration duration, {SleepTimerEndAction? action}) async {
+  Future<void> startSleepTimer(
+    Duration duration, {
+    SleepTimerEndAction? action,
+  }) async {
     _sleepEndAction = action ?? _sleepEndAction;
     _sleepTimer?.cancel();
     final endsAt = DateTime.now().add(duration);
@@ -369,15 +375,17 @@ class PlaybackService extends ChangeNotifier {
 
   Future<void> _buildAudioSource() async {
     if (_queue.isEmpty) return;
-    final sources = _queue.map((t) => AudioSource.uri(
-      Uri.parse(t.audioUrl),
-      tag: t.id,
-    )).toList();
+    final sources = _queue
+        .map((t) => AudioSource.uri(Uri.parse(t.audioUrl), tag: t.id))
+        .toList();
     final playlist = ConcatenatingAudioSource(
       children: sources,
       useLazyPreparation: true,
     );
-    await _player.setAudioSource(playlist, initialIndex: _currentIndex < 0 ? 0 : _currentIndex);
+    await _player.setAudioSource(
+      playlist,
+      initialIndex: _currentIndex < 0 ? 0 : _currentIndex,
+    );
     _handler?.broadcastQueue(_queue);
     if (_currentIndex >= 0 && _currentIndex < _queue.length) {
       _handler?.broadcastCurrentTrack(_queue[_currentIndex]);

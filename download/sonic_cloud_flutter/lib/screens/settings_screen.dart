@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/mock_data.dart';
+import '../models/models.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart' as r;
 import '../theme/app_spacing.dart';
@@ -46,12 +47,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
         minimum: const EdgeInsets.only(top: 16),
         child: ListView(
           padding: const EdgeInsets.fromLTRB(
-            AppSpacing.edgeMargin, 8, AppSpacing.edgeMargin, 120,
+            AppSpacing.edgeMargin,
+            8,
+            AppSpacing.edgeMargin,
+            120,
           ),
           children: [
             // Page title
-            Text('Settings',
-                style: AppTypography.headlineXl.copyWith(color: AppColors.onSurface)),
+            Text(
+              'Settings',
+              style: AppTypography.headlineXl.copyWith(
+                color: AppColors.onSurface,
+              ),
+            ),
             const SizedBox(height: AppSpacing.lg),
             // Profile
             _ProfileCard(user: MockData.userProfile),
@@ -106,7 +114,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   borderRadius: BorderRadius.circular(r.AppRadius.lg),
                 ),
               ),
-              child: Text('Log Out', style: AppTypography.labelMd.copyWith(color: AppColors.error)),
+              child: Text(
+                'Log Out',
+                style: AppTypography.labelMd.copyWith(color: AppColors.error),
+              ),
             ),
           ],
         ),
@@ -127,7 +138,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 // Profile card
 // ─────────────────────────────────────────────────────────────────────────────
 class _ProfileCard extends StatelessWidget {
-  final UserProfile user;
+  final UserAccount user;
   const _ProfileCard({required this.user});
 
   @override
@@ -152,16 +163,27 @@ class _ProfileCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(user.name,
-                    style: AppTypography.headlineMd.copyWith(color: AppColors.onSurface)),
-                Text(user.tier,
-                    style: AppTypography.labelMd.copyWith(color: AppColors.onSurfaceVariant)),
+                Text(
+                  user.name,
+                  style: AppTypography.headlineMd.copyWith(
+                    color: AppColors.onSurface,
+                  ),
+                ),
+                Text(
+                  user.tier,
+                  style: AppTypography.labelMd.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
           ),
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.edit_rounded, color: AppColors.secondaryContainer),
+            icon: const Icon(
+              Icons.edit_rounded,
+              color: AppColors.secondaryContainer,
+            ),
             tooltip: 'Edit profile',
           ),
         ],
@@ -189,8 +211,12 @@ class _SettingsGroup extends StatelessWidget {
             horizontal: AppSpacing.md,
             vertical: AppSpacing.xs,
           ),
-          child: Text(heading.toUpperCase(),
-              style: AppTypography.labelSm.copyWith(color: AppColors.onSurfaceVariant)),
+          child: Text(
+            heading.toUpperCase(),
+            style: AppTypography.labelSm.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
+          ),
         ),
         const SizedBox(height: 4),
         GlassCard(
@@ -241,16 +267,25 @@ class _SettingsTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title,
-                        style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface)),
-                    Text(subtitle,
-                        style: AppTypography.labelSm.copyWith(
-                            color: subtitleColor ?? AppColors.onSurfaceVariant)),
+                    Text(
+                      title,
+                      style: AppTypography.bodyMd.copyWith(
+                        color: AppColors.onSurface,
+                      ),
+                    ),
+                    Text(
+                      subtitle,
+                      style: AppTypography.labelSm.copyWith(
+                        color: subtitleColor ?? AppColors.onSurfaceVariant,
+                      ),
+                    ),
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded,
-                  color: AppColors.onSurfaceVariant),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.onSurfaceVariant,
+              ),
             ],
           ),
         ),
@@ -294,10 +329,18 @@ class _ToggleTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface)),
-                Text(subtitle,
-                    style: AppTypography.labelSm.copyWith(color: AppColors.onSurfaceVariant)),
+                Text(
+                  title,
+                  style: AppTypography.bodyMd.copyWith(
+                    color: AppColors.onSurface,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  style: AppTypography.labelSm.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
               ],
             ),
           ),
@@ -337,10 +380,17 @@ class _SettingsToggle extends StatelessWidget {
             width: 18,
             height: 18,
             decoration: BoxDecoration(
-              color: value ? AppColors.secondaryContainer : AppColors.onSurfaceVariant,
+              color: value
+                  ? AppColors.secondaryContainer
+                  : AppColors.onSurfaceVariant,
               shape: BoxShape.circle,
               boxShadow: value
-                  ? [BoxShadow(color: AppColors.sonicGlow.withOpacity(0.5), blurRadius: 8)]
+                  ? [
+                      BoxShadow(
+                        color: AppColors.sonicGlow.withOpacity(0.5),
+                        blurRadius: 8,
+                      ),
+                    ]
                   : null,
             ),
           ),

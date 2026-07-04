@@ -70,7 +70,10 @@ class _SonicGlowButtonState extends State<SonicGlowButton>
                     gradient: const LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [AppColors.onSecondaryContainer, AppColors.secondaryContainer],
+                      colors: [
+                        AppColors.onSecondaryContainer,
+                        AppColors.secondaryContainer,
+                      ],
                     ),
                     boxShadow: [
                       BoxShadow(
@@ -92,12 +95,17 @@ class _SonicGlowButtonState extends State<SonicGlowButton>
                       end: Alignment.bottomRight,
                       colors: [Color(0xFF006C71), AppColors.secondaryContainer],
                     ),
-                    border: Border.all(color: AppColors.secondary.withOpacity(0.3), width: 1),
+                    border: Border.all(
+                      color: AppColors.secondary.withOpacity(0.3),
+                      width: 1,
+                    ),
                   ),
                 ),
                 // Icon
                 Icon(
-                  widget.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                  widget.isPlaying
+                      ? Icons.pause_rounded
+                      : Icons.play_arrow_rounded,
                   size: widget.size * 0.5,
                   color: AppColors.surfaceLowest,
                 ),
@@ -129,7 +137,9 @@ class GhostButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = active ? (activeColor ?? AppColors.secondaryContainer) : AppColors.onSurfaceVariant;
+    final color = active
+        ? (activeColor ?? AppColors.secondaryContainer)
+        : AppColors.onSurfaceVariant;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -143,7 +153,14 @@ class GhostButton extends StatelessWidget {
               Icon(icon, color: color, size: 20),
               if (label != null) ...[
                 const SizedBox(width: 6),
-                Text(label!, style: TextStyle(color: color, fontSize: 14, fontWeight: FontWeight.w500)),
+                Text(
+                  label!,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ],
             ],
           ),

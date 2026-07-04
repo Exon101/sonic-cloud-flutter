@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
@@ -15,7 +17,12 @@ class SonicTopAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onSearchTap;
   final List<Widget>? actions;
 
-  const SonicTopAppBar({super.key, required this.avatarUrl, this.onSearchTap, this.actions});
+  const SonicTopAppBar({
+    super.key,
+    required this.avatarUrl,
+    this.onSearchTap,
+    this.actions,
+  });
 
   @override
   Size get preferredSize => const Size.fromHeight(64);
@@ -27,11 +34,16 @@ class SonicTopAppBar extends StatelessWidget implements PreferredSizeWidget {
         filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
         child: Container(
           height: preferredSize.height,
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.edgeMargin),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.edgeMargin,
+          ),
           decoration: BoxDecoration(
             color: AppColors.surface.withOpacity(0.8),
             border: Border(
-              bottom: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
+              bottom: BorderSide(
+                color: Colors.white.withOpacity(0.1),
+                width: 1,
+              ),
             ),
           ),
           child: Row(
@@ -61,7 +73,10 @@ class SonicTopAppBar extends StatelessWidget implements PreferredSizeWidget {
               ...(actions ?? []),
               IconButton(
                 onPressed: onSearchTap,
-                icon: const Icon(Icons.search_rounded, color: AppColors.primary),
+                icon: const Icon(
+                  Icons.search_rounded,
+                  color: AppColors.primary,
+                ),
                 tooltip: 'Search',
                 constraints: const BoxConstraints(
                   minWidth: AppSpacing.touchTarget,

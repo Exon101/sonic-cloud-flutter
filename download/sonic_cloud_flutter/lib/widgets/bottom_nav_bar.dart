@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart' as r;
@@ -123,10 +125,7 @@ class _NavButton extends StatelessWidget {
                   : null,
             ),
             const SizedBox(height: 4),
-            Text(
-              label,
-              style: AppTypography.labelSm.copyWith(color: color),
-            ),
+            Text(label, style: AppTypography.labelSm.copyWith(color: color)),
           ],
         ),
       ),
@@ -142,9 +141,6 @@ class BottomNavSpacer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 96),
-      child: child,
-    );
+    return Padding(padding: const EdgeInsets.only(bottom: 96), child: child);
   }
 }

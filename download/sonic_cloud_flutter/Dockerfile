@@ -44,7 +44,7 @@ RUN flutter pub get
 
 # Copy the rest and build
 COPY . .
-RUN flutter build web --release --web-renderer canvaski
+RUN flutter build web --release
 
 # ── Stage 2: runtime ─────────────────────────────────────────────────────────
 FROM nginx:alpine AS runtime

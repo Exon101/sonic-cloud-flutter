@@ -17,7 +17,8 @@ import '../models/models.dart';
 ///   - Android Auto / CarPlay (basic media browser)
 ///   - macOS Now Playing
 ///   - Web Media Session API
-class SonicAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
+class SonicAudioHandler extends BaseAudioHandler
+    with QueueHandler, SeekHandler {
   SonicAudioHandler(this._player);
 
   final AudioPlayer _player;
@@ -73,6 +74,7 @@ class SonicAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler 
       AudioServiceRepeatMode.none => LoopMode.off,
       AudioServiceRepeatMode.all => LoopMode.all,
       AudioServiceRepeatMode.one => LoopMode.one,
+      AudioServiceRepeatMode.group => LoopMode.all,
     });
   }
 
@@ -103,7 +105,6 @@ class SonicAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler 
       updatePosition: _player.position,
       bufferedPosition: _player.bufferedPosition,
       speed: _player.speed,
-      queue: queue.value,
       shuffleMode: _player.shuffleModeEnabled
           ? AudioServiceShuffleMode.all
           : AudioServiceShuffleMode.none,
@@ -112,7 +113,6 @@ class SonicAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler 
         LoopMode.all => AudioServiceRepeatMode.all,
         LoopMode.one => AudioServiceRepeatMode.one,
       },
-      androidBitmapUri: _currentArtUri,
     );
     playbackState.add(state);
   }
@@ -139,16 +139,16 @@ class SonicAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler 
   }
 
   MediaItem _trackToMediaItem(Track t) => MediaItem(
-        id: t.id,
-        album: t.album,
-        title: t.title,
-        artist: t.artist,
-        genre: t.genre,
-        duration: t.duration,
-        artUri: t.artUrl.isNotEmpty ? Uri.tryParse(t.artUrl) : null,
-        playable: true,
-        rating: t.rating > 0 ? Rating.newStarRating(null, 5, t.rating) : null,
-      );
+    id: t.id,
+    album: t.album,
+    title: t.title,
+    artist: t.artist,
+    genre: t.genre,
+    duration: t.duration,
+    artUri: t.artUrl.isNotEmpty ? Uri.tryParse(t.artUrl) : null,
+    playable: true,
+    rating: null, // Rating API varies across audio_service versions; skipped for compat
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -158,17 +158,19 @@ class SonicAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler 
 ConcatenatingAudioSource buildAudioSource(List<Track> tracks) {
   return ConcatenatingAudioSource(
     children: tracks
-        .map((t) => AudioSource.uri(
-              Uri.parse(t.audioUrl),
-              tag: MediaItem(
-                id: t.id,
-                album: t.album,
-                title: t.title,
-                artist: t.artist,
-                artUri: t.artUrl.isNotEmpty ? Uri.tryParse(t.artUrl) : null,
-                duration: t.duration,
-              ),
-            ))
+        .map(
+          (t) => AudioSource.uri(
+            Uri.parse(t.audioUrl),
+            tag: MediaItem(
+              id: t.id,
+              album: t.album,
+              title: t.title,
+              artist: t.artist,
+              artUri: t.artUrl.isNotEmpty ? Uri.tryParse(t.artUrl) : null,
+              duration: t.duration,
+            ),
+          ),
+        )
         .toList(),
     useLazyPreparation: true,
   );

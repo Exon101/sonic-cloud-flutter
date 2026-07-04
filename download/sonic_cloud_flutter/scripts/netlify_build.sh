@@ -20,7 +20,7 @@ flutter --version
 
 # ── Build ────────────────────────────────────────────────────────────────────
 flutter pub get
-flutter build web --release --web-renderer canvaski
+flutter build web --release
 
 echo "▶ Netlify build complete: build/web"
 ls -la build/web | head -20

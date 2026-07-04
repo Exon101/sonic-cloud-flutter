@@ -39,10 +39,6 @@ class GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(borderRadius),
-    );
-
     return Container(
       margin: margin,
       child: ClipRRect(
@@ -53,10 +49,17 @@ class GlassCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(fillOpacity),
               borderRadius: BorderRadius.circular(borderRadius),
-              border: border ??
+              border:
+                  border ??
                   Border(
-                    top: BorderSide(color: Colors.white.withOpacity(0.2), width: 1),
-                    left: BorderSide(color: Colors.white.withOpacity(0.2), width: 1),
+                    top: BorderSide(
+                      color: Colors.white.withOpacity(0.2),
+                      width: 1,
+                    ),
+                    left: BorderSide(
+                      color: Colors.white.withOpacity(0.2),
+                      width: 1,
+                    ),
                   ),
             ),
             child: Material(
@@ -92,7 +95,9 @@ class AmbientBackground extends StatelessWidget {
       children: [
         // Base vertical gradient
         Container(
-          decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
+          decoration: const BoxDecoration(
+            gradient: AppColors.backgroundGradient,
+          ),
         ),
         // Ambient glow blob (top-left, blurred)
         Positioned(

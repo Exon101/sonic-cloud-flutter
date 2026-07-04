@@ -58,7 +58,11 @@ abstract class CloudProvider extends ChangeNotifier {
 class GoogleDriveProvider extends CloudProvider {
   GoogleDriveProvider(CloudProviderConfig config) : super(config);
   @override
-  Future<bool> connect() async { debugPrint('GoogleDriveProvider.connect: stub'); return false; }
+  Future<bool> connect() async {
+    debugPrint('GoogleDriveProvider.connect: stub');
+    return false;
+  }
+
   @override
   Future<void> disconnect() async {}
   @override

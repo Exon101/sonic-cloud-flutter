@@ -69,7 +69,9 @@ class WaveformProgress extends StatelessWidget {
 
                       return Container(
                         width: barWidth,
-                        height: finalHeight.clamp(15, 100) * 0.6, // scale into 64px box
+                        height:
+                            finalHeight.clamp(15, 100) *
+                            0.6, // scale into 64px box
                         decoration: BoxDecoration(
                           color: played
                               ? AppColors.secondaryContainer

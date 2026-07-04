@@ -73,8 +73,10 @@ class LyricsService extends ChangeNotifier {
         final key = meta.group(1)!;
         final value = meta.group(2)!.trim();
         switch (key) {
-          case 'ti': title = value;
-          case 'ar': author = value;
+          case 'ti':
+            title = value;
+          case 'ar':
+            author = value;
         }
         continue;
       }

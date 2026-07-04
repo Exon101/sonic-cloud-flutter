@@ -19,8 +19,8 @@ import '../models/models.dart';
 ///     offline download) controlled by [setProviderPermission].
 class SecurityService extends ChangeNotifier {
   SecurityService({FlutterSecureStorage? storage, LocalAuthentication? auth})
-      : _storage = storage ?? const FlutterSecureStorage(),
-        _auth = auth ?? LocalAuthentication();
+    : _storage = storage ?? const FlutterSecureStorage(),
+      _auth = auth ?? LocalAuthentication();
 
   final FlutterSecureStorage _storage;
   final LocalAuthentication _auth;
@@ -35,7 +35,8 @@ class SecurityService extends ChangeNotifier {
   bool _isLocked = false;
   bool get isLocked => _isLocked;
 
-  Future<bool> get isPinSet async => (await _storage.read(key: _keyPinHash)) != null;
+  Future<bool> get isPinSet async =>
+      (await _storage.read(key: _keyPinHash)) != null;
 
   Future<bool> get isBiometricEnabled async =>
       (await _storage.read(key: _keyBiometricEnabled)) == 'true';
@@ -50,8 +51,8 @@ class SecurityService extends ChangeNotifier {
   Future<void> setPin(String pin) async {
     final salt = DateTime.now().microsecondsSinceEpoch.toString();
     final hash = _hashPin(pin, salt);
-    await _storage.write(key: _keyPinHash, hash);
-    await _storage.write(key: _keyPinSalt, salt);
+    await _storage.write(key: _keyPinHash, value: hash);
+    await _storage.write(key: _keyPinSalt, value: salt);
     _isLocked = false;
     notifyListeners();
   }
@@ -83,14 +84,16 @@ class SecurityService extends ChangeNotifier {
   }
 
   /// Attempt biometric unlock. Returns true on success.
-  Future<bool> unlockWithBiometrics({String reason = 'Please authenticate to unlock Sonic Cloud'}) async {
+  Future<bool> unlockWithBiometrics({
+    String reason = 'Please authenticate to unlock Sonic Cloud',
+  }) async {
     if (!await isBiometricEnabled) return false;
     try {
       final ok = await _auth.authenticate(
         localizedReason: reason,
         options: const AuthenticationOptions(
-          biometricLockOut: false,
           stickyAuth: true,
+          biometricOnly: false,
         ),
       );
       if (ok) {
@@ -105,16 +108,19 @@ class SecurityService extends ChangeNotifier {
   }
 
   Future<void> setBiometricEnabled(bool enabled) async {
-    await _storage.write(key: _keyBiometricEnabled, enabled ? 'true' : 'false');
+    await _storage.write(key: _keyBiometricEnabled, value: enabled ? 'true' : 'false');
     notifyListeners();
   }
 
   // ── Cloud credentials ───────────────────────────────────────────────────────
 
   /// Store credentials (any JSON-serializable map) for [providerId].
-  Future<void> storeCloudCredentials(String providerId, Map<String, dynamic> creds) async {
+  Future<void> storeCloudCredentials(
+    String providerId,
+    Map<String, dynamic> creds,
+  ) async {
     final json = jsonEncode(creds);
-    await _storage.write(key: '$_keyCloudCredsPrefix$providerId', json);
+    await _storage.write(key: '$_keyCloudCredsPrefix$providerId', value: json);
   }
 
   Future<Map<String, dynamic>?> readCloudCredentials(String providerId) async {
@@ -132,13 +138,18 @@ class SecurityService extends ChangeNotifier {
   Future<ProviderPermissions> getPermissions(String providerId) async {
     final json = await _storage.read(key: '$_keyPermissionsPrefix$providerId');
     if (json == null) return const ProviderPermissions();
-    return ProviderPermissions.fromJson(jsonDecode(json) as Map<String, dynamic>);
+    return ProviderPermissions.fromJson(
+      jsonDecode(json) as Map<String, dynamic>,
+    );
   }
 
-  Future<void> setPermissions(String providerId, ProviderPermissions perms) async {
+  Future<void> setPermissions(
+    String providerId,
+    ProviderPermissions perms,
+  ) async {
     await _storage.write(
       key: '$_keyPermissionsPrefix$providerId',
-      jsonEncode(perms.toJson()),
+      value: jsonEncode(perms.toJson()),
     );
     notifyListeners();
   }
@@ -174,14 +185,15 @@ class ProviderPermissions {
   });
 
   Map<String, dynamic> toJson() => {
-        'canRead': canRead,
-        'canWrite': canWrite,
-        'canDelete': canDelete,
-        'canOfflineDownload': canOfflineDownload,
-        'canStream': canStream,
-      };
+    'canRead': canRead,
+    'canWrite': canWrite,
+    'canDelete': canDelete,
+    'canOfflineDownload': canOfflineDownload,
+    'canStream': canStream,
+  };
 
-  factory ProviderPermissions.fromJson(Map<String, dynamic> json) => ProviderPermissions(
+  factory ProviderPermissions.fromJson(Map<String, dynamic> json) =>
+      ProviderPermissions(
         canRead: json['canRead'] as bool? ?? true,
         canWrite: json['canWrite'] as bool? ?? false,
         canDelete: json['canDelete'] as bool? ?? false,

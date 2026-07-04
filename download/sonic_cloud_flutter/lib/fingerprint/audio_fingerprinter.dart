@@ -66,10 +66,7 @@ class AudioFingerprinter {
     // still match.
     final durationBucket = (duration.inSeconds / 2).round();
 
-    final digestInput = <int>[
-      ...slice,
-      ...durationBucket.toString().codeUnits,
-    ];
+    final digestInput = <int>[...slice, ...durationBucket.toString().codeUnits];
     final hash = sha256.convert(digestInput);
     return hash.toString().substring(0, 64); // 256-bit fingerprint
   }
@@ -89,7 +86,8 @@ class AudioFingerprinter {
 
   /// Are two fingerprints similar enough to be considered the same song?
   /// Default threshold: Hamming distance ≤ 8.
-  bool areSimilar(String a, String b, {int threshold = 8}) => distance(a, b) <= threshold;
+  bool areSimilar(String a, String b, {int threshold = 8}) =>
+      distance(a, b) <= threshold;
 
   int _popcount(int x) {
     int count = 0;
@@ -105,7 +103,10 @@ class AudioFingerprinter {
   ///
   /// Returns a list of duplicate groups; each group has 2+ tracks that are
   /// all the same song.
-  Future<List<List<Track>>> findDuplicates(List<Track> tracks, {int threshold = 8}) async {
+  Future<List<List<Track>>> findDuplicates(
+    List<Track> tracks, {
+    int threshold = 8,
+  }) async {
     final fingerprints = <Track, String>{};
     for (final t in tracks) {
       final fp = await fingerprint(t);
@@ -121,7 +122,11 @@ class AudioFingerprinter {
       final group = [a];
       for (final b in fingerprints.keys) {
         if (a == b || assigned.contains(b)) continue;
-        if (areSimilar(fingerprints[a]!, fingerprints[b]!, threshold: threshold)) {
+        if (areSimilar(
+          fingerprints[a]!,
+          fingerprints[b]!,
+          threshold: threshold,
+        )) {
           group.add(b);
           assigned.add(b);
         }

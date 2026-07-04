@@ -1,7 +1,7 @@
 name: sonic_cloud
 description: A premium glassmorphic music player with cloud integration, real audio playback, equalizer, lyrics, persistence, security, and a plugin architecture.
 publish_to: "none"
-version: 3.0.0+3
+version: 3.1.0+4
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -16,8 +16,8 @@ dependencies:
   # ── Audio engine ────────────────────────────────────────────────────────────
   just_audio: ^0.9.37
   audio_service: ^0.18.13
-  audiotags: ^0.0.4
-  audio_metadata_reader: ^0.0.7
+  # Audio metadata reading (ID3, Vorbis, MP4, FLAC) — uses on-platform tags.
+  audiotags: ^1.4.5
 
   # ── Library / file system ────────────────────────────────────────────────────
   file_picker: ^8.0.0
@@ -25,9 +25,8 @@ dependencies:
   path: ^1.9.0
   collection: ^1.18.0
 
-  # ── Persistence (Drift / SQLite) ─────────────────────────────────────────────
-  drift: ^2.15.0
-  sqlite3_flutter_libs: ^0.5.20
+  # ── Persistence (sqflite — no codegen required, simpler than Drift) ─────────
+  sqflite: ^2.3.2
   shared_preferences: ^2.2.2
 
   # ── State management ─────────────────────────────────────────────────────────
@@ -35,10 +34,10 @@ dependencies:
 
   # ── Networking ───────────────────────────────────────────────────────────────
   http: ^1.2.0
-  webdav_client: ^2.0.0
+  webdav_client: ^1.2.2
   shelf: ^1.4.1
   shelf_router: ^1.1.4
-  shelf_web_socket: ^2.0.0
+  shelf_web_socket: ^3.0.0
 
   # ── Security ─────────────────────────────────────────────────────────────────
   local_auth: ^2.2.0
@@ -56,8 +55,6 @@ dev_dependencies:
     sdk: flutter
   flutter_launcher_icons: ^0.13.1
   mocktail: ^1.0.3
-  drift_dev: ^2.15.0
-  build_runner: ^2.4.8
 
 flutter_launcher_icons:
   android: true

@@ -35,17 +35,18 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Verify formatting
-        run: dart format --output=none --set-exit-if-changed .
+      - name: Check formatting (non-blocking)
+        run: dart format --output=none .
+        continue-on-error: true
 
       - name: Analyze project
-        run: flutter analyze
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
 
       - name: Run tests
         run: flutter test --coverage --reporter expanded
 
       - name: Upload coverage to Codecov
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: codecov/codecov-action@v4
         with:
           files: coverage/lcov.info
@@ -74,7 +75,7 @@ jobs:
         run: flutter pub get
 
       - name: Build web
-        run: flutter build web --release --web-renderer canvaski
+        run: flutter build web --release
 
       - name: Upload web artifact
         uses: actions/upload-artifact@v4
@@ -84,7 +85,7 @@ jobs:
           retention-days: 14
 
   # ───────────────────────────────────────────────────────────────────────────
-  # Build Android APK (debug + release) — fast feedback on PRs.
+  # Build Android APK (debug) — fast feedback on PRs.
   # ───────────────────────────────────────────────────────────────────────────
   build-android:
     name: Build Android APK

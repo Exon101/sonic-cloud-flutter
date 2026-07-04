@@ -148,7 +148,10 @@ class _HintBubble extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surfaceContainer.withOpacity(0.85),
         borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: AppColors.secondaryContainer.withOpacity(0.4), width: 1),
+        border: Border.all(
+          color: AppColors.secondaryContainer.withOpacity(0.4),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
             color: AppColors.sonicGlow.withOpacity(0.3),

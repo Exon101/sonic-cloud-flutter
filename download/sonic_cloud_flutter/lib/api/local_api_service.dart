@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:shelf/shelf.dart';
+import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../models/models.dart';
 import '../services/playback_service.dart';
@@ -28,8 +31,7 @@ import '../services/universal_library_service.dart';
 ///
 /// WebSocket:
 ///   ws://host:8765/live       → server pushes {type, ...} events on every
-///                               state change (play, pause, position tick,
-///                               queue change). Client can send commands.
+///                               state change. Client can send commands.
 ///
 /// Plugin SDK contract: the same JSON shapes are exposed to in-process plugins
 /// — they don't have to go through HTTP. Plugins receive a [PlaybackAdapter]
@@ -45,10 +47,10 @@ class LocalApiService {
   Future<void> start({int port = 8765}) async {
     if (_server != null) return;
     final handler = const Pipeline()
-        .addMiddleware(logRequests(logger: (msg) => print('[API] $msg')))
+        .addMiddleware(logRequests(logger: (msg, isError) => print('[API${isError ? ' ERROR' : ''}] $msg')))
         .addMiddleware(_corsMiddleware())
         .addHandler(_router.call);
-    _server = await serve(handler, '0.0.0.0', port);
+    _server = await shelf_io.serve(handler, '0.0.0.0', port);
     print('LocalApiService: listening on http://0.0.0.0:$port');
   }
 
@@ -64,13 +66,13 @@ class LocalApiService {
   Router get _router {
     final r = Router();
 
-    r.get('/api/status', (Request req) {
-      return _json(_status());
-    });
+    r.get('/api/status', (Request req) => _json(_status()));
 
     r.get('/api/library', (Request req) {
-      final limit = int.tryParse(req.url.queryParameters['limit'] ?? '100') ?? 100;
-      final offset = int.tryParse(req.url.queryParameters['offset'] ?? '0') ?? 0;
+      final limit =
+          int.tryParse(req.url.queryParameters['limit'] ?? '100') ?? 100;
+      final offset =
+          int.tryParse(req.url.queryParameters['offset'] ?? '0') ?? 0;
       final all = _library.allTracks;
       final slice = all.skip(offset).take(limit).toList();
       return _json({
@@ -145,53 +147,61 @@ class LocalApiService {
     });
 
     // WebSocket endpoint
-    r.get('/live', webSocketHandler((WebSocketChannel ws) {
-      _webSockets.add(ws);
-      // Send initial state.
-      ws.sink.add(jsonEncode({'type': 'state', 'data': _status()}));
-      ws.stream.listen(
-        (message) => _handleWsCommand(ws, message),
-        onDone: () => _webSockets.remove(ws),
-        onError: (_) => _webSockets.remove(ws),
-      );
-    }));
+    r.get(
+      '/live',
+      webSocketHandler((WebSocketChannel ws, String? protocol) {
+        _webSockets.add(ws);
+        ws.sink.add(jsonEncode({'type': 'state', 'data': _status()}));
+        ws.stream.listen(
+          (message) => _handleWsCommand(ws, message),
+          onDone: () => _webSockets.remove(ws),
+          onError: (_) => _webSockets.remove(ws),
+        );
+      }),
+    );
 
     return r;
   }
 
   Map<String, dynamic> _status() => {
-        'isPlaying': _playback.isPlaying,
-        'positionMs': _playback.position.inMilliseconds,
-        'durationMs': _playback.duration.inMilliseconds,
-        'shuffle': _playback.shuffleEnabled,
-        'repeatMode': _playback.repeatMode.name,
-        'speed': _playback.speed,
-        'volume': _playback.volume,
-        'currentTrack': _playback.currentTrack != null ? _trackToJson(_playback.currentTrack!) : null,
-      };
+    'isPlaying': _playback.isPlaying,
+    'positionMs': _playback.position.inMilliseconds,
+    'durationMs': _playback.duration.inMilliseconds,
+    'shuffle': _playback.shuffleEnabled,
+    'repeatMode': _playback.repeatMode.name,
+    'speed': _playback.speed,
+    'volume': _playback.volume,
+    'currentTrack': _playback.currentTrack != null
+        ? _trackToJson(_playback.currentTrack!)
+        : null,
+  };
 
   Map<String, dynamic> _trackToJson(Track t) => {
-        'id': t.id,
-        'title': t.title,
-        'artist': t.artist,
-        'album': t.album,
-        'genre': t.genre,
-        'year': t.year,
-        'durationMs': t.duration.inMilliseconds,
-        'artUrl': t.artUrl,
-        'isFavorite': t.isFavorite,
-        'rating': t.rating,
-      };
+    'id': t.id,
+    'title': t.title,
+    'artist': t.artist,
+    'album': t.album,
+    'genre': t.genre,
+    'year': t.year,
+    'durationMs': t.duration.inMilliseconds,
+    'artUrl': t.artUrl,
+    'isFavorite': t.isFavorite,
+    'rating': t.rating,
+  };
 
   void _handleWsCommand(WebSocketChannel ws, dynamic message) {
     try {
       final cmd = jsonDecode(message as String) as Map<String, dynamic>;
       final action = cmd['action'] as String?;
       switch (action) {
-        case 'play': _playback.play();
-        case 'pause': _playback.pause();
-        case 'next': _playback.skipToNext();
-        case 'previous': _playback.skipToPrevious();
+        case 'play':
+          _playback.play();
+        case 'pause':
+          _playback.pause();
+        case 'next':
+          _playback.skipToNext();
+        case 'previous':
+          _playback.skipToPrevious();
         case 'seek':
           final ms = cmd['positionMs'] as int?;
           if (ms != null) _playback.seek(Duration(milliseconds: ms));
@@ -205,7 +215,6 @@ class LocalApiService {
   }
 
   /// Broadcast a state-change event to all connected WebSocket clients.
-  /// Called by PlaybackService listeners (or via a manual hook).
   void broadcastState() {
     final payload = jsonEncode({'type': 'state', 'data': _status()});
     for (final ws in _webSockets) {
@@ -215,16 +224,17 @@ class LocalApiService {
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
   Response _json(Object body) => Response.ok(
-        jsonEncode(body),
-        headers: {'content-type': 'application/json'},
-      );
+    jsonEncode(body),
+    headers: {'content-type': 'application/json'},
+  );
 
-  Response _notFound(String msg) => Response.notFound(jsonEncode({'error': msg}));
+  Response _notFound(String msg) =>
+      Response.notFound(jsonEncode({'error': msg}));
 
   Response _badRequest(String msg) => Response.badRequest(
-        body: jsonEncode({'error': msg}),
-        headers: {'content-type': 'application/json'},
-      );
+    body: jsonEncode({'error': msg}),
+    headers: {'content-type': 'application/json'},
+  );
 
   Middleware _corsMiddleware() {
     return (Handler innerHandler) {
@@ -243,23 +253,4 @@ class LocalApiService {
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   };
-}
-
-// Shelf's webSocketHandler exposes a WebSocketChannel — fake-import it here
-// so the code compiles without needing the package directly imported.
-class WebSocketChannel {
-  Stream get stream => throw UnimplementedError();
-  WebSocketSink get sink => throw UnimplementedError();
-}
-class WebSocketSink implements StreamSink<dynamic> {
-  @override
-  void add(dynamic data) {}
-  @override
-  void addError(Object error, [StackTrace? stackTrace]) {}
-  @override
-  Future<void> addStream(Stream<dynamic> stream) async {}
-  @override
-  Future<void> close() async {}
-  @override
-  Future<void> get done => Future.value();
 }

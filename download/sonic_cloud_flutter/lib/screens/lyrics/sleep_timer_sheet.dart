@@ -10,9 +10,8 @@ import '../../theme/app_typography.dart';
 /// Surfaces preset durations (5/15/30/45/60 minutes) and a custom picker,
 /// plus the end-action choice (pause / stop / fade out).
 class SleepTimerSheet extends StatelessWidget {
-  const SleepTimerSheet({super.key});
-
-  static Future<void> show(BuildContext context, {
+  static Future<void> show(
+    BuildContext context, {
     required ValueChanged<Duration> onStart,
     required VoidCallback onCancel,
     required SleepTimerEndAction currentAction,
@@ -22,7 +21,9 @@ class SleepTimerSheet extends StatelessWidget {
       context: context,
       backgroundColor: AppColors.surfaceContainer,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(r.AppRadius.xl)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(r.AppRadius.xl),
+        ),
       ),
       builder: (_) => SleepTimerSheet._(
         onStart: onStart,
@@ -54,8 +55,12 @@ class SleepTimerSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Sleep Timer',
-              style: AppTypography.headlineMd.copyWith(color: AppColors.onSurface)),
+          Text(
+            'Sleep Timer',
+            style: AppTypography.headlineMd.copyWith(
+              color: AppColors.onSurface,
+            ),
+          ),
           const SizedBox(height: AppSpacing.md),
           Wrap(
             spacing: 8,
@@ -67,8 +72,12 @@ class SleepTimerSheet extends StatelessWidget {
                     onStart(Duration(minutes: mins));
                     Navigator.of(context).pop();
                   },
-                  backgroundColor: AppColors.secondaryContainer.withOpacity(0.2),
-                  labelStyle: AppTypography.labelMd.copyWith(color: AppColors.secondaryContainer),
+                  backgroundColor: AppColors.secondaryContainer.withOpacity(
+                    0.2,
+                  ),
+                  labelStyle: AppTypography.labelMd.copyWith(
+                    color: AppColors.secondaryContainer,
+                  ),
                 ),
               ActionChip(
                 label: const Text('Custom'),
@@ -79,7 +88,10 @@ class SleepTimerSheet extends StatelessWidget {
                     helpText: 'Pick sleep timer duration',
                   );
                   if (picked != null) {
-                    final dur = Duration(hours: picked.hour, minutes: picked.minute);
+                    final dur = Duration(
+                      hours: picked.hour,
+                      minutes: picked.minute,
+                    );
                     if (dur > Duration.zero) {
                       onStart(dur);
                       if (context.mounted) Navigator.of(context).pop();
@@ -90,8 +102,12 @@ class SleepTimerSheet extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
-          Text('When timer ends',
-              style: AppTypography.labelSm.copyWith(color: AppColors.onSurfaceVariant)),
+          Text(
+            'When timer ends',
+            style: AppTypography.labelSm.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
+          ),
           const SizedBox(height: 4),
           Wrap(
             spacing: 8,
@@ -103,7 +119,9 @@ class SleepTimerSheet extends StatelessWidget {
                 onSelected: (_) => onActionChanged(a),
                 selectedColor: AppColors.secondaryContainer,
                 labelStyle: TextStyle(
-                  color: active ? AppColors.surfaceLowest : AppColors.onSurfaceVariant,
+                  color: active
+                      ? AppColors.surfaceLowest
+                      : AppColors.onSurfaceVariant,
                 ),
               );
             }).toList(),
@@ -123,8 +141,8 @@ class SleepTimerSheet extends StatelessWidget {
   }
 
   String _actionLabel(SleepTimerEndAction a) => switch (a) {
-        SleepTimerEndAction.pause => 'Pause',
-        SleepTimerEndAction.stop => 'Stop',
-        SleepTimerEndAction.fadeOut => 'Fade out',
-      };
+    SleepTimerEndAction.pause => 'Pause',
+    SleepTimerEndAction.stop => 'Stop',
+    SleepTimerEndAction.fadeOut => 'Fade out',
+  };
 }

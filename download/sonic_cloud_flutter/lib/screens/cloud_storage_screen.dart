@@ -36,7 +36,10 @@ class CloudStorageScreen extends StatelessWidget {
         minimum: const EdgeInsets.only(top: 16),
         child: ListView(
           padding: const EdgeInsets.fromLTRB(
-            AppSpacing.edgeMargin, 8, AppSpacing.edgeMargin, 120,
+            AppSpacing.edgeMargin,
+            8,
+            AppSpacing.edgeMargin,
+            120,
           ),
           children: [
             const _StorageOverview(),
@@ -67,8 +70,7 @@ class _StorageOverview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final usedPct =
-        MockData.storageUsedGb / MockData.storageTotalGb; // 0.45
+    final usedPct = MockData.storageUsedGb / MockData.storageTotalGb; // 0.45
     return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,21 +82,27 @@ class _StorageOverview extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Cloud Storage',
-                      style: AppTypography.headlineMd
-                          .copyWith(color: AppColors.onSurface)),
+                  Text(
+                    'Cloud Storage',
+                    style: AppTypography.headlineMd.copyWith(
+                      color: AppColors.onSurface,
+                    ),
+                  ),
                   const SizedBox(height: 4),
                   Text(
                     '${MockData.storageUsedGb} GB / ${MockData.storageTotalGb} GB Used',
-                    style: AppTypography.bodyMd
-                        .copyWith(color: AppColors.onSurfaceVariant),
+                    style: AppTypography.bodyMd.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
-              const Icon(Icons.cloud_done_rounded,
-                  color: AppColors.secondaryContainer, size: 32, shadows: [
-                Shadow(color: AppColors.sonicGlow, blurRadius: 8),
-              ]),
+              const Icon(
+                Icons.cloud_done_rounded,
+                color: AppColors.secondaryContainer,
+                size: 32,
+                shadows: [Shadow(color: AppColors.sonicGlow, blurRadius: 8)],
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -159,10 +167,18 @@ class _LegendDot extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
         const SizedBox(width: 6),
-        Text(label,
-            style: AppTypography.labelSm.copyWith(color: AppColors.onSurfaceVariant)),
+        Text(
+          label,
+          style: AppTypography.labelSm.copyWith(
+            color: AppColors.onSurfaceVariant,
+          ),
+        ),
       ],
     );
   }
@@ -182,15 +198,25 @@ class _ConnectedDrives extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Connected Drives',
-                style: AppTypography.headlineMd.copyWith(color: AppColors.onSurface)),
+            Text(
+              'Connected Drives',
+              style: AppTypography.headlineMd.copyWith(
+                color: AppColors.onSurface,
+              ),
+            ),
             TextButton.icon(
               onPressed: () {},
-              icon: const Icon(Icons.add_rounded,
-                  size: 16, color: AppColors.secondaryContainer),
-              label: Text('Add Service',
-                  style: AppTypography.labelMd
-                      .copyWith(color: AppColors.secondaryContainer)),
+              icon: const Icon(
+                Icons.add_rounded,
+                size: 16,
+                color: AppColors.secondaryContainer,
+              ),
+              label: Text(
+                'Add Service',
+                style: AppTypography.labelMd.copyWith(
+                  color: AppColors.secondaryContainer,
+                ),
+              ),
             ),
           ],
         ),
@@ -222,7 +248,7 @@ class _ConnectedDrives extends StatelessWidget {
 }
 
 class _DriveCard extends StatefulWidget {
-  final CloudDrive drive;
+  final CloudProviderConfig drive;
   const _DriveCard({required this.drive});
 
   @override
@@ -235,8 +261,10 @@ class _DriveCardState extends State<_DriveCard> {
 
   @override
   Widget build(BuildContext context) {
-    final isGoogleDrive = widget.drive.kind == CloudDriveKind.googleDrive;
-    final accent = isGoogleDrive ? AppColors.secondaryContainer : AppColors.onSurface;
+    final isGoogleDrive = widget.drive.kind == CloudProviderKind.googleDrive;
+    final accent = isGoogleDrive
+        ? AppColors.secondaryContainer
+        : AppColors.onSurface;
 
     return GlassCard(
       padding: EdgeInsets.zero,
@@ -252,8 +280,11 @@ class _DriveCardState extends State<_DriveCard> {
                 width: 128,
                 height: 128,
                 decoration: BoxDecoration(
-                  color: (isGoogleDrive ? AppColors.secondaryContainer : AppColors.onTertiaryContainer)
-                      .withOpacity(0.10),
+                  color:
+                      (isGoogleDrive
+                              ? AppColors.secondaryContainer
+                              : AppColors.onTertiaryContainer)
+                          .withOpacity(0.10),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -266,7 +297,9 @@ class _DriveCardState extends State<_DriveCard> {
                   Row(
                     children: [
                       Icon(
-                        isGoogleDrive ? Icons.folder_special_rounded : Icons.folder_zip_rounded,
+                        isGoogleDrive
+                            ? Icons.folder_special_rounded
+                            : Icons.folder_zip_rounded,
                         color: accent,
                         size: 36,
                       ),
@@ -275,22 +308,35 @@ class _DriveCardState extends State<_DriveCard> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(widget.drive.name,
-                                style: AppTypography.bodyLg
-                                    .copyWith(color: AppColors.onSurface)),
-                            Text(widget.drive.description,
-                                style: AppTypography.labelSm.copyWith(
-                                    color: AppColors.onSurfaceVariant.withOpacity(0.6))),
+                            Text(
+                              widget.drive.displayName,
+                              style: AppTypography.bodyLg.copyWith(
+                                color: AppColors.onSurface,
+                              ),
+                            ),
+                            Text(
+                              "",
+                              style: AppTypography.labelSm.copyWith(
+                                color: AppColors.onSurfaceVariant.withOpacity(
+                                  0.6,
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                      const Icon(Icons.more_vert_rounded,
-                          color: AppColors.onSurfaceVariant, size: 18),
+                      const Icon(
+                        Icons.more_vert_rounded,
+                        color: AppColors.onSurfaceVariant,
+                        size: 18,
+                      ),
                     ],
                   ),
                   const Spacer(),
                   _ToggleRow(
-                    label: isGoogleDrive ? 'Stream Mode' : 'Download for Offline',
+                    label: isGoogleDrive
+                        ? 'Stream Mode'
+                        : 'Download for Offline',
                     value: isGoogleDrive ? _stream : _offline,
                     onChanged: (v) => setState(() {
                       if (isGoogleDrive) {
@@ -315,7 +361,11 @@ class _ToggleRow extends StatelessWidget {
   final bool value;
   final ValueChanged<bool> onChanged;
 
-  const _ToggleRow({required this.label, required this.value, required this.onChanged});
+  const _ToggleRow({
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -329,8 +379,12 @@ class _ToggleRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: AppTypography.labelMd.copyWith(color: AppColors.onSurfaceVariant)),
+          Text(
+            label,
+            style: AppTypography.labelMd.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
+          ),
           _SonicToggle(value: value, onChanged: onChanged),
         ],
       ),
@@ -367,10 +421,17 @@ class _SonicToggle extends StatelessWidget {
             width: 18,
             height: 18,
             decoration: BoxDecoration(
-              color: value ? AppColors.secondaryContainer : AppColors.onSurfaceVariant,
+              color: value
+                  ? AppColors.secondaryContainer
+                  : AppColors.onSurfaceVariant,
               shape: BoxShape.circle,
               boxShadow: value
-                  ? [BoxShadow(color: AppColors.sonicGlow.withOpacity(0.5), blurRadius: 8)]
+                  ? [
+                      BoxShadow(
+                        color: AppColors.sonicGlow.withOpacity(0.5),
+                        blurRadius: 8,
+                      ),
+                    ]
                   : null,
             ),
           ),
@@ -411,13 +472,18 @@ class _AddNewCard extends StatelessWidget {
                   color: AppColors.surfaceContainer,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.cloud_upload_outlined,
-                    color: AppColors.onSurfaceVariant),
+                child: const Icon(
+                  Icons.cloud_upload_outlined,
+                  color: AppColors.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: AppSpacing.xs),
-              Text('Link New Storage',
-                  style: AppTypography.bodyMd.copyWith(
-                      color: AppColors.onSurface.withOpacity(0.8))),
+              Text(
+                'Link New Storage',
+                style: AppTypography.bodyMd.copyWith(
+                  color: AppColors.onSurface.withOpacity(0.8),
+                ),
+              ),
             ],
           ),
         ),
@@ -437,13 +503,17 @@ class _SyncActivity extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Recent Sync Activity',
-            style: AppTypography.headlineMd.copyWith(color: AppColors.onSurface)),
+        Text(
+          'Recent Sync Activity',
+          style: AppTypography.headlineMd.copyWith(color: AppColors.onSurface),
+        ),
         const SizedBox(height: AppSpacing.md),
         GlassCard(
           padding: EdgeInsets.zero,
           child: Column(
-            children: MockData.syncActivity.map((a) => _SyncRow(activity: a)).toList(),
+            children: MockData.syncActivity
+                .map((a) => _SyncRow(activity: a))
+                .toList(),
           ),
         ),
       ],
@@ -457,7 +527,7 @@ class _SyncRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDownloading = activity.state == SyncState.downloading;
+    final isDownloading = activity.state == SyncState.syncing;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.xs),
       decoration: BoxDecoration(
@@ -479,8 +549,12 @@ class _SyncRow extends StatelessWidget {
               alignment: Alignment.center,
               children: [
                 Icon(
-                  isDownloading ? Icons.audio_file_rounded : Icons.library_music_rounded,
-                  color: AppColors.onSurface.withOpacity(isDownloading ? 1 : 0.6),
+                  isDownloading
+                      ? Icons.audio_file_rounded
+                      : Icons.library_music_rounded,
+                  color: AppColors.onSurface.withOpacity(
+                    isDownloading ? 1 : 0.6,
+                  ),
                   size: 20,
                 ),
                 if (isDownloading)
@@ -504,22 +578,36 @@ class _SyncRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(activity.fileName,
-                    style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
-                Text(activity.status,
-                    style: AppTypography.labelSm.copyWith(
-                        color: AppColors.onSurfaceVariant.withOpacity(0.6))),
+                Text(
+                  activity.fileName,
+                  style: AppTypography.bodyMd.copyWith(
+                    color: AppColors.onSurface,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  activity.status,
+                  style: AppTypography.labelSm.copyWith(
+                    color: AppColors.onSurfaceVariant.withOpacity(0.6),
+                  ),
+                ),
               ],
             ),
           ),
           if (isDownloading && activity.progress != null)
-            Text('${(activity.progress! * 100).round()}%',
-                style: AppTypography.labelMd.copyWith(color: AppColors.secondaryContainer))
+            Text(
+              '${(activity.progress! * 100).round()}%',
+              style: AppTypography.labelMd.copyWith(
+                color: AppColors.secondaryContainer,
+              ),
+            )
           else
-            Icon(Icons.check_circle_rounded,
-                color: AppColors.onSurface.withOpacity(0.6), size: 18),
+            Icon(
+              Icons.check_circle_rounded,
+              color: AppColors.onSurface.withOpacity(0.6),
+              size: 18,
+            ),
         ],
       ),
     );
