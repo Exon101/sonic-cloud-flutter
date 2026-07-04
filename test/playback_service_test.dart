@@ -25,7 +25,7 @@ void main() {
         .thenAnswer((_) => const Stream<SequenceState?>.empty());
     when(() => mockPlayer.duration).thenReturn(const Duration(seconds: 30));
     when(() => mockPlayer.setAudioSource(any(), initialIndex: any(named: 'initialIndex')))
-        .thenAnswer((_) async {});
+        .thenAnswer((_) async => const Duration(seconds: 30));
     when(() => mockPlayer.play()).thenAnswer((_) async {});
     when(() => mockPlayer.pause()).thenAnswer((_) async {});
     when(() => mockPlayer.stop()).thenAnswer((_) async {});
