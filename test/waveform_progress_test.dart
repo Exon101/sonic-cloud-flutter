@@ -60,8 +60,10 @@ void main() {
       expect(seekedValue!, lessThanOrEqualTo(1.0));
     });
 
-    testWidgets('calls onSeek when dragged horizontally', skip: 'CI-flaky: gesture timing', (tester) async {
-      double? seekedValue;
+    testWidgets(
+      'calls onSeek when dragged horizontally',
+      (tester) async {
+        double? seekedValue;
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -86,6 +88,8 @@ void main() {
       expect(seekedValue, isNotNull);
       expect(seekedValue!, greaterThan(0.4));
       expect(seekedValue!, lessThan(0.7));
-    });
+      },
+      skip: true, // CI-flaky: gesture timing
+    );
   });
 }
