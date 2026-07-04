@@ -309,13 +309,13 @@ class _DriveCardState extends State<_DriveCard> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              widget.drive.name,
+                              widget.drive.displayName,
                               style: AppTypography.bodyLg.copyWith(
                                 color: AppColors.onSurface,
                               ),
                             ),
                             Text(
-                              widget.drive.description,
+                              "",
                               style: AppTypography.labelSm.copyWith(
                                 color: AppColors.onSurfaceVariant.withOpacity(
                                   0.6,

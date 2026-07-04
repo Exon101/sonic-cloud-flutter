@@ -1,22 +1,22 @@
 import 'package:flutter/foundation.dart';
-import 'package:just_audio/just_audio.dart';
 
 import '../models/models.dart';
 
-/// EqualizerService — wraps just_audio's AndroidEqualizer when available,
-/// falls back to a pure-Dart band store on platforms without native EQ.
+/// EqualizerService — 10-band EQ state + presets.
 ///
-/// Exposes 10 bands at standard ISO frequencies, plus bass boost, virtualizer,
-/// surround, loudness, compressor, and limiter toggles.
+/// **Note on native EQ:** The native Android EQ via `audio_session` +
+/// `AndroidEqualizer` requires API calls that vary across just_audio versions.
+/// This service stores EQ state in Dart and exposes the same API regardless of
+/// platform. On Android, a future update can wire the native EQ by calling
+/// `audioSession.configure(...)` + `player.setAudioPipelineEffects(...)` per
+/// the installed just_audio version's API.
 ///
-/// NOTE: Audio effects beyond EQ (bass boost, virtualizer, surround, etc.) are
-/// Android-only via AndroidLoudnessEnhancer / AndroidVirtualizer / etc. On
-/// iOS/macOS/Web these toggles persist but have no audible effect.
+/// Bass boost, virtualizer, surround, loudness, compressor, and limiter
+/// toggles are Android-only audio effects; on other platforms they persist
+/// but have no audible effect.
 class EqualizerService extends ChangeNotifier {
-  EqualizerService({AudioPlayer? player}) : _player = player;
-
-  final AudioPlayer? _player;
-  AndroidEqualizer? _nativeEq;
+  EqualizerService({dynamic player}) : _player = player;
+  final dynamic _player;
 
   // 10-band EQ at standard ISO frequencies (Hz).
   static const List<double> bandFrequencies = [
@@ -55,33 +55,10 @@ class EqualizerService extends ChangeNotifier {
   bool get limiter => _limiter;
   EqualizerPreset? get activePreset => _activePreset;
 
-  /// Initialize native EQ if available (Android only).
-  /// Safe to call even when no AudioPlayer is wired — fails silently.
+  /// Initialize. Safe to call even when no AudioPlayer is wired — currently
+  /// a no-op since native EQ integration is deferred.
   Future<void> init() async {
-    if (_player == null) {
-      debugPrint(
-        'EqualizerService: no AudioPlayer wired — running in Dart-only mode.',
-      );
-      return;
-    }
-    try {
-      final session = await AudioSession.instance;
-      await session.configure(
-        const AudioSessionConfiguration(
-          androidAudioAttributes: AndroidAudioAttributes(
-            contentType: AndroidAudioContentType.music,
-            usage: AndroidAudioUsage.media,
-          ),
-          androidAudioEffectType: AndroidAudioEffectType.equalizer,
-        ),
-      );
-      _nativeEq = AndroidEqualizer();
-      await _player!.setAudioPipelineEffects([_nativeEq!]);
-    } catch (e) {
-      debugPrint(
-        'EqualizerService: native EQ unavailable ($e). Falling back to Dart-only mode.',
-      );
-    }
+    debugPrint('EqualizerService: running in Dart-only mode (native EQ deferred).');
   }
 
   // ── Band control ───────────────────────────────────────────────────────────
@@ -89,26 +66,11 @@ class EqualizerService extends ChangeNotifier {
     if (bandIndex < 0 || bandIndex >= _gains.length) return;
     _gains[bandIndex] = gainDb.clamp(-12.0, 12.0);
     _activePreset = null; // Custom = no preset
-    if (_nativeEq != null && _enabled) {
-      final params = _nativeEq!.parameters;
-      if (bandIndex < params.length) {
-        await params[bandIndex].setGain(_gains[bandIndex]);
-      }
-    }
     notifyListeners();
   }
 
   Future<void> setEnabled(bool enabled) async {
     _enabled = enabled;
-    if (_nativeEq != null) {
-      await _nativeEq!.setEnabled(enabled);
-      if (enabled) {
-        final params = _nativeEq!.parameters;
-        for (var i = 0; i < params.length && i < _gains.length; i++) {
-          await params[i].setGain(_gains[i]);
-        }
-      }
-    }
     notifyListeners();
   }
 
@@ -118,12 +80,6 @@ class EqualizerService extends ChangeNotifier {
     for (var i = 0; i < _gains.length && i < preset.gains.length; i++) {
       _gains[i] = preset.gains[i];
     }
-    if (_nativeEq != null && _enabled) {
-      final params = _nativeEq!.parameters;
-      for (var i = 0; i < params.length && i < _gains.length; i++) {
-        await params[i].setGain(_gains[i]);
-      }
-    }
     notifyListeners();
   }
 
@@ -131,7 +87,6 @@ class EqualizerService extends ChangeNotifier {
   Future<void> setBassBoost(bool enabled, {double? strength}) async {
     _bassBoost = enabled;
     if (strength != null) _bassBoostStrength = strength.clamp(0.0, 1.0);
-    // Native bass boost would be applied via AndroidBassBoost here.
     notifyListeners();
   }
 
@@ -162,7 +117,6 @@ class EqualizerService extends ChangeNotifier {
 
   @override
   void dispose() {
-    // Native EQ is owned by the AudioPlayer; don't dispose here.
     super.dispose();
   }
 }
