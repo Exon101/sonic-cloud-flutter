@@ -7,6 +7,10 @@ import 'models.dart';
 class MockData {
   MockData._();
 
+  /// Bundled audio asset used by every track for demo playback. In a real
+  /// app each track would have its own URL.
+  static const sampleAudioUrl = 'asset:///assets/audio/sample_track.wav';
+
   static const userProfile = UserProfile(
     name: 'Alex Mercer',
     tier: 'Premium Member',
@@ -58,6 +62,7 @@ class MockData {
       duration: Duration(minutes: 4, seconds: 12),
       artUrl:
           'https://lh3.googleusercontent.com/aida-public/AB6AXuB2Jb8NXjnW8090GBDO9F7i1lEknIKQCP1GyxTQxY3vxpmnmhfpNOv6JbS4lW5-tMVThO5LY6KnCpBUPnT2OdctEqYDnvmwkgPos6KfPe5A2KiGkCfv2toQGlx0P-uLAXFWJDfq6uDD9ndGXPsTnTgeXQXvtE1Kx8Rpt-f1KiOEXDhORjo16SQY746h4Ktfh9GcXBGb1jq7B2i5Y6UUw0Th32aBZkAOR7GJs5R4luOqnrCjHnhaZgc',
+      audioUrl: sampleAudioUrl,
       isCloudOnly: true,
       isFavorite: true,
     ),
@@ -70,6 +75,7 @@ class MockData {
       duration: Duration(minutes: 3, seconds: 45),
       artUrl:
           'https://lh3.googleusercontent.com/aida-public/AB6AXuBWPmHLvWIpEtGsjaMcq1NLfOlQ0b-zJeT2ZIG4NtQe8Eg58D0P-xZqrdt0SyEo1QklmewE39tyA657cxYsvdjHZX0c6eDK9tcviYPc6udVJO_8x5YY3cGDAlbqgvWB6xIvaYyB6uQp7-QCwAmtWVYpVTF4wEd35O-DhqndBPlqnR-DQ3gmT4ZY8yZ2jcAh5ep4NSn614qRIMVSFEXoYwzIHBggPfBJU89Xo2jR70KUGOf06Mew3WQ',
+      audioUrl: sampleAudioUrl,
     ),
     Track(
       id: 't3',
@@ -80,6 +86,7 @@ class MockData {
       duration: Duration(minutes: 5, seconds: 20),
       artUrl:
           'https://lh3.googleusercontent.com/aida-public/AB6AXuCrd91B3cie4w3ch0ilR446bR17kttAYwzPJVxSfOs0B7a16vtVQYWsxXiWKsLNisz2jpwE9jbOglQXVWLGU9EXH0o5Vyc5SGwpHEWvyhBJVr0bNPGIt9T5a9BDuGAA3Wv_2308h-Mne_pm4DkYoUVDGb2JgOJ7QbE9eftrRXfvn7dk74FtftbVej-9fjxy0sL4HCKmqnH-3haJp4TV6z7bZshhNHAwo990FD0Frct9t7LEmX22HK4',
+      audioUrl: sampleAudioUrl,
       isCloudOnly: true,
     ),
     Track(
@@ -90,6 +97,7 @@ class MockData {
       year: 2024,
       duration: Duration(minutes: 5, seconds: 0),
       artUrl: nowPlayingArtUrl,
+      audioUrl: sampleAudioUrl,
     ),
   ];
 

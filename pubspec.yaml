@@ -12,11 +12,49 @@ dependencies:
     sdk: flutter
   google_fonts: ^6.1.0
   cupertino_icons: ^1.0.6
+  # Real audio playback engine — used by NowPlayingScreen.
+  just_audio: ^0.9.37
+  # Background audio + lock-screen controls (optional but pairs naturally with just_audio).
+  # Commented out to keep the demo minimal; uncomment and wire up MediaController if needed.
+  # audio_service: ^0.9.39
 
 dev_dependencies:
   flutter_lints: ^3.0.0
+  flutter_test:
+    sdk: flutter
+  # Generates launcher icons for Android + iOS from a single source PNG.
+  flutter_launcher_icons: ^0.13.1
+  # Mocking library for unit/widget tests.
+  mocktail: ^1.0.3
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Launcher icon configuration.
+#
+# Run `dart run flutter_launcher_icons` after `flutter pub get` to regenerate
+# icons for both Android (mipmap-*) and iOS (Assets.xcassets/AppIcon.appiconset).
+# ─────────────────────────────────────────────────────────────────────────────
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/icon.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true
+  background_color_ios: "#131318"
+  web:
+    generate: true
+    image_path: "assets/icon/icon.png"
+    background_color: "#131318"
+    theme_color: "#131318"
+  windows:
+    generate: true
+    image_path: "assets/icon/icon.png"
+    icon_size: 48
+  macos:
+    generate: true
+    image_path: "assets/icon/icon.png"
 
 flutter:
   uses-material-design: true
-  # Assets are referenced via network URLs in mock data; no local assets required
-  # to keep the project self-contained for review.
+  assets:
+    - assets/icon/
+    - assets/audio/
