@@ -190,6 +190,64 @@ PlaybackService  ←──  widgets listen via AnimatedBuilder(animation: servic
 
 ---
 
+## Deployment
+
+Sonic Cloud ships with deployment configs for **every** target platform. The
+full guide lives in [DEPLOYMENT.md](DEPLOYMENT.md); here's the quick reference:
+
+### Web — pick your host
+
+| Host | Config file | One-liner |
+|---|---|---|
+| **Vercel** | `vercel.json` | `./scripts/deploy_web.sh vercel` |
+| **Netlify** | `netlify.toml` | `./scripts/deploy_web.sh netlify` |
+| **Firebase Hosting** | `firebase.json`, `.firebaserc` | `./scripts/deploy_web.sh firebase` |
+| **Docker** (nginx) | `Dockerfile`, `docker-compose.yml` | `./scripts/deploy_web.sh docker` → http://localhost:8080 |
+| **Local preview** | — | `./scripts/deploy_web.sh preview` |
+
+### Mobile
+
+```bash
+./scripts/deploy_android.sh install     # debug APK → connected device
+./scripts/deploy_android.sh firebase    # release APK → Firebase App Distribution
+./scripts/deploy_android.sh playstore   # release AAB → Google Play (production)
+
+./scripts/deploy_ios.sh install         # debug build → connected iPhone
+./scripts/deploy_ios.sh testflight      # release IPA → TestFlight (via fastlane)
+./scripts/deploy_ios.sh appstore        # release IPA → App Store (via fastlane)
+```
+
+### Desktop
+
+```bash
+./scripts/build.sh macos      # → build/macos/Build/Products/Release/Sonic Cloud.app
+./scripts/build.sh windows    # → build/windows/x64/runner/Release/sonic_cloud.exe
+./scripts/build.sh linux      # → build/linux/x64/release/bundle/sonic_cloud
+```
+
+### CI/CD
+
+| Platform | Config | Trigger |
+|---|---|---|
+| **GitHub Actions** (CI) | `.github/workflows/ci.yml` | every push / PR — analyze + test + build web & APK |
+| **GitHub Actions** (Release) | `.github/workflows/release.yml` | tag `v*.*.*` — builds all 6 platforms + creates GitHub Release |
+| **Codemagic** | `codemagic.yaml` | tag / push to main — Firebase + Play Store + TestFlight + Hosting |
+| **Fastlane** | `fastlane/Fastfile.android`, `fastlane/Fastfile.ios` | invoked by scripts or CI |
+| **Dependabot** | `.github/dependabot.yml` | weekly — Flutter packages, GitHub Actions, Docker, Ruby gems |
+
+To cut a release:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+# → GitHub Actions builds all platforms and creates a Release with artifacts
+```
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for environment-variable setup, signing-key
+preparation, and per-platform details.
+
+---
+
 ## Built with
 
 - [Flutter](https://flutter.dev) — UI toolkit
@@ -197,6 +255,9 @@ PlaybackService  ←──  widgets listen via AnimatedBuilder(animation: servic
 - [just_audio](https://pub.dev/packages/just_audio) — audio playback
 - [flutter_launcher_icons](https://pub.dev/packages/flutter_launcher_icons) — icon generation
 - [mocktail](https://pub.dev/packages/mocktail) — test mocks
+- [Fastlane](https://fastlane.tools) — mobile release automation
+- [Codemagic](https://codemagic.io) — cloud CI/CD
+- [Docker](https://www.docker.com) — containerized web deploy
 
 ---
 

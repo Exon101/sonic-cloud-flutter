@@ -1,0 +1,89 @@
+# frozen_string_literal: true
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Sonic Cloud — Android Fastlane config.
+#
+# Lanes:
+#   bundle exec fastlane android test           ← run unit tests
+#   bundle exec fastlane android beta           ← build + upload APK to Firebase App Distribution
+#   bundle exec fastlane android playstore      ← build AAB + upload to Play Store (production track)
+#   bundle exec fastlane android bump_version   ← bump version code/name
+#
+# Required environment variables (set in CI or ~/.zshrc):
+#   ANDROID_KEYSTORE_PATH          — path to release keystore .jks
+#   ANDROID_KEYSTORE_PASSWORD      — keystore password
+#   ANDROID_KEY_ALIAS              — key alias inside the keystore
+#   ANDROID_KEY_PASSWORD           — key password
+#   FIREBASE_APP_ID_ANDROID        — Firebase App ID for the Android app
+#   FIREBASE_TOKEN                 — Firebase CLI token (firebase login:ci)
+#   PLAY_STORE_JSON_KEY            — path to Google Play service-account JSON
+# ─────────────────────────────────────────────────────────────────────────────
+
+default_platform(:android)
+
+platform :android do
+  desc "Run unit tests"
+  lane :test do
+    Dir.chdir("..") do
+      sh("flutter", "test")
+    end
+  end
+
+  desc "Build release APK and upload to Firebase App Distribution"
+  lane :beta do
+    UI.user_error!("FIREBASE_APP_ID_ANDROID not set") unless ENV["FIREBASE_APP_ID_ANDROID"]
+
+    build_app_for_android(variant: "apk")
+    firebase_app_distribution(
+      app: ENV["FIREBASE_APP_ID_ANDROID"],
+      android_artifact_type: "APK",
+      android_artifact_path: "../build/app/outputs/flutter-apk/app-release.apk",
+      groups: "internal-testers",
+      firebase_cli_token: ENV["FIREBASE_TOKEN"]
+    )
+  end
+
+  desc "Build release AAB and upload to Google Play (production track)"
+  lane :playstore do
+    UI.user_error!("PLAY_STORE_JSON_KEY not set") unless ENV["PLAY_STORE_JSON_KEY"]
+
+    build_app_for_android(variant: "aab")
+    upload_to_play_store(
+      package_name: "com.example.sonic_cloud",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      track: "production",
+      json_key: ENV["PLAY_STORE_JSON_KEY"],
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true
+    )
+  end
+
+  desc "Bump version code & name"
+  lane :bump_version do |options|
+    version_name = options[:name] || UI.input("New version name (e.g. 1.2.0): ")
+    Dir.chdir("..") do
+      sh("flutter", "build", "apk", "--build-name=#{version_name}", "--build-number=#{Time.now.to_i}")
+    end
+  end
+
+  # ── Private helpers ────────────────────────────────────────────────────────
+  def build_app_for_android(variant:)
+    UI.user_error!("ANDROID_KEYSTORE_PATH not set") unless ENV["ANDROID_KEYSTORE_PATH"]
+
+    # Write key.properties (Flutter reads this during the Gradle build).
+    File.write("../android/key.properties", <<~PROPS)
+      storePassword=#{ENV["ANDROID_KEYSTORE_PASSWORD"]}
+      storeFile=#{ENV["ANDROID_KEYSTORE_PATH"]}
+      keyAlias=#{ENV["ANDROID_KEY_ALIAS"]}
+      keyPassword=#{ENV["ANDROID_KEY_PASSWORD"]}
+    PROPS
+
+    Dir.chdir("..") do
+      case variant
+      when :apk then sh("flutter", "build", "apk", "--release")
+      when :aab then sh("flutter", "build", "appbundle", "--release")
+      end
+    end
+  end
+end

@@ -48,3 +48,30 @@ coverage/
 # Exceptions (keep these tracked)
 !**/generated_plugin_registrant.cc
 !**/generated_plugin_registrant.h
+
+# ── Deployment / secrets ────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# Firebase
+.firebase/
+
+# Fastlane signing
+*.keystore
+*.jks
+android/key.properties
+fastlane/Preview.html
+fastlane/report.xml
+fastlane/README.md
+fastlane/swift/
+vendor/bundle/
+
+# Codemagic
+codemagic.sh
+
+# Vercel
+.vercel/
+
+# Netlify
+.netlify/

@@ -1,0 +1,82 @@
+# frozen_string_literal: true
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Sonic Cloud — iOS Fastlane config.
+#
+# Lanes:
+#   bundle exec fastlane ios test           ← run unit tests
+#   bundle exec fastlane ios beta           ← build + upload to TestFlight
+#   bundle exec fastlane ios appstore       ← build + upload to App Store
+#
+# Required environment variables:
+#   APPLE_ID                 — Apple Developer account email
+#   TEAM_ID                  — Apple Developer Team ID
+#   APP_IDENTIFIER           — iOS bundle id (default: com.example.sonicCloud)
+#   MATCH_PASSWORD           — password for fastlane match repo
+#   MATCH_GIT_URL            — git repo storing signing certs
+#   FIREBASE_APP_ID_IOS      — Firebase App ID (optional, for Firebase distro)
+# ─────────────────────────────────────────────────────────────────────────────
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Run unit tests"
+  lane :test do
+    Dir.chdir("..") do
+      sh("flutter", "test")
+    end
+  end
+
+  desc "Build IPA and upload to TestFlight"
+  lane :beta do
+    setup_ci if ENV["CI"]
+
+    match(
+      type: "appstore",
+      readonly: ENV["CI"] ? true : false,
+      git_url: ENV.fetch("MATCH_GIT_URL"),
+      app_identifier: ENV.fetch("APP_IDENTIFIER", "com.example.sonicCloud"),
+      username: ENV.fetch("APPLE_ID")
+    )
+
+    build_ios_app(
+      workspace: "Runner.xcworkspace",
+      scheme: "Runner",
+      export_method: "app-store",
+      silent: true,
+      clean: true
+    )
+
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true,
+      apple_id: ENV.fetch("APPLE_ID")
+    )
+  end
+
+  desc "Build IPA and upload to App Store Connect"
+  lane :appstore do
+    setup_ci if ENV["CI"]
+
+    match(
+      type: "appstore",
+      readonly: ENV["CI"] ? true : false,
+      git_url: ENV.fetch("MATCH_GIT_URL"),
+      app_identifier: ENV.fetch("APP_IDENTIFIER", "com.example.sonicCloud"),
+      username: ENV.fetch("APPLE_ID")
+    )
+
+    build_ios_app(
+      workspace: "Runner.xcworkspace",
+      scheme: "Runner",
+      export_method: "app-store",
+      silent: true,
+      clean: true
+    )
+
+    upload_to_app_store(
+      skip_screenshots: true,
+      skip_metadata: true,
+      apple_id: ENV.fetch("APPLE_ID")
+    )
+  end
+end

@@ -97,3 +97,48 @@ Stage Summary:
 - Audio playback works fully offline via bundled sample WAV
 - README now has badges, 4 embedded screenshots, full instructions, and a fidelity table
 - All pushed to https://github.com/Exon101/sonic-cloud-flutter
+
+---
+Task ID: 4
+Agent: main
+Task: Create all deployment and build-related files (CI/CD, Docker, Fastlane, Vercel/Netlify/Firebase, Codemagic, helper scripts) and push to GitHub.
+
+Work Log:
+- Created .github/workflows/ci.yml: lint + analyze + test + build web + build debug APK on every push/PR; uploads coverage to Codecov
+- Created .github/workflows/release.yml: tag-triggered release that builds all 6 platforms (Android APK+AAB, iOS .app, macOS .app, Windows .zip, Linux .tar.gz, web .tar.gz) and creates a GitHub Release with all artifacts via softprops/action-gh-release
+- Created .github/dependabot.yml: weekly updates for pub, github-actions, docker, bundler ecosystems
+- Created .github/ISSUE_TEMPLATE/{bug_report,feature_request}.md and .github/pull_request_template.md
+- Web deployment (4 options):
+  - vercel.json with SPA rewrites + cache headers + security headers, scripts/vercel_build.sh installs Flutter SDK and builds web bundle
+  - netlify.toml with immutable asset caching + SPA fallback + HSTS, scripts/netlify_build.sh parallel to Vercel
+  - firebase.json with hosting config (rewrites, headers, cleanUrls), .firebaserc pointing at sonic-cloud-app project, .firebaseignore
+  - Dockerfile (two-stage: debian:bookworm-slim builder + nginx:alpine runtime, ~25MB final image), docker/nginx.conf (gzip + SPA fallback + cache headers + security headers + healthcheck), docker-compose.yml (port 8080, resource limits, optional Caddy reverse proxy), .dockerignore
+- Mobile deployment via Fastlane:
+  - fastlane/Appfile (package name + iOS app identifier), fastlane/Pluginfile (firebase_app_distribution, versioning_android), Gemfile pinning fastlane 2.220
+  - fastlane/Fastfile.android: lanes for test, beta (Firebase), playstore (production AAB), bump_version
+  - fastlane/Fastfile.ios: lanes for test, beta (TestFlight via match), appstore (App Store via match)
+  - fastlane/Metadata/{android,ios}/en-US: store listing files (title, short/full description, keywords, release notes, changelog)
+- Cloud CI/CD: codemagic.yaml with three workflows (android-workflow with Firebase + Play Store publishing, ios-workflow with TestFlight publishing, web-workflow with Firebase Hosting deploy)
+- Helper scripts (all executable):
+  - scripts/build.sh: universal build for web/apk/apk-release/aab/ios/macos/windows/linux/all
+  - scripts/deploy_web.sh: deploy to docker/vercel/netlify/firebase/preview targets
+  - scripts/deploy_android.sh: install/firebase/playstore targets
+  - scripts/deploy_ios.sh: install/firebase/testflight/appstore targets
+- Documentation:
+  - DEPLOYMENT.md (~10KB) covering every deployment option with code snippets, env var tables, and per-platform details
+  - README.md: added Deployment section with quick-reference tables for web/mobile/desktop/CI/CD linking to DEPLOYMENT.md
+  - .env.example: template for all required env vars (Android signing, Apple, Firebase, Play Store, Codemagic, Codecov)
+- Updated .gitignore to ignore .env, signing keys, fastlane reports, .vercel/, .netlify/, .firebase/
+- Staged 38 new files + 2 modified (README + .gitignore), committed with detailed message, pushed to GitHub as commit d93316b
+
+Stage Summary:
+- Three commits on main now: initial (a48ce6a) + features (6f487b2) + deployment (d93316b)
+- 38 new deployment/build files added across 5 categories:
+  - CI/CD: 2 GitHub Actions workflows, dependabot, issue/PR templates (7 files)
+  - Web deploy: Vercel, Netlify, Firebase, Docker configs (10 files including nginx.conf + docker-compose + .dockerignore + .firebaseignore)
+  - Mobile deploy: Fastlane config + metadata (10 files)
+  - Cloud CI/CD: Codemagic (1 file)
+  - Helper scripts: 6 executable shell scripts
+  - Docs: DEPLOYMENT.md, .env.example, updated README (3 files)
+- User can now: tag a release to trigger multi-platform builds, deploy web to any of 4 hosts with a single command, deploy mobile via Fastlane to Firebase/Play Store/TestFlight/App Store
+- All pushed to https://github.com/Exon101/sonic-cloud-flutter (commit d93316b)
