@@ -11,6 +11,10 @@ import '../models/models.dart';
 import '../services/playback_service.dart';
 import '../services/universal_library_service.dart';
 
+// shelf's `serve` is exported by `package:shelf_io` — re-exported here for
+// convenience.
+import 'package:shelf_io/shelf_io.dart' as shelf_io show serve;
+
 /// LocalApiService — exposes a REST + WebSocket API on the local network for
 /// power users and companion apps.
 ///
@@ -46,10 +50,10 @@ class LocalApiService {
   Future<void> start({int port = 8765}) async {
     if (_server != null) return;
     final handler = const Pipeline()
-        .addMiddleware(logRequests(logger: (msg) => print('[API] $msg')))
+        .addMiddleware(logRequests(logger: (msg, isError) => print('[API${isError ? ' ERROR' : ''}] $msg')))
         .addMiddleware(_corsMiddleware())
         .addHandler(_router.call);
-    _server = await serve(handler, '0.0.0.0', port);
+    _server = await shelf_io.serve(handler, '0.0.0.0', port);
     print('LocalApiService: listening on http://0.0.0.0:$port');
   }
 
@@ -148,7 +152,7 @@ class LocalApiService {
     // WebSocket endpoint
     r.get(
       '/live',
-      webSocketHandler((WebSocketChannel ws) {
+      webSocketHandler((WebSocketChannel ws, String? protocol) {
         _webSockets.add(ws);
         ws.sink.add(jsonEncode({'type': 'state', 'data': _status()}));
         ws.stream.listen(

@@ -1,4 +1,4 @@
-import 'models.dart';
+import '../models/models.dart';
 
 /// In-memory mock data so the UI is fully populated without a backend.
 ///
