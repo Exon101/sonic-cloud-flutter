@@ -58,7 +58,9 @@ class EqualizerService extends ChangeNotifier {
   /// Initialize. Safe to call even when no AudioPlayer is wired — currently
   /// a no-op since native EQ integration is deferred.
   Future<void> init() async {
-    debugPrint('EqualizerService: running in Dart-only mode (native EQ deferred).');
+    debugPrint(
+      'EqualizerService: running in Dart-only mode (native EQ deferred).',
+    );
   }
 
   // ── Band control ───────────────────────────────────────────────────────────

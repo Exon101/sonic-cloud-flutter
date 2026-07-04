@@ -204,13 +204,29 @@ class PlaybackService extends ChangeNotifier {
 
   // ── Shuffle / repeat ───────────────────────────────────────────────────────
 
+  /// Smart shuffle: when enabled, preserves the original queue order and
+  /// shuffles a *copy* of indices so the user can return to the original
+  /// order by disabling shuffle. This is the behavior users expect from
+  /// premium music players (Spotify, Apple Music).
   Future<void> setShuffle(bool enabled) async {
     _shuffleEnabled = enabled;
-    await _player.setShuffleModeEnabled(enabled);
+    if (enabled) {
+      // Build a shuffled order that preserves the original queue indices.
+      _shuffledOrder = List.of(_queue)..shuffle();
+      // Tell just_audio to use its shuffle order too, so next/prev respect it.
+      await _player.setShuffleModeEnabled(true);
+    } else {
+      _shuffledOrder = [];
+      await _player.setShuffleModeEnabled(false);
+    }
     notifyListeners();
   }
 
   Future<void> toggleShuffle() => setShuffle(!_shuffleEnabled);
+
+  /// Returns the queue in the current playback order (shuffled or original).
+  List<Track> get effectiveQueue =>
+      _shuffleEnabled && _shuffledOrder.isNotEmpty ? _shuffledOrder : _queue;
 
   Future<void> setRepeatMode(RepeatMode mode) async {
     _repeatMode = mode;

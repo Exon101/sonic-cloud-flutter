@@ -368,3 +368,44 @@ of the new feature list. Updated counts:
 - `test/gesture_controls_test.dart` — tap/long-press/swipe gesture detection, hint bubbles
 
 Plus the v2 tests still pass: lyrics parser, playlist rules, search, library, playback.
+
+---
+
+## v3.1 Update — Scaffolded → Implemented
+
+The following scaffolds have been promoted to full implementations:
+
+### Cloud Integration
+
+| Feature | Was | Now | Notes |
+|---|---|---|---|
+| WebDAV provider | 🟡 Stub | ✅ Implemented | `RealWebDavProvider` now uses `webdav_client` 1.2.x API (`newClient`, `readDir`, `read2File`, `writeFromFile`, `remove`). Connects via basic auth, lists audio recursively, streams via embedded-credential URL, downloads, uploads, deletes. |
+| Smart shuffle | 🟡 Stub | ✅ Implemented | `PlaybackService.setShuffle` now preserves original queue order via `_shuffledOrder` copy. `effectiveQueue` getter returns shuffled or original. Toggle restores original order. |
+
+### Lyrics
+
+| Feature | Was | Now | Notes |
+|---|---|---|---|
+| Local LRC files | 🟡 Stub | ✅ Implemented | `LyricsService.getLyrics` now reads sidecar `.lrc` files via `dart:io File`. `saveSidecarLrc` writes lyrics back to disk in LRC format with `[ti:]`, `[ar:]` metadata + `[mm:ss.xx]` timestamps. |
+
+### Metadata
+
+| Feature | Was | Now | Notes |
+|---|---|---|---|
+| Edit artist/album/genre/year/lyrics | 🟡 Interface | ✅ Service | `MetadataService` with `readMetadata`, `writeMetadata`, `batchEdit`. `TrackMetadata` data class with `copyWith` merge. `LibraryService._parseAudioFile` now calls `MetadataService.readMetadata` first, falls back to filename parsing. |
+
+### CI/CD Fixes
+
+| Issue | Fix |
+|---|---|
+| Auto-merge workflow failed: `not a git repository` | Added missing `actions/checkout@v4` step before `gh pr comment` |
+| Dependabot PR #8 (9 GitHub Actions major bumps) | Open for manual review per the major-bump policy |
+
+### New Tests
+
+- `test/metadata_service_test.dart` — TrackMetadata.copyWith merge logic, fromTrack extraction, empty-string-to-null conversion, batchEdit results
+- `test/lyrics_sidecar_test.dart` — LRC parsing edge cases (empty lines, special chars, ms precision, multi-timestamp), saveSidecarLrc null-path guard
+- `test/playback_smart_shuffle_test.dart` — smart shuffle enable/disable/toggle, effectiveQueue, queue management (clearQueue, addToQueue, playNext), speed/volume clamping
+- `test/real_webdav_provider_test.dart` — WebDAV provider connect/disconnect/list/stream/pullChanges/upload when disconnected
+
+**New totals:** 80 implemented (+7), 37 scaffolded (-7), 60 planned (unchanged)

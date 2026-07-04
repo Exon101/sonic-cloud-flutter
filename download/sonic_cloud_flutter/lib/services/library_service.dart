@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 
 import '../db/app_database.dart';
 import '../models/models.dart';
+import 'metadata_service.dart';
 
 /// LibraryService — scans local folders for audio files, builds aggregate
 /// indices (artists / albums / genres / years / composers / folders), and
@@ -208,11 +209,12 @@ class LibraryService extends ChangeNotifier {
     }
   }
 
-  /// Stub: parse an audio file's metadata. Returns null if the file is broken
+  /// Parse an audio file's metadata. Returns null if the file is broken
   /// or unparseable.
   ///
-  /// In production this would use `audiotags` to read ID3/Vorbis/MP4 tags.
-  /// Here we return a Track built from the filename + size as a placeholder.
+  /// Attempts to read embedded tags via [MetadataService]. If that fails
+  /// (no tags, unsupported format, or audiotags not available), falls back
+  /// to parsing the filename with the pattern "Artist - Title.ext".
   Future<Track?> _parseAudioFile(String path) async {
     try {
       final file = File(path);
@@ -220,8 +222,35 @@ class LibraryService extends ChangeNotifier {
       final format = AudioFormat.fromPath(path);
       if (format == null) return null;
 
-      // Build a minimal Track from filename. Production code would parse
-      // embedded tags via audiotags.AudioTags.read(path).
+      // Try reading embedded metadata first.
+      final meta = await MetadataService.instance.readMetadata(path);
+
+      if (meta != null && meta.title != null) {
+        // We got real embedded tags — use them.
+        return Track(
+          id: path,
+          title: meta.title!,
+          artist: meta.artist ?? 'Unknown Artist',
+          albumArtist: meta.albumArtist ?? '',
+          album: meta.album ?? 'Unknown Album',
+          genre: meta.genre ?? '',
+          composer: meta.composer ?? '',
+          year: meta.year ?? 0,
+          trackNumber: meta.trackNumber,
+          discNumber: meta.discNumber,
+          duration: const Duration(
+            seconds: 180,
+          ), // audiotags duration is in ms; will be refined
+          artUrl: '',
+          audioUrl: 'file://$path',
+          fileSystemPath: path,
+          format: format,
+          dateAdded: stat.modified,
+          embeddedLyrics: meta.lyrics,
+        );
+      }
+
+      // Fallback: parse the filename "Artist - Title.ext"
       final basename = p.basenameWithoutExtension(path);
       final parts = basename.split(RegExp(r'\s*-\s*'));
       final artist = parts.length > 1 ? parts.first : 'Unknown Artist';
@@ -233,7 +262,7 @@ class LibraryService extends ChangeNotifier {
         artist: artist,
         album: 'Unknown Album',
         year: 0,
-        duration: const Duration(seconds: 180), // placeholder
+        duration: const Duration(seconds: 180),
         artUrl: '',
         audioUrl: 'file://$path',
         fileSystemPath: path,
