@@ -1,0 +1,16 @@
+{
+  "source" : {
+    "include" : [
+      "../.."
+    ]
+  },
+  "target" : {
+    "containerPath" : "container:Runner.xcodeproj",
+    "developerServicesType" : "none",
+    "developerTeamID" : "",
+    "productDestination" : "macOS",
+    "productName" : "Sonic Cloud",
+    "projectName" : "Runner.xcodeproj",
+    "schemeName" : "Runner"
+  }
+}

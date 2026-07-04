@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="Sonic Cloud - A premium glassmorphic music player.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Sonic Cloud">
+  <meta name="theme-color" content="#131318">
+
+  <link rel="manifest" href="manifest.json">
+
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>Sonic Cloud</title>
+  <style>
+    body { background-color: #131318; }
+    .loading-container {
+      position: fixed; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(to bottom, #12122B, #0A0A0F);
+      color: #c5c3e5;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .loading-text {
+      font-size: 18px; letter-spacing: 0.2em; text-transform: uppercase;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="loading-container">
+    <div class="loading-text">Sonic Cloud</div>
+  </div>
+  <script>
+    var serviceWorkerVersion = null;
+    var scriptLoaded = false;
+    function loadMainDartJs() {
+      if (scriptLoaded) { return; }
+      scriptLoaded = true;
+      var scriptTag = document.createElement('script');
+      scriptTag.src = 'main.dart.js';
+      scriptTag.type = 'application/javascript';
+      document.body.append(scriptTag);
+    }
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('flutter_service_worker.js?v=' + serviceWorkerVersion);
+        wait for registration to finish before proceeding
+        navigator.serviceWorker.getRegistration().then(function() {});
+        loadMainDartJs();
+      });
+    } else {
+      loadMainDartJs();
+    }
+  </script>
+</body>
+</html>
