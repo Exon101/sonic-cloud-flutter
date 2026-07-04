@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:shelf/shelf.dart';
+import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_router/shelf_router.dart';
 import 'package:shelf_web_socket/shelf_web_socket.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -10,10 +11,6 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import '../models/models.dart';
 import '../services/playback_service.dart';
 import '../services/universal_library_service.dart';
-
-// shelf's `serve` is exported by `package:shelf_io` — re-exported here for
-// convenience.
-import 'package:shelf_io/shelf_io.dart' as shelf_io show serve;
 
 /// LocalApiService — exposes a REST + WebSocket API on the local network for
 /// power users and companion apps.

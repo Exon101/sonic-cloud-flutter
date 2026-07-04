@@ -36,7 +36,6 @@ dependencies:
   http: ^1.2.0
   webdav_client: ^1.2.2
   shelf: ^1.4.1
-  shelf_io: ^1.1.0
   shelf_router: ^1.1.4
   shelf_web_socket: ^3.0.0
 
