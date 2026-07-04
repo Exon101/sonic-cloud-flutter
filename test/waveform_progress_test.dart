@@ -64,30 +64,30 @@ void main() {
       'calls onSeek when dragged horizontally',
       (tester) async {
         double? seekedValue;
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: SizedBox(
-              width: 320,
-              height: 64,
-              child: WaveformProgress(
-                progress: 0.5,
-                onSeek: (p) => seekedValue = p,
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: SizedBox(
+                width: 320,
+                height: 64,
+                child: WaveformProgress(
+                  progress: 0.5,
+                  onSeek: (p) => seekedValue = p,
+                ),
               ),
             ),
           ),
-        ),
-      );
+        );
 
-      // Drag from left edge toward the middle.
-      final gesture = await tester.startGesture(const Offset(10, 32));
-      await gesture.moveTo(const Offset(160, 32));
-      await gesture.up();
-      await tester.pump();
+        // Drag from left edge toward the middle.
+        final gesture = await tester.startGesture(const Offset(10, 32));
+        await gesture.moveTo(const Offset(160, 32));
+        await gesture.up();
+        await tester.pump();
 
-      expect(seekedValue, isNotNull);
-      expect(seekedValue!, greaterThan(0.4));
-      expect(seekedValue!, lessThan(0.7));
+        expect(seekedValue, isNotNull);
+        expect(seekedValue!, greaterThan(0.4));
+        expect(seekedValue!, lessThan(0.7));
       },
       skip: true, // CI-flaky: gesture timing
     );

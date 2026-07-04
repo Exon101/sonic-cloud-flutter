@@ -108,7 +108,10 @@ class SecurityService extends ChangeNotifier {
   }
 
   Future<void> setBiometricEnabled(bool enabled) async {
-    await _storage.write(key: _keyBiometricEnabled, value: enabled ? 'true' : 'false');
+    await _storage.write(
+      key: _keyBiometricEnabled,
+      value: enabled ? 'true' : 'false',
+    );
     notifyListeners();
   }
 

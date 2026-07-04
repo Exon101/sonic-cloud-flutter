@@ -47,7 +47,12 @@ class LocalApiService {
   Future<void> start({int port = 8765}) async {
     if (_server != null) return;
     final handler = const Pipeline()
-        .addMiddleware(logRequests(logger: (msg, isError) => print('[API${isError ? ' ERROR' : ''}] $msg')))
+        .addMiddleware(
+          logRequests(
+            logger: (msg, isError) =>
+                print('[API${isError ? ' ERROR' : ''}] $msg'),
+          ),
+        )
         .addMiddleware(_corsMiddleware())
         .addHandler(_router.call);
     _server = await shelf_io.serve(handler, '0.0.0.0', port);

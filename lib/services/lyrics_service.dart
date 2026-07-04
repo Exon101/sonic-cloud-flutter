@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 
 import '../models/models.dart';
@@ -28,14 +30,20 @@ class LyricsService extends ChangeNotifier {
       if (!parsed.isEmpty) return parsed;
     }
 
-    // 2. Sidecar .lrc file (only meaningful if we know the on-disk path)
+    // 2. Sidecar .lrc file next to the audio file
     if (track.fileSystemPath != null) {
       try {
-        // Read sidecar via the platform file system. Stubbed here; production
-        // code would use dart:io File('$path.lrc').
-        // final lrcString = await File('${track.fileSystemPath}.lrc').readAsString();
-        // return parseLrc(lrcString);
-      } catch (_) {}
+        final lrcFile = File('${track.fileSystemPath}.lrc');
+        if (await lrcFile.exists()) {
+          final lrcString = await lrcFile.readAsString();
+          final parsed = parseLrc(lrcString);
+          if (!parsed.isEmpty) return parsed;
+        }
+      } catch (e) {
+        debugPrint(
+          'LyricsService: sidecar .lrc read failed for ${track.fileSystemPath}: $e',
+        );
+      }
     }
 
     // 3. Cloud providers (in registration order)
@@ -139,6 +147,36 @@ class LyricsService extends ChangeNotifier {
       }
     }
     return active;
+  }
+
+  /// Save lyrics as a sidecar .lrc file next to [track.fileSystemPath].
+  /// Returns true on success.
+  Future<bool> saveSidecarLrc(Track track, Lyrics lyrics) async {
+    if (track.fileSystemPath == null) return false;
+    try {
+      final lrcFile = File('${track.fileSystemPath}.lrc');
+      final buffer = StringBuffer();
+      if (lyrics.title != null) buffer.writeln('[ti:${lyrics.title}]');
+      if (lyrics.author != null) buffer.writeln('[ar:${lyrics.author}]');
+      for (final line in lyrics.lines) {
+        if (line.timestamp != null) {
+          final m = line.timestamp!.inMinutes;
+          final s = line.timestamp!.inSeconds % 60;
+          final ms = line.timestamp!.inMilliseconds % 1000;
+          final msStr = ms.toString().padLeft(3, '0').substring(0, 2);
+          buffer.writeln(
+            '[${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}.$msStr]${line.text}',
+          );
+        } else {
+          buffer.writeln(line.text);
+        }
+      }
+      await lrcFile.writeAsString(buffer.toString());
+      return true;
+    } catch (e) {
+      debugPrint('LyricsService: saveSidecarLrc failed: $e');
+      return false;
+    }
   }
 }
 
