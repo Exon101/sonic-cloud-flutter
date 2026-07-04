@@ -27,20 +27,6 @@ const _localTracks = [
   ),
 ];
 
-const _cloudTracks = [
-  Track(
-    id: 'cloud1',
-    title: 'Cloud A',
-    artist: 'Z',
-    album: 'C1',
-    year: 2024,
-    duration: Duration.zero,
-    artUrl: '',
-    audioUrl: 'https://cloud/a.mp3',
-    isCloudOnly: true,
-  ),
-];
-
 void main() {
   group('UniversalLibraryService', () {
     late LibraryService local;

@@ -39,10 +39,6 @@ class GlassCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(borderRadius),
-    );
-
     return Container(
       margin: margin,
       child: ClipRRect(

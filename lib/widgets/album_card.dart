@@ -52,7 +52,7 @@ class AlbumCard extends StatelessWidget {
                     fit: StackFit.expand,
                     children: [
                       Image.network(
-                        album.artUrl,
+                        album.artUrl ?? '',
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Container(
                           color: AppColors.surfaceContainerHigh,

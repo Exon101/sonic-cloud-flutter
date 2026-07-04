@@ -1,6 +1,7 @@
+import 'package:flutter/material.dart' show Color;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sonic_cloud/accessibility/accessibility_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sonic_cloud/accessibility/accessibility_service.dart';
 
 void main() {
   setUp(() {
@@ -64,7 +65,7 @@ void main() {
     test('adjustColor returns same color for "none" mode', () async {
       final prefs = await SharedPreferences.getInstance();
       final svc = AccessibilityService(prefs);
-      const c = Color.fromARGB(255, 100, 150, 200);
+      final c = const Color.fromARGB(255, 100, 150, 200);
       expect(svc.adjustColor(c), c);
     });
 
@@ -72,7 +73,7 @@ void main() {
       final prefs = await SharedPreferences.getInstance();
       final svc = AccessibilityService(prefs);
       await svc.setColorblindMode('deuteranopia');
-      const c = Color.fromARGB(255, 100, 150, 200);
+      final c = const Color.fromARGB(255, 100, 150, 200);
       final adjusted = svc.adjustColor(c);
       // Blue channel should be boosted (240 vs 200)
       expect(adjusted.blue, greaterThan(c.blue));

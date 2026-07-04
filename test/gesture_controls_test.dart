@@ -1,7 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sonic_cloud/gestures/gesture_controls.dart';
-import 'package:sonic_cloud/theme/app_colors.dart';
-import 'package:flutter/material.dart';
 
 void main() {
   group('GestureControls', () {
