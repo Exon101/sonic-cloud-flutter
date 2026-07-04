@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../gestures/gesture_controls.dart';
 import '../models/models.dart';
 import '../services/playback_service.dart';
 import '../theme/app_colors.dart';
@@ -72,44 +73,49 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: AnimatedBuilder(
-          animation: widget.playback,
-          builder: (context, _) {
-            final pos = widget.playback.position;
-            final dur = widget.playback.duration > Duration.zero
-                ? widget.playback.duration
-                : widget.track.duration;
-            final remaining = dur - pos;
-            final progress = widget.playback.duration > Duration.zero
-                ? widget.playback.progress
-                : 0.35; // fallback mock position before audio loads
+        child: GestureControls(
+          onTogglePlay: () => widget.playback.togglePlayPause(),
+          onNext: () => widget.playback.skipToNext(),
+          onPrevious: () => widget.playback.skipToPrevious(),
+          child: AnimatedBuilder(
+            animation: widget.playback,
+            builder: (context, _) {
+              final pos = widget.playback.position;
+              final dur = widget.playback.duration > Duration.zero
+                  ? widget.playback.duration
+                  : widget.track.duration;
+              final remaining = dur - pos;
+              final progress = widget.playback.duration > Duration.zero
+                  ? widget.playback.progress
+                  : 0.35; // fallback mock position before audio loads
 
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.edgeMargin),
-              child: Column(
-                children: [
-                  _TopBar(onClose: widget.onClose),
-                  const Spacer(),
-                  _VinylArt(artUrl: widget.track.artUrl),
-                  const SizedBox(height: AppSpacing.md),
-                  _TrackInfo(track: widget.track),
-                  const Spacer(),
-                  _WaveformSection(
-                    progress: progress,
-                    position: _fmt(pos),
-                    remaining: _fmt(remaining),
-                    onSeek: (p) => widget.playback.seekToProgress(p),
-                  ),
-                  const SizedBox(height: AppSpacing.xs),
-                  _Controls(
-                    isPlaying: widget.playback.isPlaying,
-                    onPlayPause: () => widget.playback.togglePlayPause(),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                ],
-              ),
-            );
-          },
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.edgeMargin),
+                child: Column(
+                  children: [
+                    _TopBar(onClose: widget.onClose),
+                    const Spacer(),
+                    _VinylArt(artUrl: widget.track.artUrl),
+                    const SizedBox(height: AppSpacing.md),
+                    _TrackInfo(track: widget.track),
+                    const Spacer(),
+                    _WaveformSection(
+                      progress: progress,
+                      position: _fmt(pos),
+                      remaining: _fmt(remaining),
+                      onSeek: (p) => widget.playback.seekToProgress(p),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    _Controls(
+                      isPlaying: widget.playback.isPlaying,
+                      onPlayPause: () => widget.playback.togglePlayPause(),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                  ],
+                ),
+              );
+            },
+          ),
         ),
       ),
     );

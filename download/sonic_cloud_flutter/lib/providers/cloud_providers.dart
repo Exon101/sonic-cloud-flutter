@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../models/models.dart';
+import 'real_webdav_provider.dart';
 
 /// CloudProvider — abstract base for all cloud storage providers.
 ///
@@ -264,7 +265,8 @@ CloudProvider makeProvider(CloudProviderConfig config) {
     CloudProviderKind.dropbox => DropboxProvider(config),
     CloudProviderKind.oneDrive => OneDriveProvider(config),
     CloudProviderKind.nextcloud => NextcloudProvider(config),
-    CloudProviderKind.webdav => WebDavProvider(config),
+    // WebDAV is the only provider with a real implementation so far.
+    CloudProviderKind.webdav => RealWebDavProvider(config),
     CloudProviderKind.smb => SmbProvider(config),
     CloudProviderKind.ftp => FtpProvider(config),
     CloudProviderKind.sftp => SftpProvider(config),

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 
+import '../db/app_database.dart';
 import '../models/models.dart';
 
 /// LibraryService — scans local folders for audio files, builds aggregate
@@ -18,6 +19,12 @@ import '../models/models.dart';
 ///   - Indices are computed once and rebuilt on incremental add.
 ///   - Background scanning + lazy loading are supported via [scanInBackground].
 class LibraryService extends ChangeNotifier {
+  LibraryService({AppDatabase? database}) : _database = database;
+
+  /// Optional Drift database for persistence. When set, [loadFromDatabase] and
+  /// [saveToDatabase] move the in-memory library to/from SQLite.
+  final AppDatabase? _database;
+
   final Map<String, Track> _tracksById = {};
   final Map<String, Artist> _artists = {};
   final Map<String, Album> _albums = {};
@@ -33,6 +40,82 @@ class LibraryService extends ChangeNotifier {
   bool _isScanning = false;
   int _scanProgress = 0;
   int _scanTotal = 0;
+
+  /// Load all tracks from the Drift database into memory and rebuild indices.
+  /// Call once at app startup.
+  Future<void> loadFromDatabase() async {
+    if (_database == null) return;
+    final rows = await _database!.allTracks();
+    _tracksById.clear();
+    for (final r in rows) {
+      _tracksById[r.id] = Track(
+        id: r.id,
+        title: r.title,
+        artist: r.artist,
+        albumArtist: r.albumArtist,
+        album: r.album,
+        genre: r.genre,
+        composer: r.composer,
+        year: r.year,
+        trackNumber: r.trackNumber,
+        discNumber: r.discNumber,
+        duration: Duration(milliseconds: r.durationMs),
+        artUrl: r.artUrl,
+        audioUrl: r.audioUrl,
+        fileSystemPath: r.fileSystemPath,
+        format: r.format != null ? AudioFormat.values.firstWhere(
+          (f) => f.name == r.format,
+          orElse: () => AudioFormat.mp3,
+        ) : null,
+        isCloudOnly: r.isCloudOnly,
+        isFavorite: r.isFavorite,
+        rating: r.rating,
+        playCount: r.playCount,
+        lastPlayedAt: r.lastPlayedAt,
+        dateAdded: r.dateAdded,
+        replayGainTrackGain: r.replayGainTrackGain,
+        replayGainAlbumGain: r.replayGainAlbumGain,
+        embeddedLyrics: r.embeddedLyrics,
+      );
+    }
+    _rebuildIndices();
+    notifyListeners();
+  }
+
+  /// Save all in-memory tracks to the Drift database. Call on app pause or
+  /// after a scan completes.
+  Future<void> saveToDatabase() async {
+    if (_database == null) return;
+    final companions = _tracksById.values.map((t) => TracksCompanion.insert(
+          id: t.id,
+          title: t.title,
+          artist: t.artist,
+          albumArtist: Value(t.albumArtist),
+          album: t.album,
+          genre: Value(t.genre),
+          composer: Value(t.composer),
+          year: Value(t.year),
+          trackNumber: Value(t.trackNumber),
+          discNumber: Value(t.discNumber),
+          durationMs: t.duration.inMilliseconds,
+          artUrl: Value(t.artUrl),
+          audioUrl: t.audioUrl,
+          fileSystemPath: Value(t.fileSystemPath),
+          format: Value(t.format?.name),
+          isCloudOnly: Value(t.isCloudOnly),
+          isFavorite: Value(t.isFavorite),
+          rating: Value(t.rating),
+          playCount: Value(t.playCount),
+          lastPlayedAt: Value(t.lastPlayedAt),
+          dateAdded: Value(t.dateAdded),
+          replayGainTrackGain: Value(t.replayGainTrackGain),
+          replayGainAlbumGain: Value(t.replayGainAlbumGain),
+          embeddedLyrics: Value(t.embeddedLyrics),
+          sourceId: Value('local'),
+        ));
+    await _database!.clearTracks();
+    await _database!.upsertTracks(companions.toList());
+  }
 
   // ── Getters ────────────────────────────────────────────────────────────────
   List<Track> get tracks => _tracksById.values.toList(growable: false);
@@ -256,6 +339,8 @@ class LibraryService extends ChangeNotifier {
       playCount: t.playCount + 1,
       lastPlayedAt: DateTime.now(),
     );
+    // Persist to play_history table if database is wired.
+    _database?.recordPlay(trackId);
     notifyListeners();
   }
 

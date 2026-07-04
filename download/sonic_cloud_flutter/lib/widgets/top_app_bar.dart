@@ -13,8 +13,9 @@ import '../theme/app_typography.dart';
 class SonicTopAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String avatarUrl;
   final VoidCallback? onSearchTap;
+  final List<Widget>? actions;
 
-  const SonicTopAppBar({super.key, required this.avatarUrl, this.onSearchTap});
+  const SonicTopAppBar({super.key, required this.avatarUrl, this.onSearchTap, this.actions});
 
   @override
   Size get preferredSize => const Size.fromHeight(64);
@@ -57,6 +58,7 @@ class SonicTopAppBar extends StatelessWidget implements PreferredSizeWidget {
                 ),
               ),
               const Spacer(),
+              ...(actions ?? []),
               IconButton(
                 onPressed: onSearchTap,
                 icon: const Icon(Icons.search_rounded, color: AppColors.primary),

@@ -311,3 +311,60 @@ here for visibility, no code yet.
 ~32% planned. The scaffolds let you drop in real implementations (OAuth
 clients, FTS5 index, MPRIS channel, audio_service MediaController, etc.)
 without touching the rest of the app.
+
+---
+
+## v3 Update — December 2024
+
+The v3 release implements the 5 concrete user requests + a substantial chunk
+of the new feature list. Updated counts:
+
+| Area | Implemented | Scaffolded | Planned |
+|---|---|---|---|
+| Previously | 58 | 42 | 48 |
+| **v3 added** | **+15** | **+2** | **+12** |
+| **Total v3** | **73** | **44** | **60** |
+
+### Newly implemented in v3
+
+| Feature | Where |
+|---|---|
+| 🔌 `audio_service` MediaController wired to PlaybackService | `lib/services/audio_handler.dart` |
+| 🌐 Real WebDAV provider (list/stream/download/upload/delete) | `lib/providers/real_webdav_provider.dart` |
+| 📊 LibraryBrowseScreen with 7 tabs (Sources/Artists/Albums/Genres/Years/Composers/Folders) | `lib/screens/library_browse/library_browse_screen.dart` |
+| 🎚️ EqualizerScreen wired into MyLibrary top app bar | `lib/screens/my_library_screen.dart` |
+| 💾 Drift SQLite persistence for library + play history | `lib/db/app_database.dart` + `LibraryService.loadFromDatabase/saveToDatabase` |
+| 🌍 Universal Library combining all sources into one searchable index | `lib/services/universal_library_service.dart` |
+| 🔊 Audio fingerprinting (sha256-based, content-addressable) | `lib/fingerprint/audio_fingerprinter.dart` |
+| 👆 Gesture controls (tap/dbl-tap/swipe/long-press) on Now Playing | `lib/gestures/gesture_controls.dart` |
+| 🔒 SecurityService (PIN + biometric + secure cloud credential storage + granular permissions) | `lib/security/security_service.dart` |
+| ♿ AccessibilityService (high-contrast + font scale + colorblind modes + reduced motion + large touch) | `lib/accessibility/accessibility_service.dart` |
+| 🌐 Local REST API + WebSocket (shelf-based) | `lib/api/local_api_service.dart` |
+| 📱 Lock-screen / notification / Bluetooth controls | via audio_service integration |
+
+### Newly scaffolded in v3
+
+- Companion app extension points (Wear OS / watchOS / Android TV / Apple TV / Fire TV / browser extension / remote control app) — documented as planned; each requires a separate codebase
+- Plugin SDK contract — exposed via the same JSON shapes the local REST API uses
+
+### Newly planned (documented for v4+)
+
+- Media servers: Jellyfin / Plex / Emby / personal cloud (need their respective API clients)
+- Synology NAS / QNAP NAS proprietary APIs
+- Box / MEGA / pCloud cloud providers
+- DLNA / UPnP streaming
+- Internet radio / podcasts / audiobooks (need station/feed management)
+- Custom keyboard shortcut editor (desktop)
+- CLI companion (separate Dart entrypoint)
+- iOS Shortcuts / Android Tasker automation hooks
+- Colorblind-friendly visualizations (Daltonizer shader post-processing)
+
+### v3 test coverage
+
+- `test/audio_fingerprinter_test.dart` — distance/similarity math, edge cases
+- `test/universal_library_test.dart` — source aggregation, enable/disable, trackById
+- `test/security_service_test.dart` — ProviderPermissions round-trip
+- `test/accessibility_service_test.dart` — font scale clamping, colorblind adjustment, large touch
+- `test/gesture_controls_test.dart` — tap/long-press/swipe gesture detection, hint bubbles
+
+Plus the v2 tests still pass: lyrics parser, playlist rules, search, library, playback.
