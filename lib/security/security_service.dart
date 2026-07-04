@@ -51,8 +51,8 @@ class SecurityService extends ChangeNotifier {
   Future<void> setPin(String pin) async {
     final salt = DateTime.now().microsecondsSinceEpoch.toString();
     final hash = _hashPin(pin, salt);
-    await _storage.write(key: _keyPinHash, hash);
-    await _storage.write(key: _keyPinSalt, salt);
+    await _storage.write(key: _keyPinHash, value: hash);
+    await _storage.write(key: _keyPinSalt, value: salt);
     _isLocked = false;
     notifyListeners();
   }
@@ -92,8 +92,8 @@ class SecurityService extends ChangeNotifier {
       final ok = await _auth.authenticate(
         localizedReason: reason,
         options: const AuthenticationOptions(
-          biometricLockOut: false,
           stickyAuth: true,
+          biometricOnly: false,
         ),
       );
       if (ok) {
@@ -108,7 +108,7 @@ class SecurityService extends ChangeNotifier {
   }
 
   Future<void> setBiometricEnabled(bool enabled) async {
-    await _storage.write(key: _keyBiometricEnabled, enabled ? 'true' : 'false');
+    await _storage.write(key: _keyBiometricEnabled, value: enabled ? 'true' : 'false');
     notifyListeners();
   }
 
@@ -120,7 +120,7 @@ class SecurityService extends ChangeNotifier {
     Map<String, dynamic> creds,
   ) async {
     final json = jsonEncode(creds);
-    await _storage.write(key: '$_keyCloudCredsPrefix$providerId', json);
+    await _storage.write(key: '$_keyCloudCredsPrefix$providerId', value: json);
   }
 
   Future<Map<String, dynamic>?> readCloudCredentials(String providerId) async {
@@ -149,7 +149,7 @@ class SecurityService extends ChangeNotifier {
   ) async {
     await _storage.write(
       key: '$_keyPermissionsPrefix$providerId',
-      jsonEncode(perms.toJson()),
+      value: jsonEncode(perms.toJson()),
     );
     notifyListeners();
   }

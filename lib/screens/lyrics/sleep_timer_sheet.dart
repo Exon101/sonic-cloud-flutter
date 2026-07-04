@@ -10,8 +10,6 @@ import '../../theme/app_typography.dart';
 /// Surfaces preset durations (5/15/30/45/60 minutes) and a custom picker,
 /// plus the end-action choice (pause / stop / fade out).
 class SleepTimerSheet extends StatelessWidget {
-  const SleepTimerSheet({super.key});
-
   static Future<void> show(
     BuildContext context, {
     required ValueChanged<Duration> onStart,

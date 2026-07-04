@@ -137,7 +137,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 // Profile card
 // ─────────────────────────────────────────────────────────────────────────────
 class _ProfileCard extends StatelessWidget {
-  final UserProfile user;
+  final UserAccount user;
   const _ProfileCard({required this.user});
 
   @override

@@ -47,12 +47,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   @override
   void initState() {
     super.initState();
-    // Load the audio source asynchronously. The widget rebuilds when the
-    // service notifies listeners (position/duration/isPlaying).
+    // Start playing the track. PlaybackService.playAll handles loading the
+    // audio source via ConcatenatingAudioSource.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      widget.playback.load(widget.track.audioUrl).then((_) {
-        if (mounted) widget.playback.play();
-      });
+      widget.playback.playAll([widget.track]);
     });
   }
 

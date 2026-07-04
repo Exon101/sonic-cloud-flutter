@@ -248,7 +248,7 @@ class _ConnectedDrives extends StatelessWidget {
 }
 
 class _DriveCard extends StatefulWidget {
-  final CloudDrive drive;
+  final CloudProviderConfig drive;
   const _DriveCard({required this.drive});
 
   @override
@@ -261,7 +261,7 @@ class _DriveCardState extends State<_DriveCard> {
 
   @override
   Widget build(BuildContext context) {
-    final isGoogleDrive = widget.drive.kind == CloudDriveKind.googleDrive;
+    final isGoogleDrive = widget.drive.kind == CloudProviderKind.googleDrive;
     final accent = isGoogleDrive
         ? AppColors.secondaryContainer
         : AppColors.onSurface;
