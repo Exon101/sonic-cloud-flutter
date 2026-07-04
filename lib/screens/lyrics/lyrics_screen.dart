@@ -72,8 +72,12 @@ class _LyricsScreenState extends State<LyricsScreen> {
       return Scaffold(
         appBar: AppBar(title: const Text('Lyrics')),
         body: Center(
-          child: Text('No lyrics found for this track.',
-              style: AppTypography.bodyLg.copyWith(color: AppColors.onSurfaceVariant)),
+          child: Text(
+            'No lyrics found for this track.',
+            style: AppTypography.bodyLg.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
+          ),
         ),
       );
     }
@@ -84,7 +88,9 @@ class _LyricsScreenState extends State<LyricsScreen> {
         actions: [
           IconButton(
             onPressed: () => setState(() => _karaokeMode = !_karaokeMode),
-            icon: Icon(_karaokeMode ? Icons.mic_rounded : Icons.mic_none_rounded),
+            icon: Icon(
+              _karaokeMode ? Icons.mic_rounded : Icons.mic_none_rounded,
+            ),
             tooltip: 'Karaoke mode',
           ),
         ],
@@ -124,7 +130,10 @@ class _LyricsScreenState extends State<LyricsScreen> {
   void _scrollToActive(int activeIdx) {
     if (activeIdx < 0 || !_scrollCtrl.hasClients) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final targetOffset = (activeIdx * 64.0) - (_scrollCtrl.position.viewportDimension / 2) + 32;
+      final targetOffset =
+          (activeIdx * 64.0) -
+          (_scrollCtrl.position.viewportDimension / 2) +
+          32;
       _scrollCtrl.animateTo(
         targetOffset.clamp(0.0, _scrollCtrl.position.maxScrollExtent),
         duration: const Duration(milliseconds: 300),
@@ -154,8 +163,8 @@ class _LyricLineTile extends StatelessWidget {
     final color = isActive
         ? AppColors.secondaryContainer
         : isPast
-            ? AppColors.onSurfaceVariant.withOpacity(0.4)
-            : AppColors.onSurface;
+        ? AppColors.onSurfaceVariant.withOpacity(0.4)
+        : AppColors.onSurface;
     final fontSize = isActive && karaokeMode ? 26.0 : 20.0;
     return InkWell(
       onTap: onTap,

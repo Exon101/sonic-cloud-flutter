@@ -19,7 +19,18 @@ class EqualizerService extends ChangeNotifier {
   AndroidEqualizer? _nativeEq;
 
   // 10-band EQ at standard ISO frequencies (Hz).
-  static const List<double> bandFrequencies = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000];
+  static const List<double> bandFrequencies = [
+    31,
+    62,
+    125,
+    250,
+    500,
+    1000,
+    2000,
+    4000,
+    8000,
+    16000,
+  ];
 
   final List<double> _gains = List.filled(10, 0.0); // -12..+12 dB
   bool _enabled = false;
@@ -48,22 +59,28 @@ class EqualizerService extends ChangeNotifier {
   /// Safe to call even when no AudioPlayer is wired — fails silently.
   Future<void> init() async {
     if (_player == null) {
-      debugPrint('EqualizerService: no AudioPlayer wired — running in Dart-only mode.');
+      debugPrint(
+        'EqualizerService: no AudioPlayer wired — running in Dart-only mode.',
+      );
       return;
     }
     try {
       final session = await AudioSession.instance;
-      await session.configure(const AudioSessionConfiguration(
-        androidAudioAttributes: AndroidAudioAttributes(
-          contentType: AndroidAudioContentType.music,
-          usage: AndroidAudioUsage.media,
+      await session.configure(
+        const AudioSessionConfiguration(
+          androidAudioAttributes: AndroidAudioAttributes(
+            contentType: AndroidAudioContentType.music,
+            usage: AndroidAudioUsage.media,
+          ),
+          androidAudioEffectType: AndroidAudioEffectType.equalizer,
         ),
-        androidAudioEffectType: AndroidAudioEffectType.equalizer,
-      ));
+      );
       _nativeEq = AndroidEqualizer();
       await _player!.setAudioPipelineEffects([_nativeEq!]);
     } catch (e) {
-      debugPrint('EqualizerService: native EQ unavailable ($e). Falling back to Dart-only mode.');
+      debugPrint(
+        'EqualizerService: native EQ unavailable ($e). Falling back to Dart-only mode.',
+      );
     }
   }
 

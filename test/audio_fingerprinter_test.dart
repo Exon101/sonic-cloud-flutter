@@ -6,30 +6,38 @@ void main() {
     final fp = AudioFingerprinter();
 
     test('distance between identical fingerprints is 0', () {
-      const a = '0000000000000000000000000000000000000000000000000000000000000000';
+      const a =
+          '0000000000000000000000000000000000000000000000000000000000000000';
       expect(fp.distance(a, a), 0);
     });
 
     test('distance between opposite fingerprints is 256', () {
-      const zeros = '0000000000000000000000000000000000000000000000000000000000000000';
-      const ffff = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+      const zeros =
+          '0000000000000000000000000000000000000000000000000000000000000000';
+      const ffff =
+          'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
       expect(fp.distance(zeros, ffff), 256);
     });
 
     test('areSimilar returns true for identical hashes', () {
-      const a = 'abc123abc123abc123abc123abc123abc123abc123abc123abc123abc123abc1';
+      const a =
+          'abc123abc123abc123abc123abc123abc123abc123abc123abc123abc123abc1';
       expect(fp.areSimilar(a, a), true);
     });
 
     test('areSimilar returns false for very different hashes', () {
-      const a = '0000000000000000000000000000000000000000000000000000000000000000';
-      const b = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+      const a =
+          '0000000000000000000000000000000000000000000000000000000000000000';
+      const b =
+          'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
       expect(fp.areSimilar(a, b), false);
     });
 
     test('distance is symmetric', () {
-      const a = '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
-      const b = 'fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321';
+      const a =
+          '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef';
+      const b =
+          'fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321';
       expect(fp.distance(a, b), fp.distance(b, a));
     });
 

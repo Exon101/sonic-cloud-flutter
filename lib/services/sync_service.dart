@@ -77,7 +77,11 @@ class LocalSyncService extends SyncService {
 
   @override
   Future<UserAccount> signInAnonymously() async {
-    _user = UserAccount(id: 'anon-${DateTime.now().millisecondsSinceEpoch}', email: 'anonymous@local', isAnonymous: true);
+    _user = UserAccount(
+      id: 'anon-${DateTime.now().millisecondsSinceEpoch}',
+      email: 'anonymous@local',
+      isAnonymous: true,
+    );
     notifyListeners();
     return _user!;
   }

@@ -9,9 +9,7 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
-            body: GestureControls(
-              child: Center(child: Text('Hello')),
-            ),
+            body: GestureControls(child: Center(child: Text('Hello'))),
           ),
         ),
       );
@@ -52,8 +50,9 @@ void main() {
       expect(longPresses, 1);
     });
 
-    testWidgets('horizontal drag with negative velocity fires onPrevious',
-        (tester) async {
+    testWidgets('horizontal drag with negative velocity fires onPrevious', (
+      tester,
+    ) async {
       int prevCount = 0;
       int nextCount = 0;
       await tester.pumpWidget(
@@ -96,8 +95,9 @@ void main() {
       expect(find.byType(GestureControls), findsOneWidget);
     });
 
-    testWidgets('does not show hint bubble when showHints is false',
-        (tester) async {
+    testWidgets('does not show hint bubble when showHints is false', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(

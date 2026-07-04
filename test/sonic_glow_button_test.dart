@@ -7,12 +7,7 @@ void main() {
     testWidgets('shows pause icon when isPlaying=true', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: SonicGlowButton(
-              isPlaying: true,
-              onTap: () {},
-            ),
-          ),
+          home: Scaffold(body: SonicGlowButton(isPlaying: true, onTap: () {})),
         ),
       );
       // Material Icon name 'pause_rounded' is rendered via IconData.
@@ -22,12 +17,7 @@ void main() {
     testWidgets('shows play icon when isPlaying=false', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: SonicGlowButton(
-              isPlaying: false,
-              onTap: () {},
-            ),
-          ),
+          home: Scaffold(body: SonicGlowButton(isPlaying: false, onTap: () {})),
         ),
       );
       expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
@@ -38,10 +28,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: SonicGlowButton(
-              isPlaying: false,
-              onTap: () => taps++,
-            ),
+            body: SonicGlowButton(isPlaying: false, onTap: () => taps++),
           ),
         ),
       );
@@ -54,11 +41,7 @@ void main() {
         MaterialApp(
           home: Scaffold(
             body: Center(
-              child: SonicGlowButton(
-                isPlaying: false,
-                onTap: () {},
-                size: 100,
-              ),
+              child: SonicGlowButton(isPlaying: false, onTap: () {}, size: 100),
             ),
           ),
         ),
@@ -92,10 +75,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: GhostButton(
-              icon: Icons.shuffle_rounded,
-              onTap: () => taps++,
-            ),
+            body: GhostButton(icon: Icons.shuffle_rounded, onTap: () => taps++),
           ),
         ),
       );

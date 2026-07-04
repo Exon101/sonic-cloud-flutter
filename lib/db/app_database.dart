@@ -22,11 +22,7 @@ class AppDatabase {
     if (_db != null) return;
     final dir = await getApplicationDocumentsDirectory();
     final path = p.join(dir.path, 'sonic_cloud.sqlite');
-    _db = await openDatabase(
-      path,
-      version: 1,
-      onCreate: _onCreate,
-    );
+    _db = await openDatabase(path, version: 1, onCreate: _onCreate);
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -127,10 +123,18 @@ class AppDatabase {
     await db.execute('CREATE INDEX idx_tracks_album ON tracks(album)');
     await db.execute('CREATE INDEX idx_tracks_genre ON tracks(genre)');
     await db.execute('CREATE INDEX idx_tracks_year ON tracks(year)');
-    await db.execute('CREATE INDEX idx_tracks_favorite ON tracks(is_favorite) WHERE is_favorite = 1');
-    await db.execute('CREATE INDEX idx_play_history_track ON play_history(track_id)');
-    await db.execute('CREATE INDEX idx_play_history_played_at ON play_history(played_at DESC)');
-    await db.execute('CREATE INDEX idx_fingerprints_hash ON fingerprints(hash)');
+    await db.execute(
+      'CREATE INDEX idx_tracks_favorite ON tracks(is_favorite) WHERE is_favorite = 1',
+    );
+    await db.execute(
+      'CREATE INDEX idx_play_history_track ON play_history(track_id)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_play_history_played_at ON play_history(played_at DESC)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_fingerprints_hash ON fingerprints(hash)',
+    );
   }
 
   // ── Tracks ──────────────────────────────────────────────────────────────────
@@ -139,7 +143,11 @@ class AppDatabase {
   }
 
   Future<void> upsertTrack(Map<String, Object?> entry) async {
-    await _db!.insert('tracks', entry, conflictAlgorithm: ConflictAlgorithm.replace);
+    await _db!.insert(
+      'tracks',
+      entry,
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<void> upsertTracks(List<Map<String, Object?>> entries) async {
@@ -159,7 +167,10 @@ class AppDatabase {
   }
 
   // ── Play history ────────────────────────────────────────────────────────────
-  Future<void> recordPlay(String trackId, {Duration position = Duration.zero}) async {
+  Future<void> recordPlay(
+    String trackId, {
+    Duration position = Duration.zero,
+  }) async {
     await _db!.insert('play_history', {
       'track_id': trackId,
       'played_at': DateTime.now().millisecondsSinceEpoch,
@@ -168,16 +179,16 @@ class AppDatabase {
   }
 
   Future<List<Map<String, Object?>>> recentHistory({int limit = 100}) async {
-    return _db!.query(
-      'play_history',
-      orderBy: 'played_at DESC',
-      limit: limit,
-    );
+    return _db!.query('play_history', orderBy: 'played_at DESC', limit: limit);
   }
 
   // ── Fingerprints ────────────────────────────────────────────────────────────
   Future<void> upsertFingerprint(Map<String, Object?> entry) async {
-    await _db!.insert('fingerprints', entry, conflictAlgorithm: ConflictAlgorithm.replace);
+    await _db!.insert(
+      'fingerprints',
+      entry,
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<List<Map<String, Object?>>> allFingerprints() async {
@@ -194,25 +205,37 @@ class AppDatabase {
   }
 
   Future<void> upsertCloudConfig(Map<String, Object?> entry) async {
-    await _db!.insert('cloud_provider_configs', entry, conflictAlgorithm: ConflictAlgorithm.replace);
+    await _db!.insert(
+      'cloud_provider_configs',
+      entry,
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
   Future<void> deleteCloudConfig(String id) async {
-    await _db!.delete('cloud_provider_configs', where: 'id = ?', whereArgs: [id]);
+    await _db!.delete(
+      'cloud_provider_configs',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   // ── Settings (key-value) ───────────────────────────────────────────────────
   Future<String?> getSetting(String key) async {
-    final rows = await _db!.query('settings', where: 'key = ?', whereArgs: [key], limit: 1);
+    final rows = await _db!.query(
+      'settings',
+      where: 'key = ?',
+      whereArgs: [key],
+      limit: 1,
+    );
     return rows.isEmpty ? null : rows.first['value'] as String?;
   }
 
   Future<void> setSetting(String key, String value) async {
-    await _db!.insert(
-      'settings',
-      {'key': key, 'value': value},
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await _db!.insert('settings', {
+      'key': key,
+      'value': value,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<void> deleteSetting(String key) async {

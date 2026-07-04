@@ -61,14 +61,13 @@ class AppTheme {
           fontWeight: FontWeight.w700,
         ),
       ),
-      iconTheme: const IconThemeData(
-        color: AppColors.onSurface,
-        size: 24,
-      ),
+      iconTheme: const IconThemeData(color: AppColors.onSurface, size: 24),
       dividerColor: Colors.white.withOpacity(0.1),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.surfaceContainerHigh,
-        contentTextStyle: AppTypography.bodyMd.copyWith(color: AppColors.onSurface),
+        contentTextStyle: AppTypography.bodyMd.copyWith(
+          color: AppColors.onSurface,
+        ),
         behavior: SnackBarBehavior.floating,
       ),
     );

@@ -24,8 +24,9 @@ void main() {
       expect(find.text('Starlight Drift'), findsOneWidget);
     });
 
-    testWidgets('tapping the Cloud nav item switches to Cloud Storage',
-        (tester) async {
+    testWidgets('tapping the Cloud nav item switches to Cloud Storage', (
+      tester,
+    ) async {
       await tester.pumpWidget(const SonicCloudApp());
       await tester.pumpAndSettle();
 
@@ -38,8 +39,9 @@ void main() {
       expect(find.text('Recent Sync Activity'), findsOneWidget);
     });
 
-    testWidgets('tapping the Settings nav item switches to Settings',
-        (tester) async {
+    testWidgets('tapping the Settings nav item switches to Settings', (
+      tester,
+    ) async {
       await tester.pumpWidget(const SonicCloudApp());
       await tester.pumpAndSettle();
 
@@ -52,8 +54,7 @@ void main() {
       expect(find.text('Alex Mercer'), findsOneWidget);
     });
 
-    testWidgets('tapping the first track opens Now Playing',
-        (tester) async {
+    testWidgets('tapping the first track opens Now Playing', (tester) async {
       await tester.pumpWidget(const SonicCloudApp());
       await tester.pumpAndSettle();
 

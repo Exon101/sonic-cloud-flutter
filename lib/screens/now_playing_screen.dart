@@ -90,7 +90,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                   : 0.35; // fallback mock position before audio loads
 
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.edgeMargin),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.edgeMargin,
+                ),
                 child: Column(
                   children: [
                     _TopBar(onClose: widget.onClose),
@@ -138,8 +140,11 @@ class _TopBar extends StatelessWidget {
         children: [
           IconButton(
             onPressed: onClose,
-            icon: const Icon(Icons.keyboard_arrow_down_rounded,
-                color: AppColors.onSurface, size: 28),
+            icon: const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: AppColors.onSurface,
+              size: 28,
+            ),
             tooltip: 'Collapse',
             constraints: const BoxConstraints(
               minWidth: AppSpacing.touchTarget,
@@ -155,8 +160,11 @@ class _TopBar extends StatelessWidget {
           ),
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.more_vert_rounded,
-                color: AppColors.onSurface, size: 24),
+            icon: const Icon(
+              Icons.more_vert_rounded,
+              color: AppColors.onSurface,
+              size: 24,
+            ),
             tooltip: 'More',
             constraints: const BoxConstraints(
               minWidth: AppSpacing.touchTarget,
@@ -190,7 +198,10 @@ class _VinylArt extends StatelessWidget {
             height: 295,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              image: DecorationImage(image: NetworkImage(artUrl), fit: BoxFit.cover),
+              image: DecorationImage(
+                image: NetworkImage(artUrl),
+                fit: BoxFit.cover,
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.5),
@@ -307,15 +318,20 @@ class _TrackInfo extends StatelessWidget {
             Flexible(
               child: Text(
                 track.title,
-                style: AppTypography.headlineXl.copyWith(color: AppColors.onSurface),
+                style: AppTypography.headlineXl.copyWith(
+                  color: AppColors.onSurface,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(Icons.cloud_sync_rounded,
-                color: AppColors.secondaryContainer, size: 24),
+            const Icon(
+              Icons.cloud_sync_rounded,
+              color: AppColors.secondaryContainer,
+              size: 24,
+            ),
           ],
         ),
         const SizedBox(height: 4),
@@ -356,16 +372,20 @@ class _WaveformSection extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(position,
-                style: AppTypography.labelSm.copyWith(
-                  color: AppColors.onSurfaceVariant.withOpacity(0.7),
-                  letterSpacing: 1.5,
-                )),
-            Text('-$remaining',
-                style: AppTypography.labelSm.copyWith(
-                  color: AppColors.onSurfaceVariant.withOpacity(0.7),
-                  letterSpacing: 1.5,
-                )),
+            Text(
+              position,
+              style: AppTypography.labelSm.copyWith(
+                color: AppColors.onSurfaceVariant.withOpacity(0.7),
+                letterSpacing: 1.5,
+              ),
+            ),
+            Text(
+              '-$remaining',
+              style: AppTypography.labelSm.copyWith(
+                color: AppColors.onSurfaceVariant.withOpacity(0.7),
+                letterSpacing: 1.5,
+              ),
+            ),
           ],
         ),
       ],
@@ -404,8 +424,11 @@ class _Controls extends StatelessWidget {
         children: [
           IconButton(
             onPressed: () {},
-            icon: Icon(Icons.shuffle_rounded,
-                color: AppColors.onSurfaceVariant, size: 20),
+            icon: Icon(
+              Icons.shuffle_rounded,
+              color: AppColors.onSurfaceVariant,
+              size: 20,
+            ),
             tooltip: 'Shuffle',
             constraints: const BoxConstraints(
               minWidth: AppSpacing.touchTarget,
@@ -414,8 +437,11 @@ class _Controls extends StatelessWidget {
           ),
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.skip_previous_rounded,
-                color: AppColors.onSurface, size: 36),
+            icon: const Icon(
+              Icons.skip_previous_rounded,
+              color: AppColors.onSurface,
+              size: 36,
+            ),
             tooltip: 'Previous',
             constraints: const BoxConstraints(
               minWidth: AppSpacing.touchTarget,
@@ -425,8 +451,11 @@ class _Controls extends StatelessWidget {
           SonicGlowButton(isPlaying: isPlaying, onTap: onPlayPause, size: 80),
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.skip_next_rounded,
-                color: AppColors.onSurface, size: 36),
+            icon: const Icon(
+              Icons.skip_next_rounded,
+              color: AppColors.onSurface,
+              size: 36,
+            ),
             tooltip: 'Next',
             constraints: const BoxConstraints(
               minWidth: AppSpacing.touchTarget,
@@ -435,8 +464,11 @@ class _Controls extends StatelessWidget {
           ),
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.repeat_rounded,
-                color: AppColors.secondaryContainer, size: 20),
+            icon: const Icon(
+              Icons.repeat_rounded,
+              color: AppColors.secondaryContainer,
+              size: 20,
+            ),
             tooltip: 'Repeat',
             constraints: const BoxConstraints(
               minWidth: AppSpacing.touchTarget,

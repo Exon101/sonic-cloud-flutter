@@ -42,7 +42,10 @@ class MyLibraryScreen extends StatelessWidget {
         avatarUrl: MockData.userProfile.avatarUrl,
         actions: [
           IconButton(
-            icon: const Icon(Icons.graphic_eq_rounded, color: AppColors.primary),
+            icon: const Icon(
+              Icons.graphic_eq_rounded,
+              color: AppColors.primary,
+            ),
             tooltip: 'Equalizer',
             onPressed: onOpenEqualizer,
           ),
@@ -57,7 +60,10 @@ class MyLibraryScreen extends StatelessWidget {
         minimum: const EdgeInsets.only(top: 16),
         child: ListView(
           padding: const EdgeInsets.fromLTRB(
-            AppSpacing.edgeMargin, 8, AppSpacing.edgeMargin, 120,
+            AppSpacing.edgeMargin,
+            8,
+            AppSpacing.edgeMargin,
+            120,
           ),
           children: [
             const _SearchAndFilters(),
@@ -106,11 +112,16 @@ class _SearchAndFilters extends StatelessWidget {
               hintStyle: AppTypography.bodyMd.copyWith(
                 color: AppColors.onSurfaceVariant.withOpacity(0.5),
               ),
-              prefixIcon: const Icon(Icons.search_rounded,
-                  color: AppColors.onSurfaceVariant, size: 20),
+              prefixIcon: const Icon(
+                Icons.search_rounded,
+                color: AppColors.onSurfaceVariant,
+                size: 20,
+              ),
               border: InputBorder.none,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
             ),
           ),
         ),
@@ -220,12 +231,16 @@ class _AllSongsSection extends StatelessWidget {
             const _SectionTitle('All Songs'),
             TextButton.icon(
               onPressed: () {},
-              icon: const Icon(Icons.sort_rounded, size: 16,
-                  color: AppColors.secondaryContainer),
+              icon: const Icon(
+                Icons.sort_rounded,
+                size: 16,
+                color: AppColors.secondaryContainer,
+              ),
               label: Text(
                 'Sort',
-                style: AppTypography.labelSm
-                    .copyWith(color: AppColors.secondaryContainer),
+                style: AppTypography.labelSm.copyWith(
+                  color: AppColors.secondaryContainer,
+                ),
               ),
             ),
           ],
@@ -233,12 +248,12 @@ class _AllSongsSection extends StatelessWidget {
         const SizedBox(height: AppSpacing.sm),
         // The first track is "active" (matches the HTML mockup).
         ...MockData.allSongs.asMap().entries.map(
-              (e) => TrackRow(
-                track: e.value,
-                isActive: e.key == 0,
-                onTap: () => onTapTrack(e.value),
-              ),
-            ),
+          (e) => TrackRow(
+            track: e.value,
+            isActive: e.key == 0,
+            onTap: () => onTapTrack(e.value),
+          ),
+        ),
       ],
     );
   }

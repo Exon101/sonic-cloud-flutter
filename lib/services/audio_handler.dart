@@ -17,7 +17,8 @@ import '../models/models.dart';
 ///   - Android Auto / CarPlay (basic media browser)
 ///   - macOS Now Playing
 ///   - Web Media Session API
-class SonicAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler {
+class SonicAudioHandler extends BaseAudioHandler
+    with QueueHandler, SeekHandler {
   SonicAudioHandler(this._player);
 
   final AudioPlayer _player;
@@ -139,16 +140,16 @@ class SonicAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler 
   }
 
   MediaItem _trackToMediaItem(Track t) => MediaItem(
-        id: t.id,
-        album: t.album,
-        title: t.title,
-        artist: t.artist,
-        genre: t.genre,
-        duration: t.duration,
-        artUri: t.artUrl.isNotEmpty ? Uri.tryParse(t.artUrl) : null,
-        playable: true,
-        rating: t.rating > 0 ? Rating.newStarRating(null, 5, t.rating) : null,
-      );
+    id: t.id,
+    album: t.album,
+    title: t.title,
+    artist: t.artist,
+    genre: t.genre,
+    duration: t.duration,
+    artUri: t.artUrl.isNotEmpty ? Uri.tryParse(t.artUrl) : null,
+    playable: true,
+    rating: t.rating > 0 ? Rating.newStarRating(null, 5, t.rating) : null,
+  );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -158,17 +159,19 @@ class SonicAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler 
 ConcatenatingAudioSource buildAudioSource(List<Track> tracks) {
   return ConcatenatingAudioSource(
     children: tracks
-        .map((t) => AudioSource.uri(
-              Uri.parse(t.audioUrl),
-              tag: MediaItem(
-                id: t.id,
-                album: t.album,
-                title: t.title,
-                artist: t.artist,
-                artUri: t.artUrl.isNotEmpty ? Uri.tryParse(t.artUrl) : null,
-                duration: t.duration,
-              ),
-            ))
+        .map(
+          (t) => AudioSource.uri(
+            Uri.parse(t.audioUrl),
+            tag: MediaItem(
+              id: t.id,
+              album: t.album,
+              title: t.title,
+              artist: t.artist,
+              artUri: t.artUrl.isNotEmpty ? Uri.tryParse(t.artUrl) : null,
+              duration: t.duration,
+            ),
+          ),
+        )
         .toList(),
     useLazyPreparation: true,
   );

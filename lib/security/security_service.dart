@@ -19,8 +19,8 @@ import '../models/models.dart';
 ///     offline download) controlled by [setProviderPermission].
 class SecurityService extends ChangeNotifier {
   SecurityService({FlutterSecureStorage? storage, LocalAuthentication? auth})
-      : _storage = storage ?? const FlutterSecureStorage(),
-        _auth = auth ?? LocalAuthentication();
+    : _storage = storage ?? const FlutterSecureStorage(),
+      _auth = auth ?? LocalAuthentication();
 
   final FlutterSecureStorage _storage;
   final LocalAuthentication _auth;
@@ -35,7 +35,8 @@ class SecurityService extends ChangeNotifier {
   bool _isLocked = false;
   bool get isLocked => _isLocked;
 
-  Future<bool> get isPinSet async => (await _storage.read(key: _keyPinHash)) != null;
+  Future<bool> get isPinSet async =>
+      (await _storage.read(key: _keyPinHash)) != null;
 
   Future<bool> get isBiometricEnabled async =>
       (await _storage.read(key: _keyBiometricEnabled)) == 'true';
@@ -83,7 +84,9 @@ class SecurityService extends ChangeNotifier {
   }
 
   /// Attempt biometric unlock. Returns true on success.
-  Future<bool> unlockWithBiometrics({String reason = 'Please authenticate to unlock Sonic Cloud'}) async {
+  Future<bool> unlockWithBiometrics({
+    String reason = 'Please authenticate to unlock Sonic Cloud',
+  }) async {
     if (!await isBiometricEnabled) return false;
     try {
       final ok = await _auth.authenticate(
@@ -112,7 +115,10 @@ class SecurityService extends ChangeNotifier {
   // ── Cloud credentials ───────────────────────────────────────────────────────
 
   /// Store credentials (any JSON-serializable map) for [providerId].
-  Future<void> storeCloudCredentials(String providerId, Map<String, dynamic> creds) async {
+  Future<void> storeCloudCredentials(
+    String providerId,
+    Map<String, dynamic> creds,
+  ) async {
     final json = jsonEncode(creds);
     await _storage.write(key: '$_keyCloudCredsPrefix$providerId', json);
   }
@@ -132,10 +138,15 @@ class SecurityService extends ChangeNotifier {
   Future<ProviderPermissions> getPermissions(String providerId) async {
     final json = await _storage.read(key: '$_keyPermissionsPrefix$providerId');
     if (json == null) return const ProviderPermissions();
-    return ProviderPermissions.fromJson(jsonDecode(json) as Map<String, dynamic>);
+    return ProviderPermissions.fromJson(
+      jsonDecode(json) as Map<String, dynamic>,
+    );
   }
 
-  Future<void> setPermissions(String providerId, ProviderPermissions perms) async {
+  Future<void> setPermissions(
+    String providerId,
+    ProviderPermissions perms,
+  ) async {
     await _storage.write(
       key: '$_keyPermissionsPrefix$providerId',
       jsonEncode(perms.toJson()),
@@ -174,14 +185,15 @@ class ProviderPermissions {
   });
 
   Map<String, dynamic> toJson() => {
-        'canRead': canRead,
-        'canWrite': canWrite,
-        'canDelete': canDelete,
-        'canOfflineDownload': canOfflineDownload,
-        'canStream': canStream,
-      };
+    'canRead': canRead,
+    'canWrite': canWrite,
+    'canDelete': canDelete,
+    'canOfflineDownload': canOfflineDownload,
+    'canStream': canStream,
+  };
 
-  factory ProviderPermissions.fromJson(Map<String, dynamic> json) => ProviderPermissions(
+  factory ProviderPermissions.fromJson(Map<String, dynamic> json) =>
+      ProviderPermissions(
         canRead: json['canRead'] as bool? ?? true,
         canWrite: json['canWrite'] as bool? ?? false,
         canDelete: json['canDelete'] as bool? ?? false,

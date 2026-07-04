@@ -51,14 +51,18 @@ class UniversalLibraryService extends ChangeNotifier {
         final tracks = await provider.listAudioFiles();
         // Tag each track with its sourceId.
         _cloudTracksBySource[provider.config.id] = tracks
-            .map((t) => t.copyWith(
-                  // Augment the id with the source so we can route playback.
-                  // Original id is preserved inside.
-                  audioUrl: t.audioUrl,
-                ))
+            .map(
+              (t) => t.copyWith(
+                // Augment the id with the source so we can route playback.
+                // Original id is preserved inside.
+                audioUrl: t.audioUrl,
+              ),
+            )
             .toList();
       } catch (e) {
-        debugPrint('UniversalLibrary: ${provider.displayName} refresh failed: $e');
+        debugPrint(
+          'UniversalLibrary: ${provider.displayName} refresh failed: $e',
+        );
         _cloudTracksBySource[provider.config.id] = [];
       }
     }
@@ -98,7 +102,8 @@ class UniversalLibraryService extends ChangeNotifier {
   Set<String> get allAlbums => allTracks.map((t) => t.album).toSet();
 
   /// All distinct genres across all sources.
-  Set<String> get allGenres => allTracks.map((t) => t.genre).where((g) => g.isNotEmpty).toSet();
+  Set<String> get allGenres =>
+      allTracks.map((t) => t.genre).where((g) => g.isNotEmpty).toSet();
 
   /// Count of tracks per source — used by the "All Songs" tree view.
   Map<String, int> get trackCountBySource {

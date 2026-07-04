@@ -80,13 +80,34 @@ class _LibraryBrowseScreenState extends State<LibraryBrowseScreen>
           return TabBarView(
             controller: _tabCtrl,
             children: [
-              _SourcesTab(universal: widget.universalLibrary, onPlayTrack: widget.onPlayTrack),
-              _ArtistsTab(library: widget.library, onPlayTrack: widget.onPlayTrack),
-              _AlbumsTab(library: widget.library, onPlayTrack: widget.onPlayTrack),
-              _GenresTab(library: widget.library, onPlayTrack: widget.onPlayTrack),
-              _YearsTab(library: widget.library, onPlayTrack: widget.onPlayTrack),
-              _ComposersTab(library: widget.library, onPlayTrack: widget.onPlayTrack),
-              _FoldersTab(library: widget.library, onPlayTrack: widget.onPlayTrack),
+              _SourcesTab(
+                universal: widget.universalLibrary,
+                onPlayTrack: widget.onPlayTrack,
+              ),
+              _ArtistsTab(
+                library: widget.library,
+                onPlayTrack: widget.onPlayTrack,
+              ),
+              _AlbumsTab(
+                library: widget.library,
+                onPlayTrack: widget.onPlayTrack,
+              ),
+              _GenresTab(
+                library: widget.library,
+                onPlayTrack: widget.onPlayTrack,
+              ),
+              _YearsTab(
+                library: widget.library,
+                onPlayTrack: widget.onPlayTrack,
+              ),
+              _ComposersTab(
+                library: widget.library,
+                onPlayTrack: widget.onPlayTrack,
+              ),
+              _FoldersTab(
+                library: widget.library,
+                onPlayTrack: widget.onPlayTrack,
+              ),
             ],
           );
         },
@@ -109,28 +130,39 @@ class _SourcesTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.edgeMargin),
       children: [
-        Text('All Songs', style: AppTypography.headlineLg.copyWith(color: AppColors.onSurface)),
-        Text('${universal.allTracks.length} tracks across ${counts.length} sources',
-            style: AppTypography.bodySm.copyWith(color: AppColors.onSurfaceVariant)),
+        Text(
+          'All Songs',
+          style: AppTypography.headlineLg.copyWith(color: AppColors.onSurface),
+        ),
+        Text(
+          '${universal.allTracks.length} tracks across ${counts.length} sources',
+          style: AppTypography.bodySm.copyWith(
+            color: AppColors.onSurfaceVariant,
+          ),
+        ),
         const SizedBox(height: AppSpacing.md),
-        ...counts.entries.map((e) => _SourceTile(
-              label: universal.sourceLabel(e.key),
-              trackCount: e.value,
-              onTap: () => _showSourceTracks(context, e.key),
-            )),
+        ...counts.entries.map(
+          (e) => _SourceTile(
+            label: universal.sourceLabel(e.key),
+            trackCount: e.value,
+            onTap: () => _showSourceTracks(context, e.key),
+          ),
+        ),
       ],
     );
   }
 
   void _showSourceTracks(BuildContext context, String sourceId) {
     final tracks = universal.tracksForSource(sourceId);
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => _TrackListScreen(
-        title: universal.sourceLabel(sourceId),
-        tracks: tracks,
-        onPlayTrack: onPlayTrack,
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => _TrackListScreen(
+          title: universal.sourceLabel(sourceId),
+          tracks: tracks,
+          onPlayTrack: onPlayTrack,
+        ),
       ),
-    ));
+    );
   }
 }
 
@@ -138,7 +170,11 @@ class _SourceTile extends StatelessWidget {
   final String label;
   final int trackCount;
   final VoidCallback onTap;
-  const _SourceTile({required this.label, required this.trackCount, required this.onTap});
+  const _SourceTile({
+    required this.label,
+    required this.trackCount,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -149,14 +185,31 @@ class _SourceTile extends StatelessWidget {
         onTap: onTap,
         child: Row(
           children: [
-            const Icon(Icons.source_rounded, color: AppColors.secondaryContainer, size: 20),
+            const Icon(
+              Icons.source_rounded,
+              color: AppColors.secondaryContainer,
+              size: 20,
+            ),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(label, style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface)),
+              child: Text(
+                label,
+                style: AppTypography.bodyMd.copyWith(
+                  color: AppColors.onSurface,
+                ),
+              ),
             ),
-            Text('$trackCount', style: AppTypography.labelSm.copyWith(color: AppColors.onSurfaceVariant)),
+            Text(
+              '$trackCount',
+              style: AppTypography.labelSm.copyWith(
+                color: AppColors.onSurfaceVariant,
+              ),
+            ),
             const SizedBox(width: 8),
-            const Icon(Icons.chevron_right_rounded, color: AppColors.onSurfaceVariant),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.onSurfaceVariant,
+            ),
           ],
         ),
       ),
@@ -174,7 +227,8 @@ class _ArtistsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final artists = library.artists..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    final artists = library.artists
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     return GridView.builder(
       padding: const EdgeInsets.all(AppSpacing.edgeMargin),
       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
@@ -196,13 +250,15 @@ class _ArtistsTab extends StatelessWidget {
 
   void _showArtistTracks(BuildContext context, Artist artist) {
     final tracks = library.tracksByArtist(artist.name);
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => _TrackListScreen(
-        title: artist.name,
-        tracks: tracks,
-        onPlayTrack: onPlayTrack,
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => _TrackListScreen(
+          title: artist.name,
+          tracks: tracks,
+          onPlayTrack: onPlayTrack,
+        ),
       ),
-    ));
+    );
   }
 }
 
@@ -225,19 +281,33 @@ class _ArtistCard extends StatelessWidget {
               color: AppColors.surfaceContainer,
               border: Border.all(color: Colors.white.withOpacity(0.2)),
               image: artist.artUrl != null
-                  ? DecorationImage(image: NetworkImage(artist.artUrl!), fit: BoxFit.cover)
+                  ? DecorationImage(
+                      image: NetworkImage(artist.artUrl!),
+                      fit: BoxFit.cover,
+                    )
                   : null,
             ),
             child: artist.artUrl == null
-                ? const Icon(Icons.person_rounded, size: 48, color: AppColors.onSurfaceVariant)
+                ? const Icon(
+                    Icons.person_rounded,
+                    size: 48,
+                    color: AppColors.onSurfaceVariant,
+                  )
                 : null,
           ),
           const SizedBox(height: 8),
-          Text(artist.name,
-              style: AppTypography.labelMd.copyWith(color: AppColors.onSurface),
-              maxLines: 1, overflow: TextOverflow.ellipsis),
-          Text('${artist.trackCount} tracks',
-              style: AppTypography.labelSm.copyWith(color: AppColors.onSurfaceVariant)),
+          Text(
+            artist.name,
+            style: AppTypography.labelMd.copyWith(color: AppColors.onSurface),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Text(
+            '${artist.trackCount} tracks',
+            style: AppTypography.labelSm.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
+          ),
         ],
       ),
     );
@@ -254,7 +324,8 @@ class _AlbumsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final albums = library.albums..sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+    final albums = library.albums
+      ..sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
     return GridView.builder(
       padding: const EdgeInsets.all(AppSpacing.edgeMargin),
       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
@@ -273,13 +344,15 @@ class _AlbumsTab extends StatelessWidget {
 
   void _showAlbumTracks(BuildContext context, Album album) {
     final tracks = library.tracksByAlbum(album.title);
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => _TrackListScreen(
-        title: '${album.title} — ${album.artist}',
-        tracks: tracks,
-        onPlayTrack: onPlayTrack,
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => _TrackListScreen(
+          title: '${album.title} — ${album.artist}',
+          tracks: tracks,
+          onPlayTrack: onPlayTrack,
+        ),
       ),
-    ));
+    );
   }
 }
 
@@ -306,21 +379,36 @@ class _AlbumCard extends StatelessWidget {
                   left: BorderSide(color: Colors.white.withOpacity(0.2)),
                 ),
                 image: album.artUrl != null
-                    ? DecorationImage(image: NetworkImage(album.artUrl!), fit: BoxFit.cover)
+                    ? DecorationImage(
+                        image: NetworkImage(album.artUrl!),
+                        fit: BoxFit.cover,
+                      )
                     : null,
               ),
               child: album.artUrl == null
-                  ? const Icon(Icons.album_rounded, size: 48, color: AppColors.onSurfaceVariant)
+                  ? const Icon(
+                      Icons.album_rounded,
+                      size: 48,
+                      color: AppColors.onSurfaceVariant,
+                    )
                   : null,
             ),
           ),
           const SizedBox(height: 8),
-          Text(album.title,
-              style: AppTypography.labelMd.copyWith(color: AppColors.onSurface),
-              maxLines: 1, overflow: TextOverflow.ellipsis),
-          Text(album.artist,
-              style: AppTypography.labelSm.copyWith(color: AppColors.onSurfaceVariant),
-              maxLines: 1, overflow: TextOverflow.ellipsis),
+          Text(
+            album.title,
+            style: AppTypography.labelMd.copyWith(color: AppColors.onSurface),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Text(
+            album.artist,
+            style: AppTypography.labelSm.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ],
       ),
     );
@@ -337,18 +425,30 @@ class _GenresTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final genres = library.genres..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    final genres = library.genres
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     return ListView.separated(
       padding: const EdgeInsets.all(AppSpacing.edgeMargin),
       itemCount: genres.length,
-      separatorBuilder: (_, __) => const Divider(color: Colors.white10, height: 1),
+      separatorBuilder: (_, __) =>
+          const Divider(color: Colors.white10, height: 1),
       itemBuilder: (context, i) {
         final g = genres[i];
         return ListTile(
-          leading: const Icon(Icons.music_note_rounded, color: AppColors.secondaryContainer),
-          title: Text(g.name, style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface)),
-          subtitle: Text('${g.trackCount} tracks',
-              style: AppTypography.labelSm.copyWith(color: AppColors.onSurfaceVariant)),
+          leading: const Icon(
+            Icons.music_note_rounded,
+            color: AppColors.secondaryContainer,
+          ),
+          title: Text(
+            g.name,
+            style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface),
+          ),
+          subtitle: Text(
+            '${g.trackCount} tracks',
+            style: AppTypography.labelSm.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
+          ),
           onTap: () => _showGenreTracks(context, g),
         );
       },
@@ -357,9 +457,15 @@ class _GenresTab extends StatelessWidget {
 
   void _showGenreTracks(BuildContext context, Genre g) {
     final tracks = library.tracksByGenre(g.name);
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => _TrackListScreen(title: g.name, tracks: tracks, onPlayTrack: onPlayTrack),
-    ));
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => _TrackListScreen(
+          title: g.name,
+          tracks: tracks,
+          onPlayTrack: onPlayTrack,
+        ),
+      ),
+    );
   }
 }
 
@@ -370,19 +476,32 @@ class _YearsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final years = library.years.toList()..sort((a, b) => b.year.compareTo(a.year));
+    final years = library.years.toList()
+      ..sort((a, b) => b.year.compareTo(a.year));
     return ListView.separated(
       padding: const EdgeInsets.all(AppSpacing.edgeMargin),
       itemCount: years.length,
-      separatorBuilder: (_, __) => const Divider(color: Colors.white10, height: 1),
+      separatorBuilder: (_, __) =>
+          const Divider(color: Colors.white10, height: 1),
       itemBuilder: (context, i) {
         final y = years[i];
         return ListTile(
-          leading: const Icon(Icons.calendar_today_rounded, color: AppColors.secondaryContainer),
-          title: Text(y.year.toString(),
-              style: AppTypography.headlineMd.copyWith(color: AppColors.onSurface)),
-          subtitle: Text('${y.albumCount} albums · ${y.trackCount} tracks',
-              style: AppTypography.labelSm.copyWith(color: AppColors.onSurfaceVariant)),
+          leading: const Icon(
+            Icons.calendar_today_rounded,
+            color: AppColors.secondaryContainer,
+          ),
+          title: Text(
+            y.year.toString(),
+            style: AppTypography.headlineMd.copyWith(
+              color: AppColors.onSurface,
+            ),
+          ),
+          subtitle: Text(
+            '${y.albumCount} albums · ${y.trackCount} tracks',
+            style: AppTypography.labelSm.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
+          ),
           onTap: () => _showYearTracks(context, y),
         );
       },
@@ -391,9 +510,15 @@ class _YearsTab extends StatelessWidget {
 
   void _showYearTracks(BuildContext context, YearBucket y) {
     final tracks = library.tracksByYear(y.year);
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => _TrackListScreen(title: y.year.toString(), tracks: tracks, onPlayTrack: onPlayTrack),
-    ));
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => _TrackListScreen(
+          title: y.year.toString(),
+          tracks: tracks,
+          onPlayTrack: onPlayTrack,
+        ),
+      ),
+    );
   }
 }
 
@@ -404,18 +529,30 @@ class _ComposersTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final composers = library.composers.toList()..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    final composers = library.composers.toList()
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     return ListView.separated(
       padding: const EdgeInsets.all(AppSpacing.edgeMargin),
       itemCount: composers.length,
-      separatorBuilder: (_, __) => const Divider(color: Colors.white10, height: 1),
+      separatorBuilder: (_, __) =>
+          const Divider(color: Colors.white10, height: 1),
       itemBuilder: (context, i) {
         final c = composers[i];
         return ListTile(
-          leading: const Icon(Icons.edit_rounded, color: AppColors.secondaryContainer),
-          title: Text(c.name, style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface)),
-          subtitle: Text('${c.trackCount} tracks',
-              style: AppTypography.labelSm.copyWith(color: AppColors.onSurfaceVariant)),
+          leading: const Icon(
+            Icons.edit_rounded,
+            color: AppColors.secondaryContainer,
+          ),
+          title: Text(
+            c.name,
+            style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface),
+          ),
+          subtitle: Text(
+            '${c.trackCount} tracks',
+            style: AppTypography.labelSm.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
+          ),
           onTap: () => _showComposerTracks(context, c),
         );
       },
@@ -424,9 +561,15 @@ class _ComposersTab extends StatelessWidget {
 
   void _showComposerTracks(BuildContext context, Composer c) {
     final tracks = library.tracksByComposer(c.name);
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => _TrackListScreen(title: c.name, tracks: tracks, onPlayTrack: onPlayTrack),
-    ));
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => _TrackListScreen(
+          title: c.name,
+          tracks: tracks,
+          onPlayTrack: onPlayTrack,
+        ),
+      ),
+    );
   }
 }
 
@@ -437,19 +580,32 @@ class _FoldersTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final folders = library.folders..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    final folders = library.folders
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
     return ListView.separated(
       padding: const EdgeInsets.all(AppSpacing.edgeMargin),
       itemCount: folders.length,
-      separatorBuilder: (_, __) => const Divider(color: Colors.white10, height: 1),
+      separatorBuilder: (_, __) =>
+          const Divider(color: Colors.white10, height: 1),
       itemBuilder: (context, i) {
         final f = folders[i];
         return ListTile(
-          leading: const Icon(Icons.folder_rounded, color: AppColors.secondaryContainer),
-          title: Text(f.name, style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface)),
-          subtitle: Text('${f.trackCount} tracks · ${f.path}',
-              style: AppTypography.labelSm.copyWith(color: AppColors.onSurfaceVariant),
-              maxLines: 1, overflow: TextOverflow.ellipsis),
+          leading: const Icon(
+            Icons.folder_rounded,
+            color: AppColors.secondaryContainer,
+          ),
+          title: Text(
+            f.name,
+            style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface),
+          ),
+          subtitle: Text(
+            '${f.trackCount} tracks · ${f.path}',
+            style: AppTypography.labelSm.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
           onTap: () => _showFolderTracks(context, f),
         );
       },
@@ -457,10 +613,18 @@ class _FoldersTab extends StatelessWidget {
   }
 
   void _showFolderTracks(BuildContext context, Folder f) {
-    final tracks = library.tracks.where((t) => t.fileSystemPath?.startsWith(f.path) ?? false).toList();
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => _TrackListScreen(title: f.name, tracks: tracks, onPlayTrack: onPlayTrack),
-    ));
+    final tracks = library.tracks
+        .where((t) => t.fileSystemPath?.startsWith(f.path) ?? false)
+        .toList();
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => _TrackListScreen(
+          title: f.name,
+          tracks: tracks,
+          onPlayTrack: onPlayTrack,
+        ),
+      ),
+    );
   }
 }
 
@@ -491,18 +655,35 @@ class _TrackListScreen extends StatelessWidget {
             leading: t.artUrl.isNotEmpty
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(r.AppRadius.def),
-                    child: Image.network(t.artUrl, width: 48, height: 48, fit: BoxFit.cover),
+                    child: Image.network(
+                      t.artUrl,
+                      width: 48,
+                      height: 48,
+                      fit: BoxFit.cover,
+                    ),
                   )
                 : Container(
-                    width: 48, height: 48,
+                    width: 48,
+                    height: 48,
                     decoration: BoxDecoration(
                       color: AppColors.surfaceContainer,
                       borderRadius: BorderRadius.circular(r.AppRadius.def),
                     ),
-                    child: const Icon(Icons.music_note_rounded, color: AppColors.onSurfaceVariant)),
-            title: Text(t.title, style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface)),
-            subtitle: Text('${t.artist} · ${t.formattedDuration}',
-                style: AppTypography.labelSm.copyWith(color: AppColors.onSurfaceVariant)),
+                    child: const Icon(
+                      Icons.music_note_rounded,
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                  ),
+            title: Text(
+              t.title,
+              style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface),
+            ),
+            subtitle: Text(
+              '${t.artist} · ${t.formattedDuration}',
+              style: AppTypography.labelSm.copyWith(
+                color: AppColors.onSurfaceVariant,
+              ),
+            ),
             onTap: () => onPlayTrack(t),
           );
         },

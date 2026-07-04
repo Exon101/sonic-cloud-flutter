@@ -76,7 +76,9 @@ class _PresetsRow extends StatelessWidget {
               onSelected: (_) => eq.applyPreset(p),
               selectedColor: AppColors.secondaryContainer,
               labelStyle: TextStyle(
-                color: active ? AppColors.surfaceLowest : AppColors.onSurfaceVariant,
+                color: active
+                    ? AppColors.surfaceLowest
+                    : AppColors.onSurfaceVariant,
               ),
             ),
           );
@@ -124,7 +126,8 @@ class _BandSlider extends StatelessWidget {
   });
 
   String get _freqLabel {
-    if (frequency >= 1000) return '${(frequency / 1000).toStringAsFixed(frequency % 1000 == 0 ? 0 : 1)}k';
+    if (frequency >= 1000)
+      return '${(frequency / 1000).toStringAsFixed(frequency % 1000 == 0 ? 0 : 1)}k';
     return frequency.toStringAsFixed(0);
   }
 
@@ -132,7 +135,12 @@ class _BandSlider extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text('+12', style: AppTypography.labelSm.copyWith(color: AppColors.onSurfaceVariant)),
+        Text(
+          '+12',
+          style: AppTypography.labelSm.copyWith(
+            color: AppColors.onSurfaceVariant,
+          ),
+        ),
         Expanded(
           child: RotatedBox(
             quarterTurns: 3,
@@ -146,11 +154,23 @@ class _BandSlider extends StatelessWidget {
             ),
           ),
         ),
-        Text('-12', style: AppTypography.labelSm.copyWith(color: AppColors.onSurfaceVariant)),
+        Text(
+          '-12',
+          style: AppTypography.labelSm.copyWith(
+            color: AppColors.onSurfaceVariant,
+          ),
+        ),
         const SizedBox(height: 4),
-        Text(_freqLabel, style: AppTypography.labelSm.copyWith(color: AppColors.onSurface)),
-        Text('${gain.toStringAsFixed(1)}dB',
-            style: AppTypography.labelSm.copyWith(color: AppColors.secondaryContainer)),
+        Text(
+          _freqLabel,
+          style: AppTypography.labelSm.copyWith(color: AppColors.onSurface),
+        ),
+        Text(
+          '${gain.toStringAsFixed(1)}dB',
+          style: AppTypography.labelSm.copyWith(
+            color: AppColors.secondaryContainer,
+          ),
+        ),
       ],
     );
   }
@@ -165,10 +185,16 @@ class _EffectsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Audio Effects',
-            style: AppTypography.headlineMd.copyWith(color: AppColors.onSurface)),
+        Text(
+          'Audio Effects',
+          style: AppTypography.headlineMd.copyWith(color: AppColors.onSurface),
+        ),
         const SizedBox(height: AppSpacing.md),
-        _EffectToggle(label: 'Bass Boost', value: eq.bassBoost, onChanged: (v) => eq.setBassBoost(v)),
+        _EffectToggle(
+          label: 'Bass Boost',
+          value: eq.bassBoost,
+          onChanged: (v) => eq.setBassBoost(v),
+        ),
         if (eq.bassBoost) ...[
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -179,15 +205,37 @@ class _EffectsSection extends StatelessWidget {
             ),
           ),
         ],
-        _EffectToggle(label: 'Virtualizer', value: eq.virtualizer, onChanged: eq.setVirtualizer),
-        _EffectToggle(label: 'Surround', value: eq.surround, onChanged: eq.setSurround),
-        _EffectToggle(label: 'Loudness', value: eq.loudness, onChanged: eq.setLoudness),
-        _EffectToggle(label: 'Compressor', value: eq.compressor, onChanged: eq.setCompressor),
-        _EffectToggle(label: 'Limiter', value: eq.limiter, onChanged: eq.setLimiter),
+        _EffectToggle(
+          label: 'Virtualizer',
+          value: eq.virtualizer,
+          onChanged: eq.setVirtualizer,
+        ),
+        _EffectToggle(
+          label: 'Surround',
+          value: eq.surround,
+          onChanged: eq.setSurround,
+        ),
+        _EffectToggle(
+          label: 'Loudness',
+          value: eq.loudness,
+          onChanged: eq.setLoudness,
+        ),
+        _EffectToggle(
+          label: 'Compressor',
+          value: eq.compressor,
+          onChanged: eq.setCompressor,
+        ),
+        _EffectToggle(
+          label: 'Limiter',
+          value: eq.limiter,
+          onChanged: eq.setLimiter,
+        ),
         const SizedBox(height: AppSpacing.md),
         Text(
           'Note: Bass boost, virtualizer, surround, loudness, compressor, and limiter are Android-only audio effects. On iOS/macOS/Web these toggles persist but have no audible effect.',
-          style: AppTypography.bodySm.copyWith(color: AppColors.onSurfaceVariant),
+          style: AppTypography.bodySm.copyWith(
+            color: AppColors.onSurfaceVariant,
+          ),
         ),
       ],
     );
@@ -198,12 +246,19 @@ class _EffectToggle extends StatelessWidget {
   final String label;
   final bool value;
   final ValueChanged<bool> onChanged;
-  const _EffectToggle({required this.label, required this.value, required this.onChanged});
+  const _EffectToggle({
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
     return SwitchListTile(
-      title: Text(label, style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface)),
+      title: Text(
+        label,
+        style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface),
+      ),
       value: value,
       onChanged: onChanged,
       activeColor: AppColors.secondaryContainer,

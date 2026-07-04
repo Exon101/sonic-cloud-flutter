@@ -11,8 +11,9 @@ import '../models/models.dart';
 class PlaylistService extends ChangeNotifier {
   final Map<String, Playlist> _playlists = {};
 
-  List<Playlist> get playlists => _playlists.values.toList()
-    ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+  List<Playlist> get playlists =>
+      _playlists.values.toList()
+        ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
   Playlist? byId(String id) => _playlists[id];
 
   // ── Manual playlists ───────────────────────────────────────────────────────
@@ -42,7 +43,10 @@ class PlaylistService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> removeFromPlaylist(String playlistId, List<String> trackIds) async {
+  Future<void> removeFromPlaylist(
+    String playlistId,
+    List<String> trackIds,
+  ) async {
     final pl = _playlists[playlistId];
     if (pl == null) return;
     _playlists[playlistId] = pl.copyWith(
@@ -55,7 +59,10 @@ class PlaylistService extends ChangeNotifier {
   Future<void> renamePlaylist(String playlistId, String newName) async {
     final pl = _playlists[playlistId];
     if (pl == null) return;
-    _playlists[playlistId] = pl.copyWith(name: newName, updatedAt: DateTime.now());
+    _playlists[playlistId] = pl.copyWith(
+      name: newName,
+      updatedAt: DateTime.now(),
+    );
     notifyListeners();
   }
 
@@ -65,7 +72,10 @@ class PlaylistService extends ChangeNotifier {
   }
 
   // ── Smart playlists ────────────────────────────────────────────────────────
-  Playlist createSmartPlaylist(String name, {required List<SmartPlaylistRule> rules}) {
+  Playlist createSmartPlaylist(
+    String name, {
+    required List<SmartPlaylistRule> rules,
+  }) {
     final id = const Uuid().v4();
     final now = DateTime.now();
     final pl = Playlist(
@@ -98,7 +108,8 @@ class PlaylistService extends ChangeNotifier {
       AutoPlaylistKind.mostPlayed => _mostPlayed(tracks),
       AutoPlaylistKind.leastPlayed => _leastPlayed(tracks),
       AutoPlaylistKind.neverPlayed => _neverPlayed(tracks),
-      AutoPlaylistKind.favorites => tracks.where((t) => t.isFavorite).map((t) => t.id).toList(),
+      AutoPlaylistKind.favorites =>
+        tracks.where((t) => t.isFavorite).map((t) => t.id).toList(),
     };
 
     return Playlist(
@@ -124,12 +135,14 @@ class PlaylistService extends ChangeNotifier {
   }
 
   List<String> _mostPlayed(List<Track> tracks) {
-    final sorted = tracks.toList()..sort((a, b) => b.playCount.compareTo(a.playCount));
+    final sorted = tracks.toList()
+      ..sort((a, b) => b.playCount.compareTo(a.playCount));
     return sorted.take(50).map((t) => t.id).toList();
   }
 
   List<String> _leastPlayed(List<Track> tracks) {
-    final sorted = tracks.toList()..sort((a, b) => a.playCount.compareTo(b.playCount));
+    final sorted = tracks.toList()
+      ..sort((a, b) => a.playCount.compareTo(b.playCount));
     return sorted.take(50).map((t) => t.id).toList();
   }
 

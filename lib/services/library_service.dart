@@ -98,32 +98,32 @@ class LibraryService extends ChangeNotifier {
   }
 
   Map<String, Object?> _trackToRow(Track t) => {
-        'id': t.id,
-        'title': t.title,
-        'artist': t.artist,
-        'album_artist': t.albumArtist,
-        'album': t.album,
-        'genre': t.genre,
-        'composer': t.composer,
-        'year': t.year,
-        'track_number': t.trackNumber,
-        'disc_number': t.discNumber,
-        'duration_ms': t.duration.inMilliseconds,
-        'art_url': t.artUrl,
-        'audio_url': t.audioUrl,
-        'file_system_path': t.fileSystemPath,
-        'format': t.format?.name,
-        'is_cloud_only': t.isCloudOnly ? 1 : 0,
-        'is_favorite': t.isFavorite ? 1 : 0,
-        'rating': t.rating,
-        'play_count': t.playCount,
-        'last_played_at': t.lastPlayedAt?.millisecondsSinceEpoch,
-        'date_added': t.dateAdded?.millisecondsSinceEpoch,
-        'replay_gain_track_gain': t.replayGainTrackGain,
-        'replay_gain_album_gain': t.replayGainAlbumGain,
-        'embedded_lyrics': t.embeddedLyrics,
-        'source_id': 'local',
-      };
+    'id': t.id,
+    'title': t.title,
+    'artist': t.artist,
+    'album_artist': t.albumArtist,
+    'album': t.album,
+    'genre': t.genre,
+    'composer': t.composer,
+    'year': t.year,
+    'track_number': t.trackNumber,
+    'disc_number': t.discNumber,
+    'duration_ms': t.duration.inMilliseconds,
+    'art_url': t.artUrl,
+    'audio_url': t.audioUrl,
+    'file_system_path': t.fileSystemPath,
+    'format': t.format?.name,
+    'is_cloud_only': t.isCloudOnly ? 1 : 0,
+    'is_favorite': t.isFavorite ? 1 : 0,
+    'rating': t.rating,
+    'play_count': t.playCount,
+    'last_played_at': t.lastPlayedAt?.millisecondsSinceEpoch,
+    'date_added': t.dateAdded?.millisecondsSinceEpoch,
+    'replay_gain_track_gain': t.replayGainTrackGain,
+    'replay_gain_album_gain': t.replayGainAlbumGain,
+    'embedded_lyrics': t.embeddedLyrics,
+    'source_id': 'local',
+  };
 
   // ── Getters ────────────────────────────────────────────────────────────────
   List<Track> get tracks => _tracksById.values.toList(growable: false);
@@ -135,8 +135,9 @@ class LibraryService extends ChangeNotifier {
   List<Folder> get folders => _folders.values.toList(growable: false);
   List<Track> get duplicates =>
       tracks.where((t) => _duplicateHashes.contains(_hash(t))).toList();
-  List<Track> get brokenFiles =>
-      _brokenFilePaths.map((p) => _tracksById.values.firstWhere((t) => t.fileSystemPath == p)).toList();
+  List<Track> get brokenFiles => _brokenFilePaths
+      .map((p) => _tracksById.values.firstWhere((t) => t.fileSystemPath == p))
+      .toList();
 
   bool get isScanning => _isScanning;
   int get scanProgress => _scanProgress;
@@ -170,7 +171,10 @@ class LibraryService extends ChangeNotifier {
 
       // 1. Walk the tree, collect audio file paths.
       final audioPaths = <String>[];
-      await for (final entity in dir.list(recursive: true, followLinks: false)) {
+      await for (final entity in dir.list(
+        recursive: true,
+        followLinks: false,
+      )) {
         if (entity is File && AudioFormat.fromPath(entity.path) != null) {
           audioPaths.add(entity.path);
         }
@@ -183,7 +187,9 @@ class LibraryService extends ChangeNotifier {
         if (track != null) {
           _addTrack(track);
           final hash = _hash(track);
-          if (_tracksById.values.any((t) => _hash(t) == hash && t.id != track.id)) {
+          if (_tracksById.values.any(
+            (t) => _hash(t) == hash && t.id != track.id,
+          )) {
             _duplicateHashes.add(hash);
           }
         } else {
@@ -266,8 +272,10 @@ class LibraryService extends ChangeNotifier {
     for (final t in _tracksById.values) {
       // Artist
       final artistName = t.primaryArtist;
-      final artist = _artists.putIfAbsent(artistName,
-          () => Artist(id: artistName, name: artistName, trackCount: 0));
+      final artist = _artists.putIfAbsent(
+        artistName,
+        () => Artist(id: artistName, name: artistName, trackCount: 0),
+      );
       _artists[artistName] = Artist(
         id: artist.id,
         name: artist.name,
@@ -286,7 +294,8 @@ class LibraryService extends ChangeNotifier {
         year: t.year,
         artUrl: t.artUrl.isNotEmpty ? t.artUrl : existingAlbum?.artUrl,
         trackIds: [...?existingAlbum?.trackIds, t.id],
-        totalDuration: (existingAlbum?.totalDuration ?? Duration.zero) + t.duration,
+        totalDuration:
+            (existingAlbum?.totalDuration ?? Duration.zero) + t.duration,
         genre: t.genre.isNotEmpty ? t.genre : existingAlbum?.genre,
       );
 
@@ -337,7 +346,8 @@ class LibraryService extends ChangeNotifier {
   /// Returns a stable hash for duplicate detection. Combines title + artist +
   /// duration (rounded to the nearest second) so the same track at different
   /// bitrates is still flagged.
-  String _hash(Track t) => '${t.title.toLowerCase()}|${t.primaryArtist.toLowerCase()}|${t.duration.inSeconds}s';
+  String _hash(Track t) =>
+      '${t.title.toLowerCase()}|${t.primaryArtist.toLowerCase()}|${t.duration.inSeconds}s';
 
   // ── Mutation ───────────────────────────────────────────────────────────────
   void markPlayed(String trackId) {
@@ -374,7 +384,8 @@ class LibraryService extends ChangeNotifier {
   }
 
   List<Track> get mostPlayed {
-    final sorted = tracks.toList()..sort((a, b) => b.playCount.compareTo(a.playCount));
+    final sorted = tracks.toList()
+      ..sort((a, b) => b.playCount.compareTo(a.playCount));
     return sorted.take(20).toList();
   }
 

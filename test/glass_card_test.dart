@@ -8,9 +8,7 @@ void main() {
     testWidgets('renders its child inside a clipped container', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: GlassCard(child: Text('hello glass')),
-          ),
+          home: Scaffold(body: GlassCard(child: Text('hello glass'))),
         ),
       );
       expect(find.text('hello glass'), findsOneWidget);
@@ -21,10 +19,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: GlassCard(
-              onTap: () => taps++,
-              child: const Text('tap me'),
-            ),
+            body: GlassCard(onTap: () => taps++, child: const Text('tap me')),
           ),
         ),
       );

@@ -48,7 +48,9 @@ void main() {
       expect(find.byIcon(Icons.cloud_outlined), findsOneWidget);
     });
 
-    testWidgets('does not show cloud icon for non-cloud tracks', (tester) async {
+    testWidgets('does not show cloud icon for non-cloud tracks', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(body: TrackRow(track: _sampleTrack)),
@@ -62,10 +64,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: TrackRow(
-              track: _sampleTrack,
-              onTap: () => taps++,
-            ),
+            body: TrackRow(track: _sampleTrack, onTap: () => taps++),
           ),
         ),
       );

@@ -81,7 +81,9 @@ class RealWebDavProvider extends CloudProvider {
   /// Strips trailing slashes and decodes percent-escapes.
   String _extractName(String? path) {
     if (path == null || path.isEmpty) return '';
-    final trimmed = path.endsWith('/') ? path.substring(0, path.length - 1) : path;
+    final trimmed = path.endsWith('/')
+        ? path.substring(0, path.length - 1)
+        : path;
     final last = trimmed.split('/').where((s) => s.isNotEmpty).lastOrNull;
     if (last == null) return '';
     try {
@@ -98,10 +100,12 @@ class RealWebDavProvider extends CloudProvider {
     final title = parts.length > 1 ? parts.sublist(1).join(' - ') : baseName;
     final uri = Uri.parse(config.rootPath ?? '');
     final creds = (config.account ?? '').split(':');
-    final streamUrl = uri.replace(
-      userInfo: creds.length > 1 ? '${creds[0]}:${creds[1]}' : null,
-      path: f.path,
-    ).toString();
+    final streamUrl = uri
+        .replace(
+          userInfo: creds.length > 1 ? '${creds[0]}:${creds[1]}' : null,
+          path: f.path,
+        )
+        .toString();
 
     return Track(
       id: 'webdav://${config.id}/${f.path}',
@@ -157,7 +161,9 @@ class RealWebDavProvider extends CloudProvider {
       await listAudioFiles();
       return _cache?.length ?? 0;
     }
-    if (since != null && _cacheBuiltAt != null && since.isAfter(_cacheBuiltAt!)) {
+    if (since != null &&
+        _cacheBuiltAt != null &&
+        since.isAfter(_cacheBuiltAt!)) {
       return 0; // cache is fresh
     }
     _cache = null;

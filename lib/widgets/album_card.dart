@@ -56,7 +56,10 @@ class AlbumCard extends StatelessWidget {
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Container(
                           color: AppColors.surfaceContainerHigh,
-                          child: const Icon(Icons.album, color: AppColors.onSurfaceVariant),
+                          child: const Icon(
+                            Icons.album,
+                            color: AppColors.onSurfaceVariant,
+                          ),
                         ),
                       ),
                       // Hover-style overlay (always visible on mobile tap targets)
@@ -85,7 +88,9 @@ class AlbumCard extends StatelessWidget {
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: AppColors.sonicGlow.withOpacity(0.6),
+                                        color: AppColors.sonicGlow.withOpacity(
+                                          0.6,
+                                        ),
                                         blurRadius: 15,
                                       ),
                                     ],
@@ -116,7 +121,9 @@ class AlbumCard extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               album.artist,
-              style: AppTypography.labelSm.copyWith(color: AppColors.onSurfaceVariant),
+              style: AppTypography.labelSm.copyWith(
+                color: AppColors.onSurfaceVariant,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

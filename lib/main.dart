@@ -66,16 +66,19 @@ class _HomeShellState extends State<_HomeShell> {
     _universalLibrary = UniversalLibraryService(_library, []);
 
     // Open the database, load saved tracks, then seed mock data if empty.
-    AppDatabase.instance.open().then((_) async {
-      await _library.loadFromDatabase();
-      if (_library.tracks.isEmpty) {
-        _library.importCloudTracks(MockData.allSongs);
-        await _library.saveToDatabase();
-      }
-    }).catchError((e) {
-      // Database isn't available in test environments — fall back to mock data.
-      _library.importCloudTracks(MockData.allSongs);
-    });
+    AppDatabase.instance
+        .open()
+        .then((_) async {
+          await _library.loadFromDatabase();
+          if (_library.tracks.isEmpty) {
+            _library.importCloudTracks(MockData.allSongs);
+            await _library.saveToDatabase();
+          }
+        })
+        .catchError((e) {
+          // Database isn't available in test environments — fall back to mock data.
+          _library.importCloudTracks(MockData.allSongs);
+        });
 
     // Initialize audio_service media session + EQ in the background.
     // Failures are non-fatal — the app still works without notification controls.
@@ -108,9 +111,9 @@ class _HomeShellState extends State<_HomeShell> {
   }
 
   void _openEqualizer() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => EqualizerScreen(eq: _equalizer)),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => EqualizerScreen(eq: _equalizer)));
   }
 
   void _openLibraryBrowse() {
@@ -171,7 +174,9 @@ class _PlayerPlaceholder extends StatelessWidget {
         child: GlassCard(
           child: Text(
             'Open a track to start playback',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.onSurfaceVariant),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.onSurfaceVariant),
           ),
         ),
       ),

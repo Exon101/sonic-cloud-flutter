@@ -27,19 +27,48 @@ class PluginRegistry extends ChangeNotifier {
   final List<ThemePlugin> _themes = [];
   final List<ScriptPlugin> _scripts = [];
 
-  void registerLyricsProvider(LyricsProvider p) { _lyricsProviders.add(p); notifyListeners(); }
-  void registerCloudProvider(CloudProvider p) { _cloudProviders.add(p); notifyListeners(); }
-  void registerAudioEffect(AudioEffectPlugin p) { _audioEffects.add(p); notifyListeners(); }
-  void registerVisualizer(VisualizerPlugin p) { _visualizers.add(p); notifyListeners(); }
-  void registerMetadataSource(MetadataSourcePlugin p) { _metadataSources.add(p); notifyListeners(); }
-  void registerTheme(ThemePlugin p) { _themes.add(p); notifyListeners(); }
-  void registerScript(ScriptPlugin p) { _scripts.add(p); notifyListeners(); }
+  void registerLyricsProvider(LyricsProvider p) {
+    _lyricsProviders.add(p);
+    notifyListeners();
+  }
 
-  List<LyricsProvider> get lyricsProviders => List.unmodifiable(_lyricsProviders);
+  void registerCloudProvider(CloudProvider p) {
+    _cloudProviders.add(p);
+    notifyListeners();
+  }
+
+  void registerAudioEffect(AudioEffectPlugin p) {
+    _audioEffects.add(p);
+    notifyListeners();
+  }
+
+  void registerVisualizer(VisualizerPlugin p) {
+    _visualizers.add(p);
+    notifyListeners();
+  }
+
+  void registerMetadataSource(MetadataSourcePlugin p) {
+    _metadataSources.add(p);
+    notifyListeners();
+  }
+
+  void registerTheme(ThemePlugin p) {
+    _themes.add(p);
+    notifyListeners();
+  }
+
+  void registerScript(ScriptPlugin p) {
+    _scripts.add(p);
+    notifyListeners();
+  }
+
+  List<LyricsProvider> get lyricsProviders =>
+      List.unmodifiable(_lyricsProviders);
   List<CloudProvider> get cloudProviders => List.unmodifiable(_cloudProviders);
   List<AudioEffectPlugin> get audioEffects => List.unmodifiable(_audioEffects);
   List<VisualizerPlugin> get visualizers => List.unmodifiable(_visualizers);
-  List<MetadataSourcePlugin> get metadataSources => List.unmodifiable(_metadataSources);
+  List<MetadataSourcePlugin> get metadataSources =>
+      List.unmodifiable(_metadataSources);
   List<ThemePlugin> get themes => List.unmodifiable(_themes);
   List<ScriptPlugin> get scripts => List.unmodifiable(_scripts);
 }
@@ -48,6 +77,7 @@ class PluginRegistry extends ChangeNotifier {
 abstract class AudioEffectPlugin {
   String get name;
   String get description;
+
   /// Apply this effect. The implementation is responsible for routing audio
   /// through any native platform APIs it needs.
   Future<void> apply(Track track);
@@ -92,10 +122,12 @@ abstract class PlaybackAdapter {
   Future<void> playAll(List<String> trackIds);
   Future<void> pause();
 }
+
 abstract class LibraryAdapter {
   List<Track> get tracks;
   List<Track> search(String query);
 }
+
 abstract class PlaylistAdapter {
   Future<void> createSmart(String name, List<SmartPlaylistRule> rules);
 }
