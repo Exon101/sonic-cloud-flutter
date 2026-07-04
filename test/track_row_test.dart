@@ -10,7 +10,7 @@ const _sampleTrack = Track(
   album: 'Test Album',
   year: 2024,
   duration: Duration(minutes: 3, seconds: 30),
-  artUrl: 'https://example.com/art.png',
+  artUrl: '',
   audioUrl: 'asset:///assets/audio/sample_track.wav',
 );
 
@@ -21,7 +21,7 @@ const _cloudTrack = Track(
   album: 'Cloud Album',
   year: 2023,
   duration: Duration(minutes: 4, seconds: 0),
-  artUrl: 'https://example.com/art2.png',
+  artUrl: '',
   audioUrl: 'asset:///assets/audio/sample_track.wav',
   isCloudOnly: true,
 );
