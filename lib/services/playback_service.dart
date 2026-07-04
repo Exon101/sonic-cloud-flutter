@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../models/models.dart';
+import 'audio_handler.dart';
 
 /// PlaybackService v2 — a full-featured audio engine.
 ///
@@ -19,9 +21,31 @@ import '../models/models.dart';
 ///   - Volume normalization via per-track ReplayGain (when available)
 ///   - Position / duration / state streams surfaced as a ChangeNotifier API
 class PlaybackService extends ChangeNotifier {
-  PlaybackService({AudioPlayer? player}) : _player = player ?? AudioPlayer();
+  PlaybackService({AudioPlayer? player, SonicAudioHandler? handler})
+      : _player = player ?? AudioPlayer(),
+        _handler = handler;
 
   final AudioPlayer _player;
+  SonicAudioHandler? _handler;
+
+  /// Initialize the platform media session. Call once at app startup, ideally
+  /// from a real `main()` with `AudioService.init()` first.
+  Future<void> initAudioService() async {
+    if (_handler != null) return;
+    _handler = await AudioService.init(
+      builder: () => SonicAudioHandler(_player),
+      config: const AudioServiceConfig(
+        androidNotificationChannelId: 'com.example.sonic_cloud.playback',
+        androidNotificationChannelName: 'Sonic Cloud playback',
+        androidNotificationOngoing: true,
+        androidStopForegroundOnPause: true,
+        preloadArtwork: true,
+      ),
+    );
+    _handler!.init();
+  }
+
+  SonicAudioHandler? get audioHandler => _handler;
 
   // ── Queue state ────────────────────────────────────────────────────────────
   final List<Track> _queue = [];
@@ -52,6 +76,7 @@ class PlaybackService extends ChangeNotifier {
   StreamSubscription<Duration>? _durationSub;
   StreamSubscription<int?> _currentIndexSub;
   StreamSubscription<SequenceState?> _sequenceSub;
+  StreamSubscription<int?> _effectiveIndexSub;
 
   // ── Public getters ─────────────────────────────────────────────────────────
   List<Track> get queue => List.unmodifiable(_queue);
@@ -93,6 +118,12 @@ class PlaybackService extends ChangeNotifier {
     _sequenceSub ??= _player.sequenceStateStream.listen((_) {
       // The sequence changed — usually because the queue was rebuilt.
       notifyListeners();
+    });
+    _effectiveIndexSub ??= _player.currentIndexStream.listen((i) {
+      // Broadcast the new current track to the system media session.
+      if (_handler != null && i != null && i >= 0 && i < _queue.length) {
+        _handler!.broadcastCurrentTrack(_queue[i]);
+      }
     });
 
     // Apply loop mode → RepeatMode mapping
@@ -347,6 +378,10 @@ class PlaybackService extends ChangeNotifier {
       useLazyPreparation: true,
     );
     await _player.setAudioSource(playlist, initialIndex: _currentIndex < 0 ? 0 : _currentIndex);
+    _handler?.broadcastQueue(_queue);
+    if (_currentIndex >= 0 && _currentIndex < _queue.length) {
+      _handler?.broadcastCurrentTrack(_queue[_currentIndex]);
+    }
     _applyReplayGain(currentTrack);
   }
 
@@ -358,6 +393,7 @@ class PlaybackService extends ChangeNotifier {
     _durationSub?.cancel();
     _currentIndexSub?.cancel();
     _sequenceSub?.cancel();
+    _effectiveIndexSub?.cancel();
     _player.dispose();
     super.dispose();
   }

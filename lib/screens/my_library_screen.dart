@@ -22,19 +22,37 @@ class MyLibraryScreen extends StatelessWidget {
   final VoidCallback onOpenPlayer;
   final VoidCallback onOpenCloud;
   final VoidCallback onOpenSettings;
+  final VoidCallback? onOpenBrowse;
+  final VoidCallback? onOpenEqualizer;
 
   const MyLibraryScreen({
     super.key,
     required this.onOpenPlayer,
     required this.onOpenCloud,
     required this.onOpenSettings,
+    this.onOpenBrowse,
+    this.onOpenEqualizer,
   });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: SonicTopAppBar(avatarUrl: MockData.userProfile.avatarUrl),
+      appBar: SonicTopAppBar(
+        avatarUrl: MockData.userProfile.avatarUrl,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.graphic_eq_rounded, color: AppColors.primary),
+            tooltip: 'Equalizer',
+            onPressed: onOpenEqualizer,
+          ),
+          IconButton(
+            icon: const Icon(Icons.apps_rounded, color: AppColors.primary),
+            tooltip: 'Browse library',
+            onPressed: onOpenBrowse,
+          ),
+        ],
+      ),
       body: SafeArea(
         minimum: const EdgeInsets.only(top: 16),
         child: ListView(
