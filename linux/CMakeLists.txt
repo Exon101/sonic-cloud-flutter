@@ -5,7 +5,7 @@ project(runner LANGUAGES CXX)
 # by `flutter create` but we define it here since our CMakeLists.txt is
 # hand-written.
 macro(apply_standard_settings target_name)
-  if(target_name STREQUAL "")
+  if("${target_name}" STREQUAL "")
     # Global settings
     set(CMAKE_CXX_STANDARD 17)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
