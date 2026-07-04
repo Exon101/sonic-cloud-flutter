@@ -107,7 +107,7 @@ jobs:
         run: flutter pub get
 
       - name: Build web (release)
-        run: flutter build web --release --web-renderer canvaski
+        run: flutter build web --release
 
       - name: Tarball web bundle
         run: tar -czf web-release.tar.gz -C build/web .

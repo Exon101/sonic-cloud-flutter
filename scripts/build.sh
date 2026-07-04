@@ -27,7 +27,7 @@ TARGET="${1:-help}"
 
 build_web() {
   echo "▶ Building web…"
-  flutter build web --release --web-renderer canvaski
+  flutter build web --release
   echo "✓ Web bundle: build/web"
 }
 
