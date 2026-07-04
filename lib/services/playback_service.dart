@@ -73,10 +73,10 @@ class PlaybackService extends ChangeNotifier {
   // ── Stream subscriptions ───────────────────────────────────────────────────
   StreamSubscription<PlayerState>? _playerStateSub;
   StreamSubscription<Duration>? _positionSub;
-  StreamSubscription<Duration>? _durationSub;
-  StreamSubscription<int?> _currentIndexSub;
-  StreamSubscription<SequenceState?> _sequenceSub;
-  StreamSubscription<int?> _effectiveIndexSub;
+  StreamSubscription<Duration?>? _durationSub;
+  StreamSubscription<int?>? _currentIndexSub;
+  StreamSubscription<SequenceState?>? _sequenceSub;
+  StreamSubscription<int?>? _effectiveIndexSub;
 
   // ── Public getters ─────────────────────────────────────────────────────────
   List<Track> get queue => List.unmodifiable(_queue);

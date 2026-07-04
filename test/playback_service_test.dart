@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:sonic_cloud/models/models.dart';
 import 'package:sonic_cloud/services/playback_service.dart';
 
 class _MockAudioPlayer extends Mock implements AudioPlayer {}
