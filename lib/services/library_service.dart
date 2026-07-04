@@ -21,8 +21,8 @@ import '../models/models.dart';
 class LibraryService extends ChangeNotifier {
   LibraryService({AppDatabase? database}) : _database = database;
 
-  /// Optional Drift database for persistence. When set, [loadFromDatabase] and
-  /// [saveToDatabase] move the in-memory library to/from SQLite.
+  /// Optional SQLite database for persistence. When set, [loadFromDatabase]
+  /// and [saveToDatabase] move the in-memory library to/from SQLite.
   final AppDatabase? _database;
 
   final Map<String, Track> _tracksById = {};
@@ -41,81 +41,89 @@ class LibraryService extends ChangeNotifier {
   int _scanProgress = 0;
   int _scanTotal = 0;
 
-  /// Load all tracks from the Drift database into memory and rebuild indices.
+  /// Load all tracks from the SQLite database into memory and rebuild indices.
   /// Call once at app startup.
   Future<void> loadFromDatabase() async {
     if (_database == null) return;
     final rows = await _database!.allTracks();
     _tracksById.clear();
     for (final r in rows) {
-      _tracksById[r.id] = Track(
-        id: r.id,
-        title: r.title,
-        artist: r.artist,
-        albumArtist: r.albumArtist,
-        album: r.album,
-        genre: r.genre,
-        composer: r.composer,
-        year: r.year,
-        trackNumber: r.trackNumber,
-        discNumber: r.discNumber,
-        duration: Duration(milliseconds: r.durationMs),
-        artUrl: r.artUrl,
-        audioUrl: r.audioUrl,
-        fileSystemPath: r.fileSystemPath,
-        format: r.format != null ? AudioFormat.values.firstWhere(
-          (f) => f.name == r.format,
-          orElse: () => AudioFormat.mp3,
-        ) : null,
-        isCloudOnly: r.isCloudOnly,
-        isFavorite: r.isFavorite,
-        rating: r.rating,
-        playCount: r.playCount,
-        lastPlayedAt: r.lastPlayedAt,
-        dateAdded: r.dateAdded,
-        replayGainTrackGain: r.replayGainTrackGain,
-        replayGainAlbumGain: r.replayGainAlbumGain,
-        embeddedLyrics: r.embeddedLyrics,
+      _tracksById[r['id'] as String] = Track(
+        id: r['id'] as String,
+        title: r['title'] as String,
+        artist: r['artist'] as String,
+        albumArtist: (r['album_artist'] as String?) ?? '',
+        album: r['album'] as String,
+        genre: (r['genre'] as String?) ?? '',
+        composer: (r['composer'] as String?) ?? '',
+        year: (r['year'] as int?) ?? 0,
+        trackNumber: r['track_number'] as int?,
+        discNumber: r['disc_number'] as int?,
+        duration: Duration(milliseconds: (r['duration_ms'] as int?) ?? 0),
+        artUrl: (r['art_url'] as String?) ?? '',
+        audioUrl: r['audio_url'] as String,
+        fileSystemPath: r['file_system_path'] as String?,
+        format: r['format'] != null
+            ? AudioFormat.values.firstWhere(
+                (f) => f.name == r['format'],
+                orElse: () => AudioFormat.mp3,
+              )
+            : null,
+        isCloudOnly: ((r['is_cloud_only'] as int?) ?? 0) == 1,
+        isFavorite: ((r['is_favorite'] as int?) ?? 0) == 1,
+        rating: (r['rating'] as int?) ?? 0,
+        playCount: (r['play_count'] as int?) ?? 0,
+        lastPlayedAt: r['last_played_at'] != null
+            ? DateTime.fromMillisecondsSinceEpoch(r['last_played_at'] as int)
+            : null,
+        dateAdded: r['date_added'] != null
+            ? DateTime.fromMillisecondsSinceEpoch(r['date_added'] as int)
+            : null,
+        replayGainTrackGain: (r['replay_gain_track_gain'] as num?)?.toDouble(),
+        replayGainAlbumGain: (r['replay_gain_album_gain'] as num?)?.toDouble(),
+        embeddedLyrics: r['embedded_lyrics'] as String?,
       );
     }
     _rebuildIndices();
     notifyListeners();
   }
 
-  /// Save all in-memory tracks to the Drift database. Call on app pause or
+  /// Save all in-memory tracks to the SQLite database. Call on app pause or
   /// after a scan completes.
   Future<void> saveToDatabase() async {
     if (_database == null) return;
-    final companions = _tracksById.values.map((t) => TracksCompanion.insert(
-          id: t.id,
-          title: t.title,
-          artist: t.artist,
-          albumArtist: Value(t.albumArtist),
-          album: t.album,
-          genre: Value(t.genre),
-          composer: Value(t.composer),
-          year: Value(t.year),
-          trackNumber: Value(t.trackNumber),
-          discNumber: Value(t.discNumber),
-          durationMs: t.duration.inMilliseconds,
-          artUrl: Value(t.artUrl),
-          audioUrl: t.audioUrl,
-          fileSystemPath: Value(t.fileSystemPath),
-          format: Value(t.format?.name),
-          isCloudOnly: Value(t.isCloudOnly),
-          isFavorite: Value(t.isFavorite),
-          rating: Value(t.rating),
-          playCount: Value(t.playCount),
-          lastPlayedAt: Value(t.lastPlayedAt),
-          dateAdded: Value(t.dateAdded),
-          replayGainTrackGain: Value(t.replayGainTrackGain),
-          replayGainAlbumGain: Value(t.replayGainAlbumGain),
-          embeddedLyrics: Value(t.embeddedLyrics),
-          sourceId: Value('local'),
-        ));
+    final entries = _tracksById.values.map(_trackToRow).toList();
     await _database!.clearTracks();
-    await _database!.upsertTracks(companions.toList());
+    await _database!.upsertTracks(entries);
   }
+
+  Map<String, Object?> _trackToRow(Track t) => {
+        'id': t.id,
+        'title': t.title,
+        'artist': t.artist,
+        'album_artist': t.albumArtist,
+        'album': t.album,
+        'genre': t.genre,
+        'composer': t.composer,
+        'year': t.year,
+        'track_number': t.trackNumber,
+        'disc_number': t.discNumber,
+        'duration_ms': t.duration.inMilliseconds,
+        'art_url': t.artUrl,
+        'audio_url': t.audioUrl,
+        'file_system_path': t.fileSystemPath,
+        'format': t.format?.name,
+        'is_cloud_only': t.isCloudOnly ? 1 : 0,
+        'is_favorite': t.isFavorite ? 1 : 0,
+        'rating': t.rating,
+        'play_count': t.playCount,
+        'last_played_at': t.lastPlayedAt?.millisecondsSinceEpoch,
+        'date_added': t.dateAdded?.millisecondsSinceEpoch,
+        'replay_gain_track_gain': t.replayGainTrackGain,
+        'replay_gain_album_gain': t.replayGainAlbumGain,
+        'embedded_lyrics': t.embeddedLyrics,
+        'source_id': 'local',
+      };
 
   // ── Getters ────────────────────────────────────────────────────────────────
   List<Track> get tracks => _tracksById.values.toList(growable: false);

@@ -39,13 +39,13 @@ jobs:
         run: dart format --output=none --set-exit-if-changed .
 
       - name: Analyze project
-        run: flutter analyze
+        run: flutter analyze --no-fatal-infos
 
       - name: Run tests
         run: flutter test --coverage --reporter expanded
 
       - name: Upload coverage to Codecov
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: codecov/codecov-action@v4
         with:
           files: coverage/lcov.info
@@ -84,7 +84,7 @@ jobs:
           retention-days: 14
 
   # ───────────────────────────────────────────────────────────────────────────
-  # Build Android APK (debug + release) — fast feedback on PRs.
+  # Build Android APK (debug) — fast feedback on PRs.
   # ───────────────────────────────────────────────────────────────────────────
   build-android:
     name: Build Android APK

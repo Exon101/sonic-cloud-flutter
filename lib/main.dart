@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
 import 'data/mock_data.dart';
+import 'db/app_database.dart';
 import 'screens/cloud_storage_screen.dart';
 import 'screens/equalizer/equalizer_screen.dart';
 import 'screens/library_browse/library_browse_screen.dart';
@@ -46,6 +48,7 @@ class _HomeShellState extends State<_HomeShell> {
   int _index = 0;
 
   // ── v3 service graph ──────────────────────────────────────────────────────
+  late final AudioPlayer _audioPlayer;
   late final PlaybackService _playback;
   late final EqualizerService _equalizer;
   late final LibraryService _library;
@@ -54,17 +57,30 @@ class _HomeShellState extends State<_HomeShell> {
   @override
   void initState() {
     super.initState();
-    _playback = PlaybackService();
-    _equalizer = EqualizerService(player: null); // bound later via init()
-    _library = LibraryService();
+    // Single AudioPlayer shared between PlaybackService and EqualizerService
+    // so the EQ actually affects playback output.
+    _audioPlayer = AudioPlayer();
+    _playback = PlaybackService(player: _audioPlayer);
+    _equalizer = EqualizerService(player: _audioPlayer);
+    _library = LibraryService(database: AppDatabase.instance);
     _universalLibrary = UniversalLibraryService(_library, []);
 
+    // Open the database, load saved tracks, then seed mock data if empty.
+    AppDatabase.instance.open().then((_) async {
+      await _library.loadFromDatabase();
+      if (_library.tracks.isEmpty) {
+        _library.importCloudTracks(MockData.allSongs);
+        await _library.saveToDatabase();
+      }
+    }).catchError((e) {
+      // Database isn't available in test environments — fall back to mock data.
+      _library.importCloudTracks(MockData.allSongs);
+    });
+
     // Initialize audio_service media session + EQ in the background.
+    // Failures are non-fatal — the app still works without notification controls.
     _playback.initAudioService().catchError((_) {});
     _equalizer.init().catchError((_) {});
-
-    // Seed library with mock data for demo purposes.
-    _library.importCloudTracks(MockData.allSongs);
   }
 
   @override
@@ -72,6 +88,7 @@ class _HomeShellState extends State<_HomeShell> {
     _playback.dispose();
     _equalizer.dispose();
     _library.dispose();
+    AppDatabase.instance.close();
     super.dispose();
   }
 

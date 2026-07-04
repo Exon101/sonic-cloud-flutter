@@ -1,0 +1,29 @@
+# CODEOWNERS — automatically requests review from the right people.
+#
+# Each line is `path-pattern  @user1 @user2` (or `/team-name` for orgs).
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner — applied to everything not matched below
+*                          @Exon101
+
+# Critical infrastructure — needs extra eyes
+/.github/workflows/        @Exon101
+/Dockerfile                @Exon101
+/docker-compose.yml        @Exon101
+/vercel.json               @Exon101
+/netlify.toml              @Exon101
+/firebase.json             @Exon101
+/codemagic.yaml            @Exon101
+
+# Security-sensitive code
+/lib/security/             @Exon101
+/lib/db/                   @Exon101
+/.env.example              @Exon101
+
+# Audio engine — high churn, high impact
+/lib/services/playback_service.dart   @Exon101
+/lib/services/audio_handler.dart      @Exon101
+/lib/services/equalizer_service.dart  @Exon101
+
+# Cloud providers — each one's correctness matters
+/lib/providers/            @Exon101

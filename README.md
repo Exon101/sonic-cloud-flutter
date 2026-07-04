@@ -343,3 +343,44 @@ preparation, and per-platform details.
 ## License
 
 MIT — feel free to fork and adapt.
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide. Quick reference:
+
+```bash
+git clone https://github.com/Exon101/sonic-cloud-flutter.git
+cd sonic-cloud-flutter
+flutter pub get
+dart format .
+flutter analyze --no-fatal-infos
+flutter test
+```
+
+Before opening a PR:
+1. Branch from `main` (`feat/…`, `fix/…`, `chore/…`, `docs/…`)
+2. Run `dart format .`, `flutter analyze`, `flutter test` — all must pass
+3. Use [conventional commit messages](https://www.conventionalcommits.org/)
+4. Fill in the [PR template](.github/pull_request_template.md)
+5. Link any closed issues (`Closes #123`)
+
+CI runs on every push and PR — `Analyze & Test`, `Build Web`, `Build Android APK`.
+The `main` branch is protected: see [`.github/BRANCH_PROTECTION.md`](.github/BRANCH_PROTECTION.md).
+
+## Security
+
+Found a vulnerability? **Do not open a public issue.** See
+[`.github/SECURITY.md`](.github/SECURITY.md) for the disclosure process.
+
+Sonic Cloud ships with several security features built in:
+- App PIN (salted hash in OS keychain via `flutter_secure_storage`)
+- Biometric unlock (`local_auth`)
+- Secure cloud credential storage per provider
+- Granular per-provider permissions (read / write / delete / stream / offline)
+- Optional offline-only mode (no network calls)
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for versioned release notes.

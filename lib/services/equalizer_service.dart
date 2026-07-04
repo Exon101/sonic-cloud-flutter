@@ -45,8 +45,12 @@ class EqualizerService extends ChangeNotifier {
   EqualizerPreset? get activePreset => _activePreset;
 
   /// Initialize native EQ if available (Android only).
+  /// Safe to call even when no AudioPlayer is wired — fails silently.
   Future<void> init() async {
-    if (_player == null) return;
+    if (_player == null) {
+      debugPrint('EqualizerService: no AudioPlayer wired — running in Dart-only mode.');
+      return;
+    }
     try {
       final session = await AudioSession.instance;
       await session.configure(const AudioSessionConfiguration(

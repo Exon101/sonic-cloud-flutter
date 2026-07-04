@@ -30,5 +30,22 @@ If applicable, add screenshots to help explain.
 - OS version:
 - Device:
 
+## Logs
+```
+Paste any relevant error logs here. Flutter logs via `flutter logs` or the
+device console. Remove any personally-identifying information.
+```
+
 ## Additional context
 Anything else relevant.
+
+---
+
+### For maintainers
+
+- [ ] Reproduced locally
+- [ ] Root cause identified
+- [ ] Fix PR opened (link: #N)
+- [ ] Test added covering the bug
+- [ ] Changelog updated
+- [ ] Issue closed via `Closes #N` in PR description

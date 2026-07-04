@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'dart:io';
 
 import 'package:webdav_client/webdav_client.dart';
 
@@ -14,13 +14,7 @@ import '../providers/cloud_providers.dart';
 ///   - Download to local path
 ///   - Upload local file
 ///   - Delete remote file
-///   - pullChanges via `getlastmodified` ETag comparison
-///
-/// Limitations:
-///   - No streaming URL for credentials-protected URLs is returned as a plain
-///     `https://user:pass@host/path` URL. just_audio can fetch this directly.
-///   - For large WebDAV servers, the recursive list may be slow; pagination
-///     isn't supported by webdav_client yet.
+///   - pullChanges via cache invalidation
 class RealWebDavProvider extends CloudProvider {
   RealWebDavProvider(super.config);
 
@@ -28,9 +22,6 @@ class RealWebDavProvider extends CloudProvider {
   List<Track>? _cache;
   DateTime? _cacheBuiltAt;
 
-  /// Connect using credentials stored in [CloudProviderConfig.account]
-  /// (format: "user:password") and the WebDAV server URL stored in
-  /// [CloudProviderConfig.rootPath].
   @override
   Future<bool> connect() async {
     try {
@@ -75,21 +66,36 @@ class RealWebDavProvider extends CloudProvider {
     final items = await _client!.readDir(path);
     for (final item in items) {
       final isDir = item.isDir ?? false;
+      final itemName = _extractName(item.path);
       if (isDir) {
         await _walk(item.path ?? '/', tracks);
       } else {
-        final format = AudioFormat.fromPath(item.name ?? '');
+        final format = AudioFormat.fromPath(itemName);
         if (format == null) continue;
-        tracks.add(_fileToTrack(item, format));
+        tracks.add(_fileToTrack(item, format, itemName));
       }
     }
   }
 
-  Track _fileToTrack(FileElement f, AudioFormat format) {
-    final name = (f.name ?? 'unknown').replaceAll(RegExp(r'\.[^.]+$'), '');
-    final parts = name.split(RegExp(r'\s*-\s*'));
+  /// Extract the last path segment (file or folder name) from a WebDAV path.
+  /// Strips trailing slashes and decodes percent-escapes.
+  String _extractName(String? path) {
+    if (path == null || path.isEmpty) return '';
+    final trimmed = path.endsWith('/') ? path.substring(0, path.length - 1) : path;
+    final last = trimmed.split('/').where((s) => s.isNotEmpty).lastOrNull;
+    if (last == null) return '';
+    try {
+      return Uri.decodeComponent(last);
+    } catch (_) {
+      return last;
+    }
+  }
+
+  Track _fileToTrack(FileElement f, AudioFormat format, String name) {
+    final baseName = name.replaceAll(RegExp(r'\.[^.]+$'), '');
+    final parts = baseName.split(RegExp(r'\s*-\s*'));
     final artist = parts.length > 1 ? parts.first : 'Unknown Artist';
-    final title = parts.length > 1 ? parts.sublist(1).join(' - ') : name;
+    final title = parts.length > 1 ? parts.sublist(1).join(' - ') : baseName;
     final uri = Uri.parse(config.rootPath ?? '');
     final creds = (config.account ?? '').split(':');
     final streamUrl = uri.replace(
@@ -103,7 +109,7 @@ class RealWebDavProvider extends CloudProvider {
       artist: artist,
       album: 'Unknown Album',
       year: 0,
-      duration: Duration(seconds: 0),
+      duration: Duration.zero,
       artUrl: '',
       audioUrl: streamUrl,
       format: format,
@@ -120,16 +126,20 @@ class RealWebDavProvider extends CloudProvider {
   @override
   Future<void> downloadFile(String fileId, String localPath) async {
     if (_client == null) return;
-    // Strip the prefix to get the WebDAV path.
     final path = _stripPrefix(fileId);
     final data = await _client!.read(path);
-    await data.pipe(FileSink(localPath));
+    final file = File(localPath);
+    final sink = file.openWrite();
+    await data.forEach((chunk) => sink.add(chunk));
+    await sink.close();
   }
 
   @override
   Future<String> uploadFile(String localPath, String remotePath) async {
     if (_client == null) return '';
-    await _client!.upload(FileSource(localPath), remotePath);
+    final file = File(localPath);
+    final stream = file.openRead();
+    await _client!.write(remotePath, stream);
     _cache = null; // invalidate
     return '$remotePath/${localPath.split('/').last}';
   }
@@ -162,45 +172,8 @@ class RealWebDavProvider extends CloudProvider {
   }
 }
 
-// Local file sink helper for the download pipe.
-class FileSink implements StreamSink<List<int>> {
-  FileSink(this.path);
-  final String path;
-  late final _file = File(path);
-  IOSink? _sink;
-
-  IOSink get sink => _sink ??= _file.openWrite();
-
-  @override
-  Future<void> add(List<int> data) async {
-    sink.add(data);
-  }
-
-  @override
-  void addError(Object error, [StackTrace? stackTrace]) {
-    sink.addError(error, stackTrace);
-  }
-
-  @override
-  Future<void> addStream(Stream<List<int>> stream) => sink.addStream(stream);
-
-  @override
-  Future<void> close() async => await sink.close();
-
-  @override
-  Future<void> get done => sink.done;
-}
-
-// File / FileSource wrappers for webdav_client (which uses dart:io File).
-import 'dart:io';
-
-class FileSource {
-  FileSource(this.path);
-  final String path;
-  File get file => File(path);
-  Stream<List<int>> openRead() => file.openRead();
-}
-
-extension on FileElement {
-  String? get name => path?.split('/').where((s) => s.isNotEmpty).last;
+// `lastOrNull` is available on Iterable in Dart 3+; we declare it here as a
+// safety net for older SDKs.
+extension _LastOrNull<T> on Iterable<T> {
+  T? get safeLastOrNull => isEmpty ? null : last;
 }

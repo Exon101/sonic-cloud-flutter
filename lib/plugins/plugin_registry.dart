@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart' show Widget;
 
 import '../models/models.dart';
 import '../services/lyrics_service.dart';
@@ -57,9 +58,6 @@ abstract class VisualizerPlugin {
   String get name;
   Widget build(/* AudioWaveform data */);
 }
-
-// Need Widget type — re-export from flutter.
-import 'package:flutter/widgets.dart' show Widget;
 
 /// Pluggable metadata source (e.g. MusicBrainz, Discogs).
 abstract class MetadataSourcePlugin {
