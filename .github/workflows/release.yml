@@ -75,13 +75,13 @@ jobs:
         run: flutter build appbundle --release
 
       - name: Upload APK artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: android-apk-release
           path: build/app/outputs/flutter-apk/app-release.apk
 
       - name: Upload AAB artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: android-aab-release
           path: build/app/outputs/bundle/release/app-release.aab
@@ -113,7 +113,7 @@ jobs:
         run: tar -czf web-release.tar.gz -C build/web .
 
       - name: Upload web artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: web-release
           path: web-release.tar.gz
@@ -145,7 +145,7 @@ jobs:
         run: flutter build ios --release --no-codesign
 
       - name: Upload iOS build artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ios-build
           path: build/ios/iphoneos/Runner.app
@@ -177,7 +177,7 @@ jobs:
         run: tar -czf macos-release.tar.gz -C build/macos/Build/Products/Release "Sonic Cloud.app"
 
       - name: Upload macOS artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: macos-release
           path: macos-release.tar.gz
@@ -210,7 +210,7 @@ jobs:
         run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath windows-release.zip
 
       - name: Upload Windows artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: windows-release
           path: windows-release.zip
@@ -247,7 +247,7 @@ jobs:
         run: tar -czf linux-release.tar.gz -C build/linux/x64/release/bundle .
 
       - name: Upload Linux artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: linux-release
           path: linux-release.tar.gz
