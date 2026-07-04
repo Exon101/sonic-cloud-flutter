@@ -282,6 +282,7 @@ jobs:
   publish-release:
     name: Publish GitHub Release
     needs: [build-android, build-web, build-ios, build-macos, build-windows, build-linux]
+    if: always()  # Run even if some platform builds fail — release with available artifacts
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -305,14 +306,14 @@ jobs:
       - name: Stage release files
         run: |
           mkdir -p release
-          cp artifacts/android-apk-release/app-release.apk release/sonic-cloud-${{ steps.ver.outputs.version }}-android.apk
-          cp artifacts/android-aab-release/app-release.aab release/sonic-cloud-${{ steps.ver.outputs.version }}-android.aab
-          cp artifacts/web-release/web-release.tar.gz release/sonic-cloud-${{ steps.ver.outputs.version }}-web.tar.gz
-          cp artifacts/ios-build/Runner.app release/sonic-cloud-${{ steps.ver.outputs.version }}-ios.app || true
-          cp artifacts/macos-release/macos-release.tar.gz release/sonic-cloud-${{ steps.ver.outputs.version }}-macos.tar.gz
-          cp artifacts/windows-release/windows-release.zip release/sonic-cloud-${{ steps.ver.outputs.version }}-windows.zip
-          cp artifacts/linux-release/linux-release.tar.gz release/sonic-cloud-${{ steps.ver.outputs.version }}-linux.tar.gz
-          ls -la release/
+          cp artifacts/android-apk-release/app-release.apk release/sonic-cloud-${{ steps.ver.outputs.version }}-android.apk || echo "Android APK not available"
+          cp artifacts/android-aab-release/app-release.aab release/sonic-cloud-${{ steps.ver.outputs.version }}-android.aab || echo "Android AAB not available"
+          cp artifacts/web-release/web-release.tar.gz release/sonic-cloud-${{ steps.ver.outputs.version }}-web.tar.gz || echo "Web bundle not available"
+          cp artifacts/ios-build/Runner.app release/sonic-cloud-${{ steps.ver.outputs.version }}-ios.app || echo "iOS build not available"
+          cp artifacts/macos-release/macos-release.tar.gz release/sonic-cloud-${{ steps.ver.outputs.version }}-macos.tar.gz || echo "macOS build not available"
+          cp artifacts/windows-release/windows-release.zip release/sonic-cloud-${{ steps.ver.outputs.version }}-windows.zip || echo "Windows build not available"
+          cp artifacts/linux-release/linux-release.tar.gz release/sonic-cloud-${{ steps.ver.outputs.version }}-linux.tar.gz || echo "Linux build not available"
+          ls -la release/ || true
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
