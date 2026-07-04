@@ -542,11 +542,31 @@ class CloudProviderConfig {
 
 enum SyncState { idle, syncing, success, error, offline }
 
+/// A recent cloud sync activity entry (shown on the Cloud Storage screen).
+class SyncActivity {
+  final String id;
+  final String fileName;
+  final String status;
+  final SyncState state;
+  final double? progress; // 0..1, only for [SyncState.downloading]
+
+  const SyncActivity({
+    required this.id,
+    required this.fileName,
+    required this.status,
+    required this.state,
+    this.progress,
+  });
+}
+
 /// A user account (for cross-device sync).
 class UserAccount {
   final String id;
   final String email;
   final bool isAnonymous;
+  final String name;
+  final String tier;
+  final String avatarUrl;
   final List<DeviceInfo> devices;
   final List<SessionInfo> sessions;
 
@@ -554,6 +574,9 @@ class UserAccount {
     required this.id,
     required this.email,
     this.isAnonymous = false,
+    this.name = '',
+    this.tier = '',
+    this.avatarUrl = '',
     this.devices = const [],
     this.sessions = const [],
   });

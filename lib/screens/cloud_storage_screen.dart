@@ -527,7 +527,7 @@ class _SyncRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDownloading = activity.state == SyncState.downloading;
+    final isDownloading = activity.state == SyncState.syncing;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.xs),
       decoration: BoxDecoration(
