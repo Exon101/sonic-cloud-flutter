@@ -5,8 +5,8 @@
 </p>
 
 <p align="center">
-  <strong>A premium glassmorphic music player with cloud integration.</strong><br/>
-  Built with Flutter. Implements the Sonic Cloud design system across four screens.
+  <strong>A premium glassmorphic music player with cloud integration, real audio playback, equalizer, lyrics, and a plugin architecture.</strong><br/>
+  Built with Flutter. Implements the Sonic Cloud design system across four screens, plus a v2 service layer for production features.
 </p>
 
 <p align="center">
@@ -15,6 +15,7 @@
   <img alt="Platforms" src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20macOS%20%7C%20Linux%20%7C%20Windows%20%7C%20Web-5A5EA5" />
   <img alt="License" src="https://img.shields.io/badge/license-MIT-5A5EA5" />
   <img alt="Status" src="https://img.shields.io/badge/status-active-brightgreen" />
+  <img alt="Features" src="https://img.shields.io/badge/features-58%20implemented%20%7C%2042%20scaffolded%20%7C%2048%20planned-blue" />
 </p>
 
 ---
@@ -187,6 +188,84 @@ PlaybackService  ←──  widgets listen via AnimatedBuilder(animation: servic
 3. **Toggles are accessible** — Each toggle has a visible label and a `GestureDetector`.
 4. **No duplicate stylesheets** — Single source of truth in `app_theme.dart`.
 5. **Bottom nav doesn't appear on Now Playing** — Pushed as a full-screen route.
+
+---
+
+## v2 Architecture — production features
+
+Beyond the original four-screen design-system port, v2 adds a full service
+layer that supports the feature set of a production music player. The full
+matrix of what's implemented, scaffolded (interface only), and planned lives in
+[FEATURES.md](FEATURES.md) — quick summary:
+
+### Implemented (working code)
+
+- **Audio engine**: gapless playback via `ConcatenatingAudioSource`, repeat
+  modes (off/all/one), shuffle, playback speed 0.5×–3×, pitch ±12 semitones,
+  per-track ReplayGain normalization, sleep timer (pause/stop/fade-out)
+- **Equalizer**: 10-band ISO-frequency EQ (31 Hz–16 kHz, -12..+12 dB) with
+  native Android EQ via `AndroidEqualizer`, 9 built-in presets (Flat, Bass
+  Boost, Rock, Pop, Jazz, etc.), bass boost / virtualizer / surround /
+  loudness / compressor / limiter toggles
+- **Library**: scan local folders recursively, multi-tier indices
+  (artists / albums / genres / years / composers / folders), duplicate
+  detection, broken-file detection, favorites, ratings, play counts,
+  recently played, most played
+- **Lyrics**: parse embedded lyrics + sidecar `.lrc` files, multi-timestamp
+  lines, millisecond precision, synced scrolling with active-line highlight,
+  karaoke mode, tap-to-seek
+- **Playlists**: manual + smart + auto playlists, rule engine
+  (most/least/never played, recent, genre, artist, mood, year, rating)
+- **Search**: instant in-memory search across artist / album / song /
+  genre / lyrics
+- **Themes**: dark / light / AMOLED / dynamic / system, custom accent colors
+  via `ColorScheme.fromSeed`
+- **Plugin system**: extension points for lyrics providers, cloud providers,
+  audio effects, visualizers, metadata sources, themes, and scripts
+
+### Scaffolded (interface only — drop in real impl)
+
+- 10 cloud providers (Google Drive, Dropbox, OneDrive, Nextcloud, WebDAV,
+  SMB, FTP, SFTP, NAS, local network) — `CloudProvider` abstract class
+- Cross-device sync (playlists, queue, favorites, ratings, resume position,
+  settings) — `SyncService` abstract class with `LocalSyncService` default
+- `audio_service` integration for lock-screen / notification / Bluetooth
+  controls (package is in pubspec; MediaController not wired)
+- Tag editing via `audiotags`
+
+### Planned (not yet started)
+
+- Android Auto / CarPlay / DLNA / UPnP
+- Audio visualizer widgets
+- FTS5 index for >100k song libraries
+- Desktop: system tray, media keys, MPRIS, drag-and-drop
+- AI: mood detection, similar songs, smart playlist generation
+- Sharing: playlist QR codes, M3U/XSPF import/export
+
+See [FEATURES.md](FEATURES.md) for the complete 148-row matrix.
+
+### v2 Service architecture
+
+```
+lib/
+├── models/models.dart              ← 20+ domain classes (Track, Album, Playlist, Lyrics, EQ, Cloud…)
+├── services/
+│   ├── playback_service.dart       ← v2: queue, repeat, shuffle, speed, pitch, sleep timer, crossfade, ReplayGain
+│   ├── equalizer_service.dart      ← 10-band EQ + bass boost / virtualizer / etc.
+│   ├── library_service.dart        ← scan, indices, duplicates, broken files, favorites, ratings
+│   ├── lyrics_service.dart         ← LRC parser, synced active-line index, karaoke
+│   ├── playlist_service.dart       ← manual + smart + auto playlists with rule engine
+│   ├── search_service.dart         ← instant in-memory search
+│   ├── sync_service.dart           ← cross-device sync abstraction + LocalSyncService
+│   ├── app_settings_service.dart   ← SharedPreferences-backed settings
+│   └── theme_service.dart          ← 5 theme modes + custom accent
+├── providers/cloud_providers.dart  ← CloudProvider abstract + 10 stub implementations
+├── plugins/plugin_registry.dart    ← 7 plugin extension points
+└── screens/
+    ├── equalizer/equalizer_screen.dart
+    ├── lyrics/lyrics_screen.dart
+    └── lyrics/sleep_timer_sheet.dart
+```
 
 ---
 

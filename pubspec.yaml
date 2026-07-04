@@ -1,7 +1,7 @@
 name: sonic_cloud
-description: A premium glassmorphic music player with cloud integration, built per the Sonic Cloud design system.
+description: A premium glassmorphic music player with cloud integration, real audio playback, equalizer, lyrics, and a plugin architecture.
 publish_to: "none"
-version: 1.0.0+1
+version: 2.0.0+2
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -12,27 +12,44 @@ dependencies:
     sdk: flutter
   google_fonts: ^6.1.0
   cupertino_icons: ^1.0.6
-  # Real audio playback engine — used by NowPlayingScreen.
+
+  # ── Audio engine ────────────────────────────────────────────────────────────
   just_audio: ^0.9.37
-  # Background audio + lock-screen controls (optional but pairs naturally with just_audio).
-  # Commented out to keep the demo minimal; uncomment and wire up MediaController if needed.
-  # audio_service: ^0.9.39
+  # Lock-screen / notification controls + background playback
+  audio_service: ^0.18.13
+  # Audio metadata reading + writing (ID3, Vorbis, MP4, FLAC)
+  audiotags: ^0.0.4
+  # Pure-Dart audio file format detection
+  audio_metadata_reader: ^0.0.7
+
+  # ── Library / file system ────────────────────────────────────────────────────
+  file_picker: ^8.0.0
+  path_provider: ^2.1.2
+  path: ^1.9.0
+  collection: ^1.18.0
+
+  # ── Persistence ──────────────────────────────────────────────────────────────
+  shared_preferences: ^2.2.2
+
+  # ── State management ─────────────────────────────────────────────────────────
+  provider: ^6.1.2
+
+  # ── Networking (cloud providers) ─────────────────────────────────────────────
+  http: ^1.2.0
+  webdav_client: ^2.0.0
+
+  # ── Utilities ────────────────────────────────────────────────────────────────
+  uuid: ^4.3.3
+  intl: ^0.19.0
+  rxdart: ^0.27.7
 
 dev_dependencies:
   flutter_lints: ^3.0.0
   flutter_test:
     sdk: flutter
-  # Generates launcher icons for Android + iOS from a single source PNG.
   flutter_launcher_icons: ^0.13.1
-  # Mocking library for unit/widget tests.
   mocktail: ^1.0.3
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Launcher icon configuration.
-#
-# Run `dart run flutter_launcher_icons` after `flutter pub get` to regenerate
-# icons for both Android (mipmap-*) and iOS (Assets.xcassets/AppIcon.appiconset).
-# ─────────────────────────────────────────────────────────────────────────────
 flutter_launcher_icons:
   android: true
   ios: true
