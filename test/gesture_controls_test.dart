@@ -1,9 +1,9 @@
-// Skip: these tests need rework for CI compatibility (gesture timing + mock signatures)
-@Skip("CI-flaky: see FEATURES.md")
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sonic_cloud/gestures/gesture_controls.dart';
+
+@Skip('CI-flaky: gesture timing + mock signatures need rework')
 
 void main() {
   group('GestureControls', () {
