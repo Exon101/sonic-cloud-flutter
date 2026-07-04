@@ -121,6 +121,7 @@ class RealWebDavProvider extends CloudProvider {
 
   @override
   Future<String?> streamUrl(String fileId) async {
+    if (_client == null) return null;
     // fileId is the audioUrl we constructed in _fileToTrack.
     return fileId;
   }

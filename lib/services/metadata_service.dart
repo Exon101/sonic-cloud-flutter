@@ -130,7 +130,7 @@ class TrackMetadata {
     title: t.title,
     artist: t.artist,
     albumArtist: t.albumArtist.isNotEmpty ? t.albumArtist : null,
-    album: t.album,
+    album: t.album.isNotEmpty ? t.album : null,
     genre: t.genre.isNotEmpty ? t.genre : null,
     composer: t.composer.isNotEmpty ? t.composer : null,
     year: t.year > 0 ? t.year : null,
