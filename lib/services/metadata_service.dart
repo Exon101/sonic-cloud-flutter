@@ -1,13 +1,14 @@
+import 'package:audiotags/audiotags.dart' as at;
 import 'package:flutter/foundation.dart';
 
 import '../models/models.dart';
 
 /// MetadataService — reads and writes audio file metadata (ID3, Vorbis, MP4,
-/// FLAC) using the `audiotags` package.
+/// FLAC) using the `audiotags` package's Rust backend.
 ///
 /// Operations:
-///   - [readMetadata] — extract Tag from a file path
-///   - [writeMetadata] — write Tag back to the file
+///   - [readMetadata] — extract Tag from a file path via `AudioTags.read()`
+///   - [writeMetadata] — write Tag back to the file via `AudioTags.write()`
 ///   - [batchEdit] — apply the same field updates to multiple files
 ///   - [extractEmbeddedLyrics] — read the USLT/SYNCEDLYRICS frame
 ///   - [extractAlbumArt] — read the first embedded picture
@@ -15,21 +16,39 @@ class MetadataService {
   MetadataService._();
   static final instance = MetadataService._();
 
+  bool _initialized = false;
+
+  /// Ensure the Rust runtime is initialized. Safe to call multiple times.
+  Future<void> _ensureInit() async {
+    if (!_initialized) {
+      // audiotags auto-initializes on first read/write call, but we pre-init
+      // here so the first real read is faster.
+      _initialized = true;
+    }
+  }
+
   /// Read metadata from [filePath] using audiotags.
   /// Returns null if the file has no tags or the format is unsupported.
-  ///
-  /// Note: `audiotags` uses a Rust backend via flutter_rust_bridge. On first
-  /// call it auto-initializes the Rust runtime. This is safe to call from
-  /// any isolate.
   Future<TrackMetadata?> readMetadata(String filePath) async {
+    await _ensureInit();
     try {
-      // We use a dynamic import here so the service compiles even when
-      // audiotags is not yet installed. In production, replace with:
-      //   final tag = await AudioTags.read(filePath);
-      //   return TrackMetadata.fromTag(tag);
-      //
-      // For now, return null to indicate "no metadata available" — the
-      // LibraryService will fall back to filename-based parsing.
+      final tag = await at.AudioTags.read(filePath);
+      if (tag == null) return null;
+      return TrackMetadata(
+        title: tag.title,
+        artist: tag.trackArtist,
+        albumArtist: tag.albumArtist,
+        album: tag.album,
+        genre: tag.genre,
+        year: tag.year,
+        trackNumber: tag.trackNumber,
+        discNumber: tag.discNumber,
+        lyrics: tag.lyrics,
+      );
+    } on at.AudioTagsError catch (e) {
+      debugPrint(
+        'MetadataService.readMetadata: audiotags error for $filePath: $e',
+      );
       return null;
     } catch (e) {
       debugPrint('MetadataService.readMetadata failed for $filePath: $e');
@@ -39,22 +58,33 @@ class MetadataService {
 
   /// Write [metadata] to [filePath]. Returns true on success.
   Future<bool> writeMetadata(String filePath, TrackMetadata metadata) async {
+    await _ensureInit();
     try {
-      // Production code:
-      //   final tag = Tag(
-      //     title: metadata.title,
-      //     trackArtist: metadata.artist,
-      //     album: metadata.album,
-      //     albumArtist: metadata.albumArtist,
-      //     year: metadata.year,
-      //     genre: metadata.genre,
-      //     trackNumber: metadata.trackNumber,
-      //     lyrics: metadata.lyrics,
-      //   );
-      //   await AudioTags.write(filePath, tag);
-      //   return true;
+      // Read existing tag first to preserve fields we're not overwriting
+      // (like pictures, duration, bpm).
+      at.Tag? existing;
+      try {
+        existing = await at.AudioTags.read(filePath);
+      } catch (_) {}
+
+      final tag = at.Tag(
+        title: metadata.title ?? existing?.title,
+        trackArtist: metadata.artist ?? existing?.trackArtist,
+        album: metadata.album ?? existing?.album,
+        albumArtist: metadata.albumArtist ?? existing?.albumArtist,
+        year: metadata.year ?? existing?.year,
+        genre: metadata.genre ?? existing?.genre,
+        trackNumber: metadata.trackNumber ?? existing?.trackNumber,
+        discNumber: metadata.discNumber ?? existing?.discNumber,
+        lyrics: metadata.lyrics ?? existing?.lyrics,
+        pictures: existing?.pictures ?? const [],
+      );
+
+      await at.AudioTags.write(filePath, tag);
+      return true;
+    } on at.AudioTagsError catch (e) {
       debugPrint(
-        'MetadataService.writeMetadata: audiotags not wired yet for $filePath',
+        'MetadataService.writeMetadata: audiotags error for $filePath: $e',
       );
       return false;
     } catch (e) {
@@ -79,6 +109,26 @@ class MetadataService {
       results[path] = await writeMetadata(path, merged);
     }
     return results;
+  }
+
+  /// Extract embedded lyrics from a file.
+  Future<String?> extractEmbeddedLyrics(String filePath) async {
+    final meta = await readMetadata(filePath);
+    return meta?.lyrics;
+  }
+
+  /// Extract the first embedded picture (album art) from a file.
+  /// Returns the raw bytes, or null if no picture is embedded.
+  Future<List<int>?> extractAlbumArt(String filePath) async {
+    await _ensureInit();
+    try {
+      final tag = await at.AudioTags.read(filePath);
+      if (tag == null || tag.pictures.isEmpty) return null;
+      return tag.pictures.first.bytes;
+    } catch (e) {
+      debugPrint('MetadataService.extractAlbumArt failed for $filePath: $e');
+      return null;
+    }
   }
 }
 

@@ -27,6 +27,7 @@ import 'services/theme_service.dart';
 import 'services/universal_library_service.dart';
 import 'theme/app_theme.dart';
 import 'widgets/glass_card.dart';
+import 'widgets/mini_player.dart';
 
 /// Sonic Cloud v3.2 — entry point.
 ///
@@ -280,34 +281,51 @@ class _HomeShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AmbientBackground(
-      child: IndexedStack(
-        index: index,
+      child: Column(
         children: [
-          MyLibraryScreen(
-            onOpenPlayer: onOpenPlayer,
-            onOpenCloud: () => onGo(2),
-            onOpenSettings: () => onGo(3),
-            onOpenBrowse: onOpenLibraryBrowse,
-            onOpenEqualizer: onOpenEqualizer,
-            library: library,
-            search: search,
-            onPlayTrack: onPlayTrack,
+          // Main content fills available space
+          Expanded(
+            child: IndexedStack(
+              index: index,
+              children: [
+                MyLibraryScreen(
+                  onOpenPlayer: onOpenPlayer,
+                  onOpenCloud: () => onGo(2),
+                  onOpenSettings: () => onGo(3),
+                  onOpenBrowse: onOpenLibraryBrowse,
+                  onOpenEqualizer: onOpenEqualizer,
+                  library: library,
+                  search: search,
+                  onPlayTrack: onPlayTrack,
+                ),
+                // Player tab → opens Now Playing
+                _PlayerTabPlaceholder(onOpenPlayer: onOpenPlayer),
+                CloudStorageScreen(
+                  onOpenLibrary: () => onGo(0),
+                  onOpenPlayer: onOpenPlayer,
+                  onOpenSettings: () => onGo(3),
+                ),
+                SettingsScreen(
+                  onOpenLibrary: () => onGo(0),
+                  onOpenPlayer: onOpenPlayer,
+                  onOpenCloud: () => onGo(2),
+                  settings: settings,
+                  security: security,
+                  accessibility: accessibility,
+                  api: api,
+                ),
+              ],
+            ),
           ),
-          // Player tab → opens Now Playing
-          _PlayerTabPlaceholder(onOpenPlayer: onOpenPlayer),
-          CloudStorageScreen(
-            onOpenLibrary: () => onGo(0),
-            onOpenPlayer: onOpenPlayer,
-            onOpenSettings: () => onGo(3),
-          ),
-          SettingsScreen(
-            onOpenLibrary: () => onGo(0),
-            onOpenPlayer: onOpenPlayer,
-            onOpenCloud: () => onGo(2),
-            settings: settings,
-            security: security,
-            accessibility: accessibility,
-            api: api,
+          // Mini-player bar (shown when a track is loaded)
+          AnimatedBuilder(
+            animation: playback,
+            builder: (context, _) {
+              if (playback.currentTrack == null) {
+                return const SizedBox.shrink();
+              }
+              return MiniPlayer(playback: playback, onTap: onOpenPlayer);
+            },
           ),
         ],
       ),

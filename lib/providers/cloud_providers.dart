@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 
 import '../models/models.dart';
 import 'real_webdav_provider.dart';
+import 'real_google_drive_provider.dart';
+import 'real_dropbox_provider.dart';
 
 /// CloudProvider — abstract base for all cloud storage providers.
 ///
@@ -265,12 +267,13 @@ class LocalNetworkProvider extends CloudProvider {
 
 CloudProvider makeProvider(CloudProviderConfig config) {
   return switch (config.kind) {
-    CloudProviderKind.googleDrive => GoogleDriveProvider(config),
-    CloudProviderKind.dropbox => DropboxProvider(config),
+    // Real implementations (using HTTP APIs)
+    CloudProviderKind.googleDrive => RealGoogleDriveProvider(config),
+    CloudProviderKind.dropbox => RealDropboxProvider(config),
+    CloudProviderKind.webdav => RealWebDavProvider(config),
+    // Stub implementations (interface only — replace with real code)
     CloudProviderKind.oneDrive => OneDriveProvider(config),
     CloudProviderKind.nextcloud => NextcloudProvider(config),
-    // WebDAV is the only provider with a real implementation so far.
-    CloudProviderKind.webdav => RealWebDavProvider(config),
     CloudProviderKind.smb => SmbProvider(config),
     CloudProviderKind.ftp => FtpProvider(config),
     CloudProviderKind.sftp => SftpProvider(config),

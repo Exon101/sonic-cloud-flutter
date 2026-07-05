@@ -140,7 +140,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                       },
                     ),
                     const Spacer(),
-                    _VinylArt(artUrl: widget.track.artUrl),
+                    _VinylArt(
+                      artUrl: widget.track.artUrl,
+                      isPlaying: widget.playback.isPlaying,
+                    ),
                     const SizedBox(height: AppSpacing.md),
                     _TrackInfo(track: widget.track),
                     const Spacer(),
@@ -268,9 +271,43 @@ class _TopBar extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 // Vinyl-style album art
 // ─────────────────────────────────────────────────────────────────────────────
-class _VinylArt extends StatelessWidget {
+class _VinylArt extends StatefulWidget {
   final String artUrl;
-  const _VinylArt({required this.artUrl});
+  final bool isPlaying;
+  const _VinylArt({required this.artUrl, this.isPlaying = true});
+
+  @override
+  State<_VinylArt> createState() => _VinylArtState();
+}
+
+class _VinylArtState extends State<_VinylArt> with TickerProviderStateMixin {
+  late final AnimationController _rotationCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _rotationCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 20), // 20s per rotation = 33⅓ RPM
+    );
+    if (widget.isPlaying) _rotationCtrl.repeat();
+  }
+
+  @override
+  void didUpdateWidget(_VinylArt oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isPlaying && !oldWidget.isPlaying) {
+      _rotationCtrl.repeat();
+    } else if (!widget.isPlaying && oldWidget.isPlaying) {
+      _rotationCtrl.stop();
+    }
+  }
+
+  @override
+  void dispose() {
+    _rotationCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -281,53 +318,79 @@ class _VinylArt extends StatelessWidget {
         alignment: Alignment.center,
         children: [
           _PulsingRing(),
-          Container(
-            width: 295,
-            height: 295,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              image: DecorationImage(
-                image: NetworkImage(artUrl),
-                fit: BoxFit.cover,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.5),
-                  blurRadius: 24,
-                  offset: const Offset(0, 12),
+          // Rotating vinyl disc
+          AnimatedBuilder(
+            animation: _rotationCtrl,
+            builder: (context, child) {
+              return Transform.rotate(
+                angle: _rotationCtrl.value * 2 * 3.141592653589793,
+                child: child,
+              );
+            },
+            child: Container(
+              width: 295,
+              height: 295,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                image: DecorationImage(
+                  image: NetworkImage(widget.artUrl),
+                  fit: BoxFit.cover,
                 ),
-              ],
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.background.withOpacity(0.8),
-                    border: Border.all(color: Colors.white.withOpacity(0.1)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.5),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.5),
+                    blurRadius: 24,
+                    offset: const Offset(0, 12),
                   ),
-                  child: Center(
-                    child: Container(
-                      width: 12,
-                      height: 12,
-                      decoration: const BoxDecoration(
-                        color: Colors.black54,
+                ],
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Vinyl grooves (subtle rings)
+                  ...List.generate(5, (i) {
+                    final size = 120.0 + i * 30;
+                    return Container(
+                      width: size,
+                      height: size,
+                      decoration: BoxDecoration(
                         shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.03),
+                          width: 0.5,
+                        ),
+                      ),
+                    );
+                  }),
+                  // Center spindle hole
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppColors.background.withOpacity(0.8),
+                      border: Border.all(color: Colors.white.withOpacity(0.1)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.5),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Container(
+                        width: 12,
+                        height: 12,
+                        decoration: const BoxDecoration(
+                          color: Colors.black54,
+                          shape: BoxShape.circle,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
