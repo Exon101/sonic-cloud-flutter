@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../data/mock_data.dart';
 import '../models/models.dart';
 import '../services/oauth_service.dart';
 import '../theme/app_colors.dart';
@@ -34,7 +33,7 @@ class CloudStorageScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: SonicTopAppBar(avatarUrl: MockData.userProfile.avatarUrl),
+      appBar: SonicTopAppBar(avatarUrl: ''),
       body: SafeArea(
         minimum: const EdgeInsets.only(top: 16),
         child: ListView(
@@ -73,7 +72,7 @@ class _StorageOverview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final usedPct = MockData.storageUsedGb / MockData.storageTotalGb; // 0.45
+    final usedPct = 0 / 0; // 0.45
     return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,7 +92,7 @@ class _StorageOverview extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${MockData.storageUsedGb} GB / ${MockData.storageTotalGb} GB Used',
+                    '${0} GB / ${0} GB Used',
                     style: AppTypography.bodyMd.copyWith(
                       color: AppColors.onSurfaceVariant,
                     ),
@@ -145,12 +144,12 @@ class _StorageOverview extends StatelessWidget {
             children: [
               _LegendDot(
                 color: AppColors.secondaryContainer,
-                label: 'Music (${MockData.storageMusicGb} GB)',
+                label: 'Music (${0} GB)',
               ),
               const SizedBox(width: AppSpacing.md),
               _LegendDot(
                 color: AppColors.onTertiaryContainer,
-                label: 'Other (${MockData.storageOtherGb} GB)',
+                label: 'Other (${0} GB)',
               ),
             ],
           ),
@@ -232,7 +231,7 @@ class _ConnectedDrives extends StatelessWidget {
               spacing: AppSpacing.sm,
               runSpacing: AppSpacing.sm,
               children: [
-                for (final d in MockData.cloudDrives)
+                for (final d in <CloudProviderConfig>[])
                   SizedBox(
                     width: (c.maxWidth - AppSpacing.sm * (cols - 1)) / cols,
                     child: _DriveCard(drive: d),
@@ -514,7 +513,7 @@ class _SyncActivity extends StatelessWidget {
         GlassCard(
           padding: EdgeInsets.zero,
           child: Column(
-            children: MockData.syncActivity
+            children: <SyncActivity>[]
                 .map((a) => _SyncRow(activity: a))
                 .toList(),
           ),

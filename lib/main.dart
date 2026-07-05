@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'accessibility/accessibility_service.dart';
 import 'models/models.dart';
 import 'api/local_api_service.dart';
-import 'data/mock_data.dart';
 import 'db/app_database.dart';
 import 'fingerprint/audio_fingerprinter.dart';
 import 'screens/cloud_storage_screen.dart';
@@ -103,16 +102,12 @@ class _SonicCloudAppState extends State<SonicCloudApp> {
     _api = LocalApiService(_playback, _universalLibrary);
     _oauth = OAuthService();
 
-    // Open database, load saved tracks, seed mock data if empty
+    // Open database, load saved tracks
     try {
       await AppDatabase.instance.open();
       await _library.loadFromDatabase();
-      if (_library.tracks.isEmpty) {
-        _library.importCloudTracks(MockData.allSongs);
-        await _library.saveToDatabase();
-      }
-    } catch (_) {
-      _library.importCloudTracks(MockData.allSongs);
+    } catch (e) {
+      debugPrint('Database load failed: $e');
     }
 
     // Index search
@@ -152,9 +147,8 @@ class _SonicCloudAppState extends State<SonicCloudApp> {
   void _openPlayer() {
     final track =
         _playback.currentTrack ??
-        (_playback.queue.isNotEmpty
-            ? _playback.queue.first
-            : MockData.allSongs.first);
+        (_playback.queue.isNotEmpty ? _playback.queue.first : null);
+    if (track == null) return; // Nothing to play — don't open player
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => NowPlayingScreen(

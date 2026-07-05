@@ -1,6 +1,5 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import '../data/mock_data.dart';
 import '../models/models.dart';
 import '../services/library_service.dart';
 import '../services/search_service.dart';
@@ -241,7 +240,7 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: SonicTopAppBar(
-        avatarUrl: MockData.userProfile.avatarUrl,
+        avatarUrl: '',
         actions: [
           IconButton(
             icon: const Icon(

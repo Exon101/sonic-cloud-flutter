@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../accessibility/accessibility_service.dart';
 import '../api/local_api_service.dart';
-import '../data/mock_data.dart';
 import '../models/models.dart';
 import '../security/security_service.dart';
 import '../services/app_settings_service.dart';
@@ -127,7 +126,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: SonicTopAppBar(avatarUrl: MockData.userProfile.avatarUrl),
+      appBar: SonicTopAppBar(avatarUrl: ''),
       body: SafeArea(
         minimum: const EdgeInsets.only(top: 16),
         child: AnimatedBuilder(
@@ -153,7 +152,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 // Profile
-                _ProfileCard(user: MockData.userProfile),
+                _ProfileCard(
+                  user: const UserAccount(
+                    id: 'local',
+                    email: 'Not signed in',
+                    name: 'Guest User',
+                    tier: 'Local Mode',
+                  ),
+                ),
                 const SizedBox(height: AppSpacing.md),
 
                 // ── Appearance ──────────────────────────────────────────────

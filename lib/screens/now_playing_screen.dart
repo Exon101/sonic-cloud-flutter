@@ -52,10 +52,12 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   @override
   void initState() {
     super.initState();
-    // If nothing is playing yet, start playing this track.
-    // Don't replay if the caller (onPlayTrack) already started it.
+    // The caller (onPlayTrack) already calls playAll. We only need to
+    // start playback if this screen was opened directly (e.g. from
+    // notification) and nothing is playing.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!widget.playback.isPlaying && widget.playback.currentTrack == null) {
+      if (widget.playback.currentTrack?.id != widget.track.id &&
+          !widget.playback.isPlaying) {
         widget.playback.playAll([widget.track]);
       }
     });
