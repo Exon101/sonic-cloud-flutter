@@ -4,6 +4,15 @@ All notable changes to Sonic Cloud are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.1.0] — 2025-07-05
+
+### Fixed
+- **Theme not applying**: MaterialApp was not rebuilding when ThemeService changed. Wrapped in AnimatedBuilder watching theme + settings + accessibility.
+- **Player not working**: AudioSource used String tag instead of MediaItem (required by audio_service). Changed to MediaItem with id/album/title/artist/artUri/duration.
+- **Player not working**: onPlayTrack callback didn't await playAll() before opening NowPlayingScreen. Now awaits.
+- **No notification controls**: initAudioService() was called with .catchError() that silently swallowed errors. Changed to try/await/catch with debugPrint.
+- **_openPlayer fallback**: was using MockData.allSongs.first even when queue had tracks. Now checks queue first.
+
 ## [4.0.0] — 2025-07-05
 
 ### Major release — all features wired, local file playback, real cloud providers
@@ -131,7 +140,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - 6 helper shell scripts (`build.sh`, `deploy_*.sh`)
 - README with badges, screenshots, deployment docs
 
-[Unreleased]: https://github.com/Exon101/sonic-cloud-flutter/compare/v4.0.0...HEAD
+[Unreleased]: https://github.com/Exon101/sonic-cloud-flutter/compare/v4.1.0...HEAD
+[4.1.0]: https://github.com/Exon101/sonic-cloud-flutter/releases/tag/v4.1.0
 [4.0.0]: https://github.com/Exon101/sonic-cloud-flutter/releases/tag/v4.0.0
 [3.0.0]: https://github.com/Exon101/sonic-cloud-flutter/releases/tag/v3.0.0
 [2.0.0]: https://github.com/Exon101/sonic-cloud-flutter/releases/tag/v2.0.0
