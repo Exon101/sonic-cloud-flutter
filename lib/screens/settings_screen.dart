@@ -131,7 +131,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: SafeArea(
         minimum: const EdgeInsets.only(top: 16),
         child: AnimatedBuilder(
-          animation: Listenable.merge([widget.settings, widget.accessibility]),
+          animation: Listenable.merge([
+            widget.settings,
+            widget.accessibility,
+            widget.security,
+          ]),
           builder: (context, _) {
             return ListView(
               padding: const EdgeInsets.fromLTRB(

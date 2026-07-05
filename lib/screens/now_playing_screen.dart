@@ -52,10 +52,12 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   @override
   void initState() {
     super.initState();
-    // Start playing the track. PlaybackService.playAll handles loading the
-    // audio source via ConcatenatingAudioSource.
+    // If nothing is playing yet, start playing this track.
+    // Don't replay if the caller (onPlayTrack) already started it.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      widget.playback.playAll([widget.track]);
+      if (!widget.playback.isPlaying && widget.playback.currentTrack == null) {
+        widget.playback.playAll([widget.track]);
+      }
     });
   }
 

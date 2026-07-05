@@ -180,8 +180,8 @@ class _SonicCloudAppState extends State<SonicCloudApp> {
         builder: (_) => LibraryBrowseScreen(
           library: _library,
           universalLibrary: _universalLibrary,
-          onPlayTrack: (t) {
-            _playback.playAll([t]);
+          onPlayTrack: (t) async {
+            await _playback.playAll([t]);
             _openPlayer();
           },
         ),

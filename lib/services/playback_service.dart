@@ -149,8 +149,13 @@ class PlaybackService extends ChangeNotifier {
     _currentIndex = startIndex;
     _subscribe();
     await _buildAudioSource();
-    await _player.seek(Duration.zero, index: startIndex);
-    await _player.play();
+    notifyListeners();
+    try {
+      await _player.seek(Duration.zero, index: startIndex);
+      await _player.play();
+    } catch (e) {
+      debugPrint('PlaybackService.playAll: play() failed: $e');
+    }
   }
 
   /// Append [tracks] to the end of the queue.
@@ -391,34 +396,55 @@ class PlaybackService extends ChangeNotifier {
 
   Future<void> _buildAudioSource() async {
     if (_queue.isEmpty) return;
-    // Use MediaItem as the tag so audio_service can display it in the
-    // notification panel and lock screen.
-    final sources = _queue.map((t) {
-      return AudioSource.uri(
-        Uri.parse(t.audioUrl),
-        tag: MediaItem(
-          id: t.id,
-          album: t.album,
-          title: t.title,
-          artist: t.artist,
-          artUri: t.artUrl.isNotEmpty ? Uri.tryParse(t.artUrl) : null,
-          duration: t.duration,
-        ),
+    try {
+      // Use MediaItem as the tag so audio_service can display it in the
+      // notification panel and lock screen.
+      final sources = _queue.map((t) {
+        final uri = Uri.parse(t.audioUrl);
+        // For assets, use AudioSource.asset for proper loading
+        if (t.audioUrl.startsWith('asset://')) {
+          final assetPath = t.audioUrl.substring('asset:///'.length);
+          return AudioSource.asset(
+            assetPath,
+            tag: MediaItem(
+              id: t.id,
+              album: t.album,
+              title: t.title,
+              artist: t.artist,
+              artUri: t.artUrl.isNotEmpty ? Uri.tryParse(t.artUrl) : null,
+              duration: t.duration,
+            ),
+          );
+        }
+        return AudioSource.uri(
+          uri,
+          tag: MediaItem(
+            id: t.id,
+            album: t.album,
+            title: t.title,
+            artist: t.artist,
+            artUri: t.artUrl.isNotEmpty ? Uri.tryParse(t.artUrl) : null,
+            duration: t.duration,
+          ),
+        );
+      }).toList();
+      final playlist = ConcatenatingAudioSource(
+        children: sources,
+        useLazyPreparation: true,
       );
-    }).toList();
-    final playlist = ConcatenatingAudioSource(
-      children: sources,
-      useLazyPreparation: true,
-    );
-    await _player.setAudioSource(
-      playlist,
-      initialIndex: _currentIndex < 0 ? 0 : _currentIndex,
-    );
-    _handler?.broadcastQueue(_queue);
-    if (_currentIndex >= 0 && _currentIndex < _queue.length) {
-      _handler?.broadcastCurrentTrack(_queue[_currentIndex]);
+      await _player.setAudioSource(
+        playlist,
+        initialIndex: _currentIndex < 0 ? 0 : _currentIndex,
+      );
+      _handler?.broadcastQueue(_queue);
+      if (_currentIndex >= 0 && _currentIndex < _queue.length) {
+        _handler?.broadcastCurrentTrack(_queue[_currentIndex]);
+      }
+      _applyReplayGain(currentTrack);
+    } catch (e) {
+      debugPrint('PlaybackService._buildAudioSource FAILED: $e');
+      // Don't rethrow — the UI should still show the track even if audio fails
     }
-    _applyReplayGain(currentTrack);
   }
 
   @override
