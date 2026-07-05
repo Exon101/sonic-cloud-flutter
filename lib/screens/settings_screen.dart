@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import '../accessibility/accessibility_service.dart';
+import '../api/local_api_service.dart';
 import '../data/mock_data.dart';
 import '../models/models.dart';
+import '../security/security_service.dart';
+import '../services/app_settings_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart' as r;
 import '../theme/app_spacing.dart';
@@ -9,26 +13,26 @@ import '../widgets/bottom_nav_bar.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/top_app_bar.dart';
 
-/// Settings screen.
-///
-/// Sections (per the HTML mockup):
-///   1. Profile card (avatar, name, tier, edit)
-///   2. Connections group → Cloud Accounts
-///   3. Playback group → Audio Quality, Offline Mode toggle, Sync Preferences
-///   4. Log Out button
-///
-/// This Flutter port fixes the HTML analysis finding that desktop view was
-/// broken (placeholder only) — we use a single responsive layout here.
+/// Settings screen — v3.2 wired to AppSettingsService + SecurityService +
+/// AccessibilityService + LocalApiService.
 class SettingsScreen extends StatefulWidget {
   final VoidCallback onOpenLibrary;
   final VoidCallback onOpenPlayer;
   final VoidCallback onOpenCloud;
+  final AppSettingsService settings;
+  final SecurityService security;
+  final AccessibilityService accessibility;
+  final LocalApiService api;
 
   const SettingsScreen({
     super.key,
     required this.onOpenLibrary,
     required this.onOpenPlayer,
     required this.onOpenCloud,
+    required this.settings,
+    required this.security,
+    required this.accessibility,
+    required this.api,
   });
 
   @override
@@ -36,7 +40,88 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool _offlineMode = false;
+  bool _apiRunning = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkApiStatus();
+  }
+
+  Future<void> _checkApiStatus() async {
+    // The API service doesn't expose a running flag; track it locally
+  }
+
+  Future<void> _toggleApi() async {
+    if (_apiRunning) {
+      await widget.api.stop();
+      setState(() => _apiRunning = false);
+    } else {
+      try {
+        await widget.api.start();
+        setState(() => _apiRunning = true);
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Failed to start API: $e')));
+        }
+      }
+    }
+  }
+
+  Future<void> _toggleBiometric() async {
+    final enabled = await widget.security.isBiometricEnabled;
+    if (!enabled) {
+      final canCheck = await widget.security.canCheckBiometrics;
+      if (!canCheck) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Biometrics not available on this device.'),
+            ),
+          );
+        }
+        return;
+      }
+    }
+    await widget.security.setBiometricEnabled(!enabled);
+  }
+
+  Future<void> _setPin() async {
+    final controller = TextEditingController();
+    final pin = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Set App PIN'),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          obscureText: true,
+          maxLength: 8,
+          decoration: const InputDecoration(hintText: 'Enter 4-8 digit PIN'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, controller.text),
+            child: const Text('Set'),
+          ),
+        ],
+      ),
+    );
+    if (pin != null && pin.length >= 4) {
+      await widget.security.setPin(pin);
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('PIN set successfully.')));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,81 +130,304 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appBar: SonicTopAppBar(avatarUrl: MockData.userProfile.avatarUrl),
       body: SafeArea(
         minimum: const EdgeInsets.only(top: 16),
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.edgeMargin,
-            8,
-            AppSpacing.edgeMargin,
-            120,
-          ),
-          children: [
-            // Page title
-            Text(
-              'Settings',
-              style: AppTypography.headlineXl.copyWith(
-                color: AppColors.onSurface,
+        child: AnimatedBuilder(
+          animation: Listenable.merge([widget.settings, widget.accessibility]),
+          builder: (context, _) {
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.edgeMargin,
+                8,
+                AppSpacing.edgeMargin,
+                120,
               ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            // Profile
-            _ProfileCard(user: MockData.userProfile),
-            const SizedBox(height: AppSpacing.md),
-            // Connections group
-            _SettingsGroup(
-              heading: 'Connections',
               children: [
-                _SettingsTile(
-                  icon: Icons.cloud_sync_rounded,
-                  title: 'Cloud Accounts',
-                  subtitle: 'Link or unlink external drives',
-                  onTap: () {},
+                Text(
+                  'Settings',
+                  style: AppTypography.headlineXl.copyWith(
+                    color: AppColors.onSurface,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                // Profile
+                _ProfileCard(user: MockData.userProfile),
+                const SizedBox(height: AppSpacing.md),
+
+                // ── Appearance ──────────────────────────────────────────────
+                _GroupHeader('Appearance'),
+                GlassCard(
+                  padding: EdgeInsets.zero,
+                  child: Column(
+                    children: [
+                      _ThemeModeTile(settings: widget.settings),
+                      _AccentColorTile(settings: widget.settings),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+
+                // ── Accessibility ───────────────────────────────────────────
+                _GroupHeader('Accessibility'),
+                GlassCard(
+                  padding: EdgeInsets.zero,
+                  child: Column(
+                    children: [
+                      SwitchListTile(
+                        title: Text(
+                          'High Contrast',
+                          style: AppTypography.bodyMd.copyWith(
+                            color: AppColors.onSurface,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Boost text contrast',
+                          style: AppTypography.labelSm.copyWith(
+                            color: AppColors.onSurfaceVariant,
+                          ),
+                        ),
+                        value: widget.accessibility.highContrast,
+                        onChanged: (v) =>
+                            widget.accessibility.setHighContrast(v),
+                        activeColor: AppColors.secondaryContainer,
+                      ),
+                      _FontScaleTile(accessibility: widget.accessibility),
+                      SwitchListTile(
+                        title: Text(
+                          'Reduced Motion',
+                          style: AppTypography.bodyMd.copyWith(
+                            color: AppColors.onSurface,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Disable animations',
+                          style: AppTypography.labelSm.copyWith(
+                            color: AppColors.onSurfaceVariant,
+                          ),
+                        ),
+                        value: widget.accessibility.reducedMotion,
+                        onChanged: (v) =>
+                            widget.accessibility.setReducedMotion(v),
+                        activeColor: AppColors.secondaryContainer,
+                      ),
+                      SwitchListTile(
+                        title: Text(
+                          'Large Touch Targets',
+                          style: AppTypography.bodyMd.copyWith(
+                            color: AppColors.onSurface,
+                          ),
+                        ),
+                        subtitle: Text(
+                          '44px → 56px minimum',
+                          style: AppTypography.labelSm.copyWith(
+                            color: AppColors.onSurfaceVariant,
+                          ),
+                        ),
+                        value: widget.accessibility.largeTouchTargets,
+                        onChanged: (v) =>
+                            widget.accessibility.setLargeTouchTargets(v),
+                        activeColor: AppColors.secondaryContainer,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+
+                // ── Security ────────────────────────────────────────────────
+                _GroupHeader('Security'),
+                GlassCard(
+                  padding: EdgeInsets.zero,
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: const Icon(
+                          Icons.lock_outline,
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                        title: Text(
+                          'Set PIN',
+                          style: AppTypography.bodyMd.copyWith(
+                            color: AppColors.onSurface,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Require PIN to open app',
+                          style: AppTypography.labelSm.copyWith(
+                            color: AppColors.onSurfaceVariant,
+                          ),
+                        ),
+                        trailing: const Icon(
+                          Icons.chevron_right,
+                          color: AppColors.onSurfaceVariant,
+                        ),
+                        onTap: _setPin,
+                      ),
+                      FutureBuilder<bool>(
+                        future: widget.security.isBiometricEnabled,
+                        builder: (context, snapshot) {
+                          return SwitchListTile(
+                            title: Text(
+                              'Biometric Unlock',
+                              style: AppTypography.bodyMd.copyWith(
+                                color: AppColors.onSurface,
+                              ),
+                            ),
+                            subtitle: Text(
+                              'Use fingerprint / face ID',
+                              style: AppTypography.labelSm.copyWith(
+                                color: AppColors.onSurfaceVariant,
+                              ),
+                            ),
+                            value: snapshot.data ?? false,
+                            onChanged: (_) => _toggleBiometric(),
+                            activeColor: AppColors.secondaryContainer,
+                          );
+                        },
+                      ),
+                      SwitchListTile(
+                        title: Text(
+                          'Offline Only Mode',
+                          style: AppTypography.bodyMd.copyWith(
+                            color: AppColors.onSurface,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Disable all network calls',
+                          style: AppTypography.labelSm.copyWith(
+                            color: AppColors.onSurfaceVariant,
+                          ),
+                        ),
+                        value: widget.settings.offlineOnlyMode,
+                        onChanged: (v) => widget.settings.setOfflineOnlyMode(v),
+                        activeColor: AppColors.secondaryContainer,
+                      ),
+                      SwitchListTile(
+                        title: Text(
+                          'End-to-End Encryption',
+                          style: AppTypography.bodyMd.copyWith(
+                            color: AppColors.onSurface,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Encrypt synced data (planned)',
+                          style: AppTypography.labelSm.copyWith(
+                            color: AppColors.onSurfaceVariant,
+                          ),
+                        ),
+                        value: widget.settings.endToEndEncryptionEnabled,
+                        onChanged: (v) =>
+                            widget.settings.setEndToEndEncryptionEnabled(v),
+                        activeColor: AppColors.secondaryContainer,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+
+                // ── Developer ───────────────────────────────────────────────
+                _GroupHeader('Developer'),
+                GlassCard(
+                  padding: EdgeInsets.zero,
+                  child: Column(
+                    children: [
+                      SwitchListTile(
+                        title: Text(
+                          'Local REST API',
+                          style: AppTypography.bodyMd.copyWith(
+                            color: AppColors.onSurface,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Port 8765 — control playback via HTTP',
+                          style: AppTypography.labelSm.copyWith(
+                            color: AppColors.onSurfaceVariant,
+                          ),
+                        ),
+                        value: _apiRunning,
+                        onChanged: (_) => _toggleApi(),
+                        activeColor: AppColors.secondaryContainer,
+                      ),
+                      SwitchListTile(
+                        title: Text(
+                          'Telemetry',
+                          style: AppTypography.bodyMd.copyWith(
+                            color: AppColors.onSurface,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Send anonymous usage data',
+                          style: AppTypography.labelSm.copyWith(
+                            color: AppColors.onSurfaceVariant,
+                          ),
+                        ),
+                        value: widget.settings.telemetryEnabled,
+                        onChanged: (v) =>
+                            widget.settings.setTelemetryEnabled(v),
+                        activeColor: AppColors.secondaryContainer,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+
+                // ── Connections (placeholder) ───────────────────────────────
+                _GroupHeader('Connections'),
+                GlassCard(
+                  padding: EdgeInsets.zero,
+                  child: ListTile(
+                    leading: const Icon(
+                      Icons.cloud_sync,
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                    title: Text(
+                      'Cloud Accounts',
+                      style: AppTypography.bodyMd.copyWith(
+                        color: AppColors.onSurface,
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Link or unlink external drives',
+                      style: AppTypography.labelSm.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                      ),
+                    ),
+                    trailing: const Icon(
+                      Icons.chevron_right,
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                    onTap: widget.onOpenCloud,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+
+                // Log out
+                TextButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Log out not implemented (no auth backend).',
+                        ),
+                      ),
+                    );
+                  },
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.error,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.md,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(r.AppRadius.lg),
+                    ),
+                  ),
+                  child: Text(
+                    'Log Out',
+                    style: AppTypography.labelMd.copyWith(
+                      color: AppColors.error,
+                    ),
+                  ),
                 ),
               ],
-            ),
-            const SizedBox(height: AppSpacing.md),
-            // Playback group
-            _SettingsGroup(
-              heading: 'Playback',
-              children: [
-                _SettingsTile(
-                  icon: Icons.graphic_eq_rounded,
-                  title: 'Audio Quality',
-                  subtitle: 'High (Lossless)',
-                  subtitleColor: AppColors.secondaryContainer,
-                  onTap: () {},
-                ),
-                _ToggleTile(
-                  icon: Icons.offline_pin_rounded,
-                  title: 'Offline Mode',
-                  subtitle: 'Play downloaded tracks only',
-                  value: _offlineMode,
-                  onChanged: (v) => setState(() => _offlineMode = v),
-                ),
-                _SettingsTile(
-                  icon: Icons.sync_alt_rounded,
-                  title: 'Sync Preferences',
-                  subtitle: 'Wi-Fi only',
-                  onTap: () {},
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.md),
-            // Log out
-            TextButton(
-              onPressed: () {},
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.error,
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(r.AppRadius.lg),
-                ),
-              ),
-              child: Text(
-                'Log Out',
-                style: AppTypography.labelMd.copyWith(color: AppColors.error),
-              ),
-            ),
-          ],
+            );
+          },
         ),
       ),
       bottomNavigationBar: SonicBottomNavBar(
@@ -135,8 +443,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Profile card
+// Helper widgets
 // ─────────────────────────────────────────────────────────────────────────────
+class _GroupHeader extends StatelessWidget {
+  final String text;
+  const _GroupHeader(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.xs,
+      ),
+      child: Text(
+        text.toUpperCase(),
+        style: AppTypography.labelSm.copyWith(
+          color: AppColors.onSurfaceVariant,
+        ),
+      ),
+    );
+  }
+}
+
 class _ProfileCard extends StatelessWidget {
   final UserAccount user;
   const _ProfileCard({required this.user});
@@ -192,208 +521,122 @@ class _ProfileCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Settings group (heading + card containing tiles)
-// ─────────────────────────────────────────────────────────────────────────────
-class _SettingsGroup extends StatelessWidget {
-  final String heading;
-  final List<Widget> children;
-
-  const _SettingsGroup({required this.heading, required this.children});
+class _ThemeModeTile extends StatelessWidget {
+  final AppSettingsService settings;
+  const _ThemeModeTile({required this.settings});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.xs,
-          ),
-          child: Text(
-            heading.toUpperCase(),
-            style: AppTypography.labelSm.copyWith(
-              color: AppColors.onSurfaceVariant,
-            ),
-          ),
-        ),
-        const SizedBox(height: 4),
-        GlassCard(
-          padding: EdgeInsets.zero,
-          child: Column(children: children),
-        ),
-      ],
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Settings tile (tap → chevron)
-// ─────────────────────────────────────────────────────────────────────────────
-class _SettingsTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final Color? subtitleColor;
-  final VoidCallback? onTap;
-
-  const _SettingsTile({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    this.subtitleColor,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      type: MaterialType.transparency,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(color: Colors.white.withOpacity(0.05)),
-            ),
-          ),
-          child: Row(
-            children: [
-              Icon(icon, color: AppColors.onSurfaceVariant),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: AppTypography.bodyMd.copyWith(
-                        color: AppColors.onSurface,
-                      ),
-                    ),
-                    Text(
-                      subtitle,
-                      style: AppTypography.labelSm.copyWith(
-                        color: subtitleColor ?? AppColors.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: AppColors.onSurfaceVariant,
-              ),
-            ],
-          ),
-        ),
+    return ListTile(
+      leading: const Icon(Icons.palette, color: AppColors.onSurfaceVariant),
+      title: Text(
+        'Theme',
+        style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface),
       ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Toggle tile
-// ─────────────────────────────────────────────────────────────────────────────
-class _ToggleTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  const _ToggleTile({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.value,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Colors.white.withOpacity(0.05)),
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: AppColors.onSurfaceVariant),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: AppTypography.bodyMd.copyWith(
-                    color: AppColors.onSurface,
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: AppTypography.labelSm.copyWith(
-                    color: AppColors.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
+      trailing: DropdownButton<ThemeModePreference>(
+        value: settings.themeMode,
+        underline: const SizedBox(),
+        items: const [
+          DropdownMenuItem(
+            value: ThemeModePreference.system,
+            child: Text('System'),
           ),
-          _SettingsToggle(value: value, onChanged: onChanged),
+          DropdownMenuItem(
+            value: ThemeModePreference.dark,
+            child: Text('Dark'),
+          ),
+          DropdownMenuItem(
+            value: ThemeModePreference.light,
+            child: Text('Light'),
+          ),
+          DropdownMenuItem(
+            value: ThemeModePreference.amoled,
+            child: Text('AMOLED'),
+          ),
+          DropdownMenuItem(
+            value: ThemeModePreference.dynamic,
+            child: Text('Dynamic'),
+          ),
         ],
+        onChanged: (v) {
+          if (v != null) settings.setThemeMode(v);
+        },
       ),
     );
   }
 }
 
-class _SettingsToggle extends StatelessWidget {
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  const _SettingsToggle({required this.value, required this.onChanged});
+class _AccentColorTile extends StatelessWidget {
+  final AppSettingsService settings;
+  const _AccentColorTile({required this.settings});
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => onChanged(!value),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: 48,
-        height: 24,
-        padding: const EdgeInsets.all(2),
-        decoration: BoxDecoration(
-          color: value
-              ? AppColors.secondaryContainer.withOpacity(0.20)
-              : AppColors.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(r.AppRadius.full),
-          border: Border.all(color: Colors.white.withOpacity(0.20)),
-        ),
-        child: AnimatedAlign(
-          duration: const Duration(milliseconds: 200),
-          alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-          child: Container(
-            width: 18,
-            height: 18,
-            decoration: BoxDecoration(
-              color: value
-                  ? AppColors.secondaryContainer
-                  : AppColors.onSurfaceVariant,
-              shape: BoxShape.circle,
-              boxShadow: value
-                  ? [
-                      BoxShadow(
-                        color: AppColors.sonicGlow.withOpacity(0.5),
-                        blurRadius: 8,
-                      ),
-                    ]
-                  : null,
+    final colors = [
+      const Color(0xFF00F4FE), // Sonic cyan (default)
+      const Color(0xFF7F66FF), // Electric violet
+      const Color(0xFFFF6B6B), // Red
+      const Color(0xFF4ECDC4), // Teal
+      const Color(0xFFFFE66D), // Yellow
+      const Color(0xFF95E1D3), // Mint
+    ];
+    return ListTile(
+      leading: const Icon(Icons.color_lens, color: AppColors.onSurfaceVariant),
+      title: Text(
+        'Accent Color',
+        style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface),
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: colors.map((c) {
+          final selected = settings.accentColor == c;
+          return GestureDetector(
+            onTap: () => settings.setAccentColor(c),
+            child: Container(
+              width: 28,
+              height: 28,
+              margin: const EdgeInsets.only(left: 4),
+              decoration: BoxDecoration(
+                color: c,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: selected ? Colors.white : Colors.transparent,
+                  width: 2,
+                ),
+              ),
             ),
-          ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _FontScaleTile extends StatelessWidget {
+  final AccessibilityService accessibility;
+  const _FontScaleTile({required this.accessibility});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.text_fields, color: AppColors.onSurfaceVariant),
+      title: Text(
+        'Font Size',
+        style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface),
+      ),
+      subtitle: Slider(
+        value: accessibility.fontScale,
+        min: 0.85,
+        max: 1.5,
+        divisions: 13,
+        label: '${(accessibility.fontScale * 100).round()}%',
+        activeColor: AppColors.secondaryContainer,
+        onChanged: (v) => accessibility.setFontScale(v),
+      ),
+      trailing: Text(
+        '${(accessibility.fontScale * 100).round()}%',
+        style: AppTypography.labelSm.copyWith(
+          color: AppColors.onSurfaceVariant,
         ),
       ),
     );

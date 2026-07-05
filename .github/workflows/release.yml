@@ -142,7 +142,7 @@ jobs:
         run: flutter config --no-enable-swift-package-manager
 
       - name: Regenerate iOS project files
-        run: flutter create --platforms=ios --project-name=sonic_cloud .
+        run: flutter create --platforms=ios --project-name=sonic_cloud --force .
 
       - name: Install dependencies
         run: flutter pub get
@@ -180,7 +180,7 @@ jobs:
         run: flutter config --no-enable-swift-package-manager
 
       - name: Regenerate macOS project files
-        run: flutter create --platforms=macos --project-name=sonic_cloud .
+        run: flutter create --platforms=macos --project-name=sonic_cloud --force .
 
       - name: Install dependencies
         run: flutter pub get
@@ -215,7 +215,7 @@ jobs:
           cache: true
 
       - name: Regenerate Windows project files
-        run: flutter create --platforms=windows --project-name=sonic_cloud .
+        run: flutter create --platforms=windows --project-name=sonic_cloud --force .
 
       - name: Install dependencies
         run: flutter pub get
@@ -259,7 +259,7 @@ jobs:
         run: flutter precache --linux
 
       - name: Regenerate Linux project files
-        run: flutter create --platforms=linux --project-name=sonic_cloud .
+        run: flutter create --platforms=linux --project-name=sonic_cloud --force .
 
       - name: Install dependencies
         run: flutter pub get

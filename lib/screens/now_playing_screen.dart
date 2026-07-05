@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../gestures/gesture_controls.dart';
 import '../models/models.dart';
+import '../services/lyrics_service.dart';
 import '../services/playback_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart' as r;
@@ -8,6 +9,8 @@ import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../widgets/sonic_glow_button.dart';
 import '../widgets/waveform_progress.dart';
+import 'lyrics/lyrics_screen.dart';
+import 'lyrics/sleep_timer_sheet.dart';
 
 /// Now Playing screen.
 ///
@@ -31,12 +34,14 @@ class NowPlayingScreen extends StatefulWidget {
   final Track track;
   final VoidCallback onClose;
   final PlaybackService playback;
+  final LyricsService? lyricsService;
 
   const NowPlayingScreen({
     super.key,
     required this.track,
     required this.onClose,
     required this.playback,
+    this.lyricsService,
   });
 
   @override
@@ -93,7 +98,42 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                 ),
                 child: Column(
                   children: [
-                    _TopBar(onClose: widget.onClose),
+                    _TopBar(
+                      onClose: widget.onClose,
+                      onOpenLyrics: widget.lyricsService != null
+                          ? () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => LyricsScreen(
+                                    lyricsService: widget.lyricsService!,
+                                    track: widget.playback.currentTrack ?? widget.track,
+                                    currentPosition: () => widget.playback.position,
+                                    positionStream:
+                                        Stream.periodic(const Duration(milliseconds: 500), (_) {
+                                      return widget.playback.position;
+                                    }),
+                                    onSeek: (d) => widget.playback.seek(d),
+                                  ),
+                                ),
+                              );
+                            }
+                          : null,
+                      onOpenSleepTimer: () {
+                        SleepTimerSheet.show(
+                          context,
+                          onStart: (duration) {
+                            widget.playback.startSleepTimer(duration);
+                          },
+                          onCancel: () {
+                            widget.playback.cancelSleepTimer();
+                          },
+                          currentAction: SleepTimerEndAction.pause,
+                          onActionChanged: (action) {
+                            // The action is set on the service when startSleepTimer is called
+                          },
+                        );
+                      },
+                    ),
                     const Spacer(),
                     _VinylArt(artUrl: widget.track.artUrl),
                     const SizedBox(height: AppSpacing.md),
@@ -109,6 +149,12 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                     _Controls(
                       isPlaying: widget.playback.isPlaying,
                       onPlayPause: () => widget.playback.togglePlayPause(),
+                      onShuffle: () => widget.playback.toggleShuffle(),
+                      onPrevious: () => widget.playback.skipToPrevious(),
+                      onNext: () => widget.playback.skipToNext(),
+                      onRepeat: () => widget.playback.cycleRepeatMode(),
+                      shuffleEnabled: widget.playback.shuffleEnabled,
+                      repeatMode: widget.playback.repeatMode,
                     ),
                     const SizedBox(height: AppSpacing.lg),
                   ],
@@ -127,7 +173,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 // ─────────────────────────────────────────────────────────────────────────────
 class _TopBar extends StatelessWidget {
   final VoidCallback onClose;
-  const _TopBar({required this.onClose});
+  final VoidCallback? onOpenLyrics;
+  final VoidCallback? onOpenSleepTimer;
+  const _TopBar({required this.onClose, this.onOpenLyrics, this.onOpenSleepTimer});
 
   @override
   Widget build(BuildContext context) {
@@ -156,10 +204,33 @@ class _TopBar extends StatelessWidget {
               letterSpacing: 2.0,
             ),
           ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(
-              Icons.more_vert_rounded,
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (onOpenLyrics != null)
+                IconButton(
+                  onPressed: onOpenLyrics,
+                  icon: const Icon(Icons.lyrics_rounded, color: AppColors.onSurface, size: 22),
+                  tooltip: 'Lyrics',
+                  constraints: const BoxConstraints(
+                    minWidth: AppSpacing.touchTarget,
+                    minHeight: AppSpacing.touchTarget,
+                  ),
+                ),
+              if (onOpenSleepTimer != null)
+                IconButton(
+                  onPressed: onOpenSleepTimer,
+                  icon: const Icon(Icons.bedtime_rounded, color: AppColors.onSurface, size: 22),
+                  tooltip: 'Sleep timer',
+                  constraints: const BoxConstraints(
+                    minWidth: AppSpacing.touchTarget,
+                    minHeight: AppSpacing.touchTarget,
+                  ),
+                ),
+              IconButton(
+                onPressed: () {},
+                icon: const Icon(
+                  Icons.more_vert_rounded,
               color: AppColors.onSurface,
               size: 24,
             ),
@@ -397,8 +468,23 @@ class _WaveformSection extends StatelessWidget {
 class _Controls extends StatelessWidget {
   final bool isPlaying;
   final VoidCallback onPlayPause;
+  final VoidCallback? onShuffle;
+  final VoidCallback? onPrevious;
+  final VoidCallback? onNext;
+  final VoidCallback? onRepeat;
+  final bool shuffleEnabled;
+  final RepeatMode repeatMode;
 
-  const _Controls({required this.isPlaying, required this.onPlayPause});
+  const _Controls({
+    required this.isPlaying,
+    required this.onPlayPause,
+    this.onShuffle,
+    this.onPrevious,
+    this.onNext,
+    this.onRepeat,
+    this.shuffleEnabled = false,
+    this.repeatMode = RepeatMode.off,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -421,10 +507,12 @@ class _Controls extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
-            onPressed: () {},
+            onPressed: onShuffle,
             icon: Icon(
               Icons.shuffle_rounded,
-              color: AppColors.onSurfaceVariant,
+              color: shuffleEnabled
+                  ? AppColors.secondaryContainer
+                  : AppColors.onSurfaceVariant,
               size: 20,
             ),
             tooltip: 'Shuffle',
@@ -434,7 +522,7 @@ class _Controls extends StatelessWidget {
             ),
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: onPrevious,
             icon: const Icon(
               Icons.skip_previous_rounded,
               color: AppColors.onSurface,
@@ -448,7 +536,7 @@ class _Controls extends StatelessWidget {
           ),
           SonicGlowButton(isPlaying: isPlaying, onTap: onPlayPause, size: 80),
           IconButton(
-            onPressed: () {},
+            onPressed: onNext,
             icon: const Icon(
               Icons.skip_next_rounded,
               color: AppColors.onSurface,
@@ -461,13 +549,15 @@ class _Controls extends StatelessWidget {
             ),
           ),
           IconButton(
-            onPressed: () {},
-            icon: const Icon(
+            onPressed: onRepeat,
+            icon: Icon(
               Icons.repeat_rounded,
-              color: AppColors.secondaryContainer,
+              color: repeatMode != RepeatMode.off
+                  ? AppColors.secondaryContainer
+                  : AppColors.onSurfaceVariant,
               size: 20,
             ),
-            tooltip: 'Repeat',
+            tooltip: 'Repeat (${repeatMode.name})',
             constraints: const BoxConstraints(
               minWidth: AppSpacing.touchTarget,
               minHeight: AppSpacing.touchTarget,
