@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide RepeatMode;
 import '../gestures/gesture_controls.dart';
 import '../models/models.dart';
 import '../services/lyrics_service.dart';
@@ -106,12 +106,17 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                                 MaterialPageRoute(
                                   builder: (_) => LyricsScreen(
                                     lyricsService: widget.lyricsService!,
-                                    track: widget.playback.currentTrack ?? widget.track,
-                                    currentPosition: () => widget.playback.position,
-                                    positionStream:
-                                        Stream.periodic(const Duration(milliseconds: 500), (_) {
-                                      return widget.playback.position;
-                                    }),
+                                    track:
+                                        widget.playback.currentTrack ??
+                                        widget.track,
+                                    currentPosition: () =>
+                                        widget.playback.position,
+                                    positionStream: Stream.periodic(
+                                      const Duration(milliseconds: 500),
+                                      (_) {
+                                        return widget.playback.position;
+                                      },
+                                    ),
                                     onSeek: (d) => widget.playback.seek(d),
                                   ),
                                 ),
@@ -175,7 +180,11 @@ class _TopBar extends StatelessWidget {
   final VoidCallback onClose;
   final VoidCallback? onOpenLyrics;
   final VoidCallback? onOpenSleepTimer;
-  const _TopBar({required this.onClose, this.onOpenLyrics, this.onOpenSleepTimer});
+  const _TopBar({
+    required this.onClose,
+    this.onOpenLyrics,
+    this.onOpenSleepTimer,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -210,7 +219,11 @@ class _TopBar extends StatelessWidget {
               if (onOpenLyrics != null)
                 IconButton(
                   onPressed: onOpenLyrics,
-                  icon: const Icon(Icons.lyrics_rounded, color: AppColors.onSurface, size: 22),
+                  icon: const Icon(
+                    Icons.lyrics_rounded,
+                    color: AppColors.onSurface,
+                    size: 22,
+                  ),
                   tooltip: 'Lyrics',
                   constraints: const BoxConstraints(
                     minWidth: AppSpacing.touchTarget,
@@ -220,7 +233,11 @@ class _TopBar extends StatelessWidget {
               if (onOpenSleepTimer != null)
                 IconButton(
                   onPressed: onOpenSleepTimer,
-                  icon: const Icon(Icons.bedtime_rounded, color: AppColors.onSurface, size: 22),
+                  icon: const Icon(
+                    Icons.bedtime_rounded,
+                    color: AppColors.onSurface,
+                    size: 22,
+                  ),
                   tooltip: 'Sleep timer',
                   constraints: const BoxConstraints(
                     minWidth: AppSpacing.touchTarget,
@@ -231,14 +248,16 @@ class _TopBar extends StatelessWidget {
                 onPressed: () {},
                 icon: const Icon(
                   Icons.more_vert_rounded,
-              color: AppColors.onSurface,
-              size: 24,
-            ),
-            tooltip: 'More',
-            constraints: const BoxConstraints(
-              minWidth: AppSpacing.touchTarget,
-              minHeight: AppSpacing.touchTarget,
-            ),
+                  color: AppColors.onSurface,
+                  size: 24,
+                ),
+                tooltip: 'More',
+                constraints: const BoxConstraints(
+                  minWidth: AppSpacing.touchTarget,
+                  minHeight: AppSpacing.touchTarget,
+                ),
+              ),
+            ],
           ),
         ],
       ),

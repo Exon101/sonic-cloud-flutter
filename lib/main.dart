@@ -3,6 +3,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'accessibility/accessibility_service.dart';
+import 'models/models.dart';
 import 'api/local_api_service.dart';
 import 'data/mock_data.dart';
 import 'db/app_database.dart';
