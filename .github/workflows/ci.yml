@@ -35,6 +35,10 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Generate launcher icons
+        run: dart run flutter_launcher_icons || true
+        continue-on-error: true
+
       - name: Check formatting (non-blocking)
         run: dart format --output=none .
         continue-on-error: true
@@ -74,6 +78,10 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Generate launcher icons
+        run: dart run flutter_launcher_icons || true
+        continue-on-error: true
+
       - name: Build web
         run: flutter build web --release
 
@@ -110,6 +118,10 @@ jobs:
 
       - name: Install dependencies
         run: flutter pub get
+
+      - name: Generate launcher icons
+        run: dart run flutter_launcher_icons || true
+        continue-on-error: true
 
       - name: Build APK (debug)
         run: flutter build apk --debug
