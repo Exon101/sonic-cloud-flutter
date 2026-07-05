@@ -118,8 +118,17 @@ class _SonicCloudAppState extends State<SonicCloudApp> {
     // Index search
     _search.index(_library.tracks);
 
-    // Init audio service + EQ (non-fatal if they fail)
-    _playback.initAudioService().catchError((_) {});
+    // Init audio service (for notification + lock screen controls).
+    // This MUST succeed for playback to work — don't swallow errors.
+    try {
+      await _playback.initAudioService();
+    } catch (e) {
+      debugPrint(
+        'AudioService init failed (playback will still work without notification controls): $e',
+      );
+    }
+
+    // Init EQ (non-fatal)
     _equalizer.init().catchError((_) {});
 
     if (mounted) {
@@ -141,7 +150,11 @@ class _SonicCloudAppState extends State<SonicCloudApp> {
   int _index = 0;
 
   void _openPlayer() {
-    final track = _playback.currentTrack ?? MockData.allSongs.first;
+    final track =
+        _playback.currentTrack ??
+        (_playback.queue.isNotEmpty
+            ? _playback.queue.first
+            : MockData.allSongs.first);
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => NowPlayingScreen(
@@ -178,34 +191,40 @@ class _SonicCloudAppState extends State<SonicCloudApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Sonic Cloud',
-      debugShowCheckedModeBanner: false,
-      theme: _initialized ? _theme.themeData : AppTheme.dark(),
-      home: _initialized
-          ? _HomeShell(
-              index: _index,
-              onGo: _go,
-              onOpenPlayer: _openPlayer,
-              onOpenEqualizer: _openEqualizer,
-              onOpenLibraryBrowse: _openLibraryBrowse,
-              playback: _playback,
-              library: _library,
-              universalLibrary: _universalLibrary,
-              search: _search,
-              lyrics: _lyrics,
-              playlists: _playlists,
-              settings: _settings,
-              security: _security,
-              accessibility: _accessibility,
-              api: _api,
-              oauth: _oauth,
-              onPlayTrack: (track) {
-                _playback.playAll([track]);
-                _openPlayer();
-              },
-            )
-          : const _SplashScreen(),
+    // AnimatedBuilder ensures the entire app rebuilds when theme/settings change
+    return AnimatedBuilder(
+      animation: Listenable.merge([_theme, _settings, _accessibility]),
+      builder: (context, _) {
+        return MaterialApp(
+          title: 'Sonic Cloud',
+          debugShowCheckedModeBanner: false,
+          theme: _initialized ? _theme.themeData : AppTheme.dark(),
+          home: _initialized
+              ? _HomeShell(
+                  index: _index,
+                  onGo: _go,
+                  onOpenPlayer: _openPlayer,
+                  onOpenEqualizer: _openEqualizer,
+                  onOpenLibraryBrowse: _openLibraryBrowse,
+                  playback: _playback,
+                  library: _library,
+                  universalLibrary: _universalLibrary,
+                  search: _search,
+                  lyrics: _lyrics,
+                  playlists: _playlists,
+                  settings: _settings,
+                  security: _security,
+                  accessibility: _accessibility,
+                  api: _api,
+                  oauth: _oauth,
+                  onPlayTrack: (track) async {
+                    await _playback.playAll([track]);
+                    _openPlayer();
+                  },
+                )
+              : const _SplashScreen(),
+        );
+      },
     );
   }
 }

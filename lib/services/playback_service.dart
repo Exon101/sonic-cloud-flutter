@@ -391,9 +391,21 @@ class PlaybackService extends ChangeNotifier {
 
   Future<void> _buildAudioSource() async {
     if (_queue.isEmpty) return;
-    final sources = _queue
-        .map((t) => AudioSource.uri(Uri.parse(t.audioUrl), tag: t.id))
-        .toList();
+    // Use MediaItem as the tag so audio_service can display it in the
+    // notification panel and lock screen.
+    final sources = _queue.map((t) {
+      return AudioSource.uri(
+        Uri.parse(t.audioUrl),
+        tag: MediaItem(
+          id: t.id,
+          album: t.album,
+          title: t.title,
+          artist: t.artist,
+          artUri: t.artUrl.isNotEmpty ? Uri.tryParse(t.artUrl) : null,
+          duration: t.duration,
+        ),
+      );
+    }).toList();
     final playlist = ConcatenatingAudioSource(
       children: sources,
       useLazyPreparation: true,
