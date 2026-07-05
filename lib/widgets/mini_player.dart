@@ -39,8 +39,7 @@ class MiniPlayer extends StatelessWidget {
                 0,
               ),
               constraints: BoxConstraints(
-                maxWidth:
-                    MediaQuery.sizeOf(context).width -
+                maxWidth: MediaQuery.sizeOf(context).width -
                     AppSpacing.edgeMargin * 2,
               ),
               decoration: BoxDecoration(

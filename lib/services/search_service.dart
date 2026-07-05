@@ -29,8 +29,7 @@ class SearchService extends ChangeNotifier {
 
     for (final t in _index) {
       final tMatch = t.title.toLowerCase().contains(q);
-      final arMatch =
-          t.artist.toLowerCase().contains(q) ||
+      final arMatch = t.artist.toLowerCase().contains(q) ||
           t.albumArtist.toLowerCase().contains(q);
       final alMatch = t.album.toLowerCase().contains(q);
       final gMatch = t.genre.toLowerCase().contains(q);

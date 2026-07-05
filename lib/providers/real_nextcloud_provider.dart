@@ -103,9 +103,8 @@ class RealNextcloudProvider extends CloudProvider {
     if (_client == null) return null;
     // The fileId contains the full WebDAV path
     final prefix = 'nextcloud://${config.id}/';
-    final path = fileId.startsWith(prefix)
-        ? fileId.substring(prefix.length)
-        : fileId;
+    final path =
+        fileId.startsWith(prefix) ? fileId.substring(prefix.length) : fileId;
     final serverUrl = config.rootPath ?? '';
     final creds = (config.account ?? '').split(':');
     final username = creds.isNotEmpty ? creds[0] : '';
@@ -116,9 +115,8 @@ class RealNextcloudProvider extends CloudProvider {
   Future<void> downloadFile(String fileId, String localPath) async {
     if (_client == null) return;
     final prefix = 'nextcloud://${config.id}/';
-    final path = fileId.startsWith(prefix)
-        ? fileId.substring(prefix.length)
-        : fileId;
+    final path =
+        fileId.startsWith(prefix) ? fileId.substring(prefix.length) : fileId;
     await _client!.read2File(path, localPath);
   }
 
@@ -134,9 +132,8 @@ class RealNextcloudProvider extends CloudProvider {
   Future<void> deleteFile(String fileId) async {
     if (_client == null) return;
     final prefix = 'nextcloud://${config.id}/';
-    final path = fileId.startsWith(prefix)
-        ? fileId.substring(prefix.length)
-        : fileId;
+    final path =
+        fileId.startsWith(prefix) ? fileId.substring(prefix.length) : fileId;
     await _client!.remove(path);
     _cache = null;
   }

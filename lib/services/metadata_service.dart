@@ -163,29 +163,29 @@ class TrackMetadata {
   /// Merge another [other] into this metadata. Non-null fields in [other]
   /// override this.
   TrackMetadata copyWith(TrackMetadata other) => TrackMetadata(
-    title: other.title ?? title,
-    artist: other.artist ?? artist,
-    albumArtist: other.albumArtist ?? albumArtist,
-    album: other.album ?? album,
-    genre: other.genre ?? genre,
-    composer: other.composer ?? composer,
-    year: other.year ?? year,
-    trackNumber: other.trackNumber ?? trackNumber,
-    discNumber: other.discNumber ?? discNumber,
-    lyrics: other.lyrics ?? lyrics,
-    artUrl: other.artUrl ?? artUrl,
-  );
+        title: other.title ?? title,
+        artist: other.artist ?? artist,
+        albumArtist: other.albumArtist ?? albumArtist,
+        album: other.album ?? album,
+        genre: other.genre ?? genre,
+        composer: other.composer ?? composer,
+        year: other.year ?? year,
+        trackNumber: other.trackNumber ?? trackNumber,
+        discNumber: other.discNumber ?? discNumber,
+        lyrics: other.lyrics ?? lyrics,
+        artUrl: other.artUrl ?? artUrl,
+      );
 
   factory TrackMetadata.fromTrack(Track t) => TrackMetadata(
-    title: t.title,
-    artist: t.artist,
-    albumArtist: t.albumArtist.isNotEmpty ? t.albumArtist : null,
-    album: t.album.isNotEmpty ? t.album : null,
-    genre: t.genre.isNotEmpty ? t.genre : null,
-    composer: t.composer.isNotEmpty ? t.composer : null,
-    year: t.year > 0 ? t.year : null,
-    trackNumber: t.trackNumber,
-    discNumber: t.discNumber,
-    lyrics: t.embeddedLyrics,
-  );
+        title: t.title,
+        artist: t.artist,
+        albumArtist: t.albumArtist.isNotEmpty ? t.albumArtist : null,
+        album: t.album.isNotEmpty ? t.album : null,
+        genre: t.genre.isNotEmpty ? t.genre : null,
+        composer: t.composer.isNotEmpty ? t.composer : null,
+        year: t.year > 0 ? t.year : null,
+        trackNumber: t.trackNumber,
+        discNumber: t.discNumber,
+        lyrics: t.embeddedLyrics,
+      );
 }

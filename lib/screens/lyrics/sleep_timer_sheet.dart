@@ -141,8 +141,8 @@ class SleepTimerSheet extends StatelessWidget {
   }
 
   String _actionLabel(SleepTimerEndAction a) => switch (a) {
-    SleepTimerEndAction.pause => 'Pause',
-    SleepTimerEndAction.stop => 'Stop',
-    SleepTimerEndAction.fadeOut => 'Fade out',
-  };
+        SleepTimerEndAction.pause => 'Pause',
+        SleepTimerEndAction.stop => 'Stop',
+        SleepTimerEndAction.fadeOut => 'Fade out',
+      };
 }

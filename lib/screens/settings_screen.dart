@@ -518,7 +518,13 @@ class _ProfileCard extends StatelessWidget {
             ),
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content: Text(
+                        'Profile editing requires an account. Connect a cloud provider first.')),
+              );
+            },
             icon: const Icon(
               Icons.edit_rounded,
               color: AppColors.secondaryContainer,

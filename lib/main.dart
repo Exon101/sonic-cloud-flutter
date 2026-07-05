@@ -145,8 +145,7 @@ class _SonicCloudAppState extends State<SonicCloudApp> {
   int _index = 0;
 
   void _openPlayer() {
-    final track =
-        _playback.currentTrack ??
+    final track = _playback.currentTrack ??
         (_playback.queue.isNotEmpty ? _playback.queue.first : null);
     if (track == null) {
       // No track loaded — switch to Library tab so user can add music
@@ -384,8 +383,8 @@ class _PlayerTabPlaceholder extends StatelessWidget {
               Text(
                 'Open a track to start playback',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFFC8C5CE),
-                ),
+                      color: const Color(0xFFC8C5CE),
+                    ),
               ),
               const SizedBox(height: 16),
               ElevatedButton(

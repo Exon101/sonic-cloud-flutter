@@ -79,9 +79,8 @@ class RealWebDavProvider extends CloudProvider {
   /// Extract the last path segment (file or folder name) from a WebDAV path.
   String _extractName(String? path) {
     if (path == null || path.isEmpty) return '';
-    final trimmed = path.endsWith('/')
-        ? path.substring(0, path.length - 1)
-        : path;
+    final trimmed =
+        path.endsWith('/') ? path.substring(0, path.length - 1) : path;
     final segments = trimmed.split('/').where((s) => s.isNotEmpty);
     final last = segments.isEmpty ? '' : segments.last;
     try {

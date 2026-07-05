@@ -27,9 +27,9 @@ class RealOneDriveProvider extends CloudProvider {
 
   String get _accessToken => config.account ?? '';
   Map<String, String> get _authHeaders => {
-    'Authorization': 'Bearer $_accessToken',
-    'Accept': 'application/json',
-  };
+        'Authorization': 'Bearer $_accessToken',
+        'Accept': 'application/json',
+      };
 
   @override
   Future<bool> connect() async {
@@ -64,32 +64,29 @@ class RealOneDriveProvider extends CloudProvider {
       final data = jsonDecode(resp.body) as Map<String, dynamic>;
       final value = data['value'] as List? ?? [];
 
-      return value
-          .where((f) {
-            final name = (f['name'] as String?) ?? '';
-            final lower = name.toLowerCase();
-            return _audioExtensions.any((ext) => lower.endsWith(ext));
-          })
-          .map<Track>((f) {
-            final name = f['name'] as String? ?? 'unknown';
-            final baseName = name.replaceAll(RegExp(r'\.[^.]+$'), '');
-            final parts = baseName.split(RegExp(r'\s*-\s*'));
-            final format = AudioFormat.fromPath(name) ?? AudioFormat.mp3;
-            final downloadUrl = f['@microsoft.graph.downloadUrl'] as String?;
-            return Track(
-              id: 'onedrive://${config.id}/${f['id']}',
-              title: parts.length > 1 ? parts.sublist(1).join(' - ') : baseName,
-              artist: parts.length > 1 ? parts.first : 'Unknown Artist',
-              album: 'OneDrive',
-              year: 0,
-              duration: Duration.zero,
-              artUrl: '',
-              audioUrl: downloadUrl ?? '',
-              format: format,
-              isCloudOnly: true,
-            );
-          })
-          .toList();
+      return value.where((f) {
+        final name = (f['name'] as String?) ?? '';
+        final lower = name.toLowerCase();
+        return _audioExtensions.any((ext) => lower.endsWith(ext));
+      }).map<Track>((f) {
+        final name = f['name'] as String? ?? 'unknown';
+        final baseName = name.replaceAll(RegExp(r'\.[^.]+$'), '');
+        final parts = baseName.split(RegExp(r'\s*-\s*'));
+        final format = AudioFormat.fromPath(name) ?? AudioFormat.mp3;
+        final downloadUrl = f['@microsoft.graph.downloadUrl'] as String?;
+        return Track(
+          id: 'onedrive://${config.id}/${f['id']}',
+          title: parts.length > 1 ? parts.sublist(1).join(' - ') : baseName,
+          artist: parts.length > 1 ? parts.first : 'Unknown Artist',
+          album: 'OneDrive',
+          year: 0,
+          duration: Duration.zero,
+          artUrl: '',
+          audioUrl: downloadUrl ?? '',
+          format: format,
+          isCloudOnly: true,
+        );
+      }).toList();
     } catch (e) {
       return [];
     }
@@ -100,9 +97,8 @@ class RealOneDriveProvider extends CloudProvider {
     if (_accessToken.isEmpty) return null;
     // OneDrive provides pre-authenticated download URLs
     final prefix = 'onedrive://${config.id}/';
-    final rawId = fileId.startsWith(prefix)
-        ? fileId.substring(prefix.length)
-        : fileId;
+    final rawId =
+        fileId.startsWith(prefix) ? fileId.substring(prefix.length) : fileId;
     try {
       final resp = await http.get(
         Uri.parse('$_graphUrl/me/drive/items/$rawId'),
@@ -147,9 +143,8 @@ class RealOneDriveProvider extends CloudProvider {
   Future<void> deleteFile(String fileId) async {
     if (_accessToken.isEmpty) return;
     final prefix = 'onedrive://${config.id}/';
-    final rawId = fileId.startsWith(prefix)
-        ? fileId.substring(prefix.length)
-        : fileId;
+    final rawId =
+        fileId.startsWith(prefix) ? fileId.substring(prefix.length) : fileId;
     await http.delete(
       Uri.parse('$_graphUrl/me/drive/items/$rawId'),
       headers: _authHeaders,

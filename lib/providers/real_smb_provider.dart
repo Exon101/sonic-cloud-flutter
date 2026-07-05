@@ -122,9 +122,8 @@ class RealSmbProvider extends CloudProvider {
   Future<void> downloadFile(String fileId, String localPath) async {
     if (!_isDesktop) return;
     final prefix = 'smb://${config.id}/';
-    final remotePath = fileId.startsWith(prefix)
-        ? fileId.substring(prefix.length)
-        : fileId;
+    final remotePath =
+        fileId.startsWith(prefix) ? fileId.substring(prefix.length) : fileId;
     await Process.run('smbclient', [
       _smbPath,
       '-c',
@@ -149,9 +148,8 @@ class RealSmbProvider extends CloudProvider {
   Future<void> deleteFile(String fileId) async {
     if (!_isDesktop) return;
     final prefix = 'smb://${config.id}/';
-    final remotePath = fileId.startsWith(prefix)
-        ? fileId.substring(prefix.length)
-        : fileId;
+    final remotePath =
+        fileId.startsWith(prefix) ? fileId.substring(prefix.length) : fileId;
     await Process.run('smbclient', [
       _smbPath,
       '-c',

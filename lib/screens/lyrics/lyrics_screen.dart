@@ -130,8 +130,7 @@ class _LyricsScreenState extends State<LyricsScreen> {
   void _scrollToActive(int activeIdx) {
     if (activeIdx < 0 || !_scrollCtrl.hasClients) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final targetOffset =
-          (activeIdx * 64.0) -
+      final targetOffset = (activeIdx * 64.0) -
           (_scrollCtrl.position.viewportDimension / 2) +
           32;
       _scrollCtrl.animateTo(
@@ -163,8 +162,8 @@ class _LyricLineTile extends StatelessWidget {
     final color = isActive
         ? AppColors.secondaryContainer
         : isPast
-        ? AppColors.onSurfaceVariant.withOpacity(0.4)
-        : AppColors.onSurface;
+            ? AppColors.onSurfaceVariant.withOpacity(0.4)
+            : AppColors.onSurface;
     final fontSize = isActive && karaokeMode ? 26.0 : 20.0;
     return InkWell(
       onTap: onTap,

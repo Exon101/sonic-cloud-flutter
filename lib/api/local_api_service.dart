@@ -169,30 +169,30 @@ class LocalApiService {
   }
 
   Map<String, dynamic> _status() => {
-    'isPlaying': _playback.isPlaying,
-    'positionMs': _playback.position.inMilliseconds,
-    'durationMs': _playback.duration.inMilliseconds,
-    'shuffle': _playback.shuffleEnabled,
-    'repeatMode': _playback.repeatMode.name,
-    'speed': _playback.speed,
-    'volume': _playback.volume,
-    'currentTrack': _playback.currentTrack != null
-        ? _trackToJson(_playback.currentTrack!)
-        : null,
-  };
+        'isPlaying': _playback.isPlaying,
+        'positionMs': _playback.position.inMilliseconds,
+        'durationMs': _playback.duration.inMilliseconds,
+        'shuffle': _playback.shuffleEnabled,
+        'repeatMode': _playback.repeatMode.name,
+        'speed': _playback.speed,
+        'volume': _playback.volume,
+        'currentTrack': _playback.currentTrack != null
+            ? _trackToJson(_playback.currentTrack!)
+            : null,
+      };
 
   Map<String, dynamic> _trackToJson(Track t) => {
-    'id': t.id,
-    'title': t.title,
-    'artist': t.artist,
-    'album': t.album,
-    'genre': t.genre,
-    'year': t.year,
-    'durationMs': t.duration.inMilliseconds,
-    'artUrl': t.artUrl,
-    'isFavorite': t.isFavorite,
-    'rating': t.rating,
-  };
+        'id': t.id,
+        'title': t.title,
+        'artist': t.artist,
+        'album': t.album,
+        'genre': t.genre,
+        'year': t.year,
+        'durationMs': t.duration.inMilliseconds,
+        'artUrl': t.artUrl,
+        'isFavorite': t.isFavorite,
+        'rating': t.rating,
+      };
 
   void _handleWsCommand(WebSocketChannel ws, dynamic message) {
     try {
@@ -229,17 +229,17 @@ class LocalApiService {
 
   // ── Helpers ─────────────────────────────────────────────────────────────────
   Response _json(Object body) => Response.ok(
-    jsonEncode(body),
-    headers: {'content-type': 'application/json'},
-  );
+        jsonEncode(body),
+        headers: {'content-type': 'application/json'},
+      );
 
   Response _notFound(String msg) =>
       Response.notFound(jsonEncode({'error': msg}));
 
   Response _badRequest(String msg) => Response.badRequest(
-    body: jsonEncode({'error': msg}),
-    headers: {'content-type': 'application/json'},
-  );
+        body: jsonEncode({'error': msg}),
+        headers: {'content-type': 'application/json'},
+      );
 
   Middleware _corsMiddleware() {
     return (Handler innerHandler) {

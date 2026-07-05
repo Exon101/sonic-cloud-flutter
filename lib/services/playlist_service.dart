@@ -11,9 +11,8 @@ import '../models/models.dart';
 class PlaylistService extends ChangeNotifier {
   final Map<String, Playlist> _playlists = {};
 
-  List<Playlist> get playlists =>
-      _playlists.values.toList()
-        ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+  List<Playlist> get playlists => _playlists.values.toList()
+    ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
   Playlist? byId(String id) => _playlists[id];
 
   // ── Manual playlists ───────────────────────────────────────────────────────

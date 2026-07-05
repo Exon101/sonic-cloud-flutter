@@ -19,8 +19,8 @@ import '../models/models.dart';
 ///     offline download) controlled by [setProviderPermission].
 class SecurityService extends ChangeNotifier {
   SecurityService({FlutterSecureStorage? storage, LocalAuthentication? auth})
-    : _storage = storage ?? const FlutterSecureStorage(),
-      _auth = auth ?? LocalAuthentication();
+      : _storage = storage ?? const FlutterSecureStorage(),
+        _auth = auth ?? LocalAuthentication();
 
   final FlutterSecureStorage _storage;
   final LocalAuthentication _auth;
@@ -188,12 +188,12 @@ class ProviderPermissions {
   });
 
   Map<String, dynamic> toJson() => {
-    'canRead': canRead,
-    'canWrite': canWrite,
-    'canDelete': canDelete,
-    'canOfflineDownload': canOfflineDownload,
-    'canStream': canStream,
-  };
+        'canRead': canRead,
+        'canWrite': canWrite,
+        'canDelete': canDelete,
+        'canOfflineDownload': canOfflineDownload,
+        'canStream': canStream,
+      };
 
   factory ProviderPermissions.fromJson(Map<String, dynamic> json) =>
       ProviderPermissions(

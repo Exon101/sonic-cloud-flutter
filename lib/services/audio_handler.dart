@@ -139,17 +139,17 @@ class SonicAudioHandler extends BaseAudioHandler
   }
 
   MediaItem _trackToMediaItem(Track t) => MediaItem(
-    id: t.id,
-    album: t.album,
-    title: t.title,
-    artist: t.artist,
-    genre: t.genre,
-    duration: t.duration,
-    artUri: t.artUrl.isNotEmpty ? Uri.tryParse(t.artUrl) : null,
-    playable: true,
-    rating:
-        null, // Rating API varies across audio_service versions; skipped for compat
-  );
+        id: t.id,
+        album: t.album,
+        title: t.title,
+        artist: t.artist,
+        genre: t.genre,
+        duration: t.duration,
+        artUri: t.artUrl.isNotEmpty ? Uri.tryParse(t.artUrl) : null,
+        playable: true,
+        rating:
+            null, // Rating API varies across audio_service versions; skipped for compat
+      );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

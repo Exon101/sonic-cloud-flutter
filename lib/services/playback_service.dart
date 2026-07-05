@@ -22,8 +22,8 @@ import 'audio_handler.dart';
 ///   - Position / duration / state streams surfaced as a ChangeNotifier API
 class PlaybackService extends ChangeNotifier {
   PlaybackService({AudioPlayer? player, SonicAudioHandler? handler})
-    : _player = player ?? AudioPlayer(),
-      _handler = handler;
+      : _player = player ?? AudioPlayer(),
+        _handler = handler;
 
   final AudioPlayer _player;
   SonicAudioHandler? _handler;
@@ -83,8 +83,8 @@ class PlaybackService extends ChangeNotifier {
   int get currentIndex => _currentIndex;
   Track? get currentTrack =>
       (_currentIndex >= 0 && _currentIndex < _queue.length)
-      ? _queue[_currentIndex]
-      : null;
+          ? _queue[_currentIndex]
+          : null;
   bool get isPlaying => _isPlaying;
   Duration get position => _position;
   Duration get duration => _duration;
@@ -133,10 +133,10 @@ class PlaybackService extends ChangeNotifier {
   }
 
   LoopMode _repeatModeToLoopMode(RepeatMode mode) => switch (mode) {
-    RepeatMode.off => LoopMode.off,
-    RepeatMode.all => LoopMode.all,
-    RepeatMode.one => LoopMode.one,
-  };
+        RepeatMode.off => LoopMode.off,
+        RepeatMode.all => LoopMode.all,
+        RepeatMode.one => LoopMode.one,
+      };
 
   // ── Queue management ───────────────────────────────────────────────────────
 
@@ -271,9 +271,9 @@ class PlaybackService extends ChangeNotifier {
   Future<void> seekToProgress(double progress) async {
     if (_duration.inMilliseconds == 0) return;
     final ms = (_duration.inMilliseconds * progress).round().clamp(
-      0,
-      _duration.inMilliseconds,
-    );
+          0,
+          _duration.inMilliseconds,
+        );
     await seek(Duration(milliseconds: ms));
   }
 

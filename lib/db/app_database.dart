@@ -232,10 +232,13 @@ class AppDatabase {
   }
 
   Future<void> setSetting(String key, String value) async {
-    await _db!.insert('settings', {
-      'key': key,
-      'value': value,
-    }, conflictAlgorithm: ConflictAlgorithm.replace);
+    await _db!.insert(
+        'settings',
+        {
+          'key': key,
+          'value': value,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<void> deleteSetting(String key) async {

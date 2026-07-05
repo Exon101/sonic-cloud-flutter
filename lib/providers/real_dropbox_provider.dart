@@ -23,9 +23,9 @@ class RealDropboxProvider extends CloudProvider {
 
   String get _accessToken => config.account ?? '';
   Map<String, String> get _authHeaders => {
-    'Authorization': 'Bearer $_accessToken',
-    'Accept': 'application/json',
-  };
+        'Authorization': 'Bearer $_accessToken',
+        'Accept': 'application/json',
+      };
 
   @override
   Future<bool> connect() async {
@@ -72,32 +72,29 @@ class RealDropboxProvider extends CloudProvider {
         '.m4a',
         '.opus',
       ];
-      return entries
-          .where((e) {
-            final name = (e['name'] as String?) ?? '';
-            final lower = name.toLowerCase();
-            return audioExtensions.any((ext) => lower.endsWith(ext));
-          })
-          .map<Track>((f) {
-            final name = f['name'] as String? ?? 'unknown';
-            final pathLower = f['path_lower'] as String? ?? '';
-            final baseName = name.replaceAll(RegExp(r'\.[^.]+$'), '');
-            final parts = baseName.split(RegExp(r'\s*-\s*'));
-            final format = AudioFormat.fromPath(name) ?? AudioFormat.mp3;
-            return Track(
-              id: 'dropbox://${config.id}/$pathLower',
-              title: parts.length > 1 ? parts.sublist(1).join(' - ') : baseName,
-              artist: parts.length > 1 ? parts.first : 'Unknown Artist',
-              album: 'Dropbox',
-              year: 0,
-              duration: Duration.zero,
-              artUrl: '',
-              audioUrl: '$_contentUrl/files/download',
-              format: format,
-              isCloudOnly: true,
-            );
-          })
-          .toList();
+      return entries.where((e) {
+        final name = (e['name'] as String?) ?? '';
+        final lower = name.toLowerCase();
+        return audioExtensions.any((ext) => lower.endsWith(ext));
+      }).map<Track>((f) {
+        final name = f['name'] as String? ?? 'unknown';
+        final pathLower = f['path_lower'] as String? ?? '';
+        final baseName = name.replaceAll(RegExp(r'\.[^.]+$'), '');
+        final parts = baseName.split(RegExp(r'\s*-\s*'));
+        final format = AudioFormat.fromPath(name) ?? AudioFormat.mp3;
+        return Track(
+          id: 'dropbox://${config.id}/$pathLower',
+          title: parts.length > 1 ? parts.sublist(1).join(' - ') : baseName,
+          artist: parts.length > 1 ? parts.first : 'Unknown Artist',
+          album: 'Dropbox',
+          year: 0,
+          duration: Duration.zero,
+          artUrl: '',
+          audioUrl: '$_contentUrl/files/download',
+          format: format,
+          isCloudOnly: true,
+        );
+      }).toList();
     } catch (e) {
       return [];
     }
@@ -116,9 +113,8 @@ class RealDropboxProvider extends CloudProvider {
   /// Dropbox-Api-Arg that specifies the file path.
   Map<String, String> streamHeadersForFile(String fileId) {
     final prefix = 'dropbox://${config.id}/';
-    final path = fileId.startsWith(prefix)
-        ? fileId.substring(prefix.length)
-        : fileId;
+    final path =
+        fileId.startsWith(prefix) ? fileId.substring(prefix.length) : fileId;
     return {
       ..._authHeaders,
       'Dropbox-Api-Arg': jsonEncode({'path': path}),
@@ -129,9 +125,8 @@ class RealDropboxProvider extends CloudProvider {
   Future<void> downloadFile(String fileId, String localPath) async {
     if (_accessToken.isEmpty) return;
     final prefix = 'dropbox://${config.id}/';
-    final path = fileId.startsWith(prefix)
-        ? fileId.substring(prefix.length)
-        : fileId;
+    final path =
+        fileId.startsWith(prefix) ? fileId.substring(prefix.length) : fileId;
     final resp = await http.post(
       Uri.parse('$_contentUrl/files/download'),
       headers: {
@@ -149,9 +144,8 @@ class RealDropboxProvider extends CloudProvider {
   Future<String> uploadFile(String localPath, String remotePath) async {
     if (_accessToken.isEmpty) return '';
     final fileName = localPath.split('/').last;
-    final dropboxPath = remotePath.isEmpty
-        ? '/$fileName'
-        : '$remotePath/$fileName';
+    final dropboxPath =
+        remotePath.isEmpty ? '/$fileName' : '$remotePath/$fileName';
     // In production, read the file bytes and upload via multipart
     // final fileBytes = await File(localPath).readAsBytes();
     final resp = await http.post(
@@ -178,9 +172,8 @@ class RealDropboxProvider extends CloudProvider {
   Future<void> deleteFile(String fileId) async {
     if (_accessToken.isEmpty) return;
     final prefix = 'dropbox://${config.id}/';
-    final path = fileId.startsWith(prefix)
-        ? fileId.substring(prefix.length)
-        : fileId;
+    final path =
+        fileId.startsWith(prefix) ? fileId.substring(prefix.length) : fileId;
     await http.post(
       Uri.parse('$_apiUrl/files/delete_v2'),
       headers: {..._authHeaders, 'Content-Type': 'application/json'},

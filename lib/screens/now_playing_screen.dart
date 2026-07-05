@@ -110,8 +110,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                                 MaterialPageRoute(
                                   builder: (_) => LyricsScreen(
                                     lyricsService: widget.lyricsService!,
-                                    track:
-                                        widget.playback.currentTrack ??
+                                    track: widget.playback.currentTrack ??
                                         widget.track,
                                     currentPosition: () =>
                                         widget.playback.position,
@@ -262,8 +261,7 @@ class _TopBar extends StatelessWidget {
                   ),
                   padding: EdgeInsets.zero,
                 ),
-              IconButton(
-                onPressed: () {},
+              PopupMenuButton<String>(
                 icon: const Icon(
                   Icons.more_vert_rounded,
                   color: AppColors.onSurface,
@@ -275,6 +273,17 @@ class _TopBar extends StatelessWidget {
                   minHeight: buttonSize,
                 ),
                 padding: EdgeInsets.zero,
+                itemBuilder: (context) => [
+                  const PopupMenuItem(value: 'queue', child: Text('Queue')),
+                  const PopupMenuItem(
+                      value: 'favorite', child: Text('Toggle Favorite')),
+                  const PopupMenuItem(value: 'info', child: Text('Track Info')),
+                ],
+                onSelected: (value) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('$value — coming soon')),
+                  );
+                },
               ),
             ],
           ),

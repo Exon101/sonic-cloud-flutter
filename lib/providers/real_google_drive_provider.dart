@@ -36,9 +36,9 @@ class RealGoogleDriveProvider extends CloudProvider {
 
   String get _accessToken => config.account ?? '';
   Map<String, String> get _authHeaders => {
-    'Authorization': 'Bearer $_accessToken',
-    'Accept': 'application/json',
-  };
+        'Authorization': 'Bearer $_accessToken',
+        'Accept': 'application/json',
+      };
 
   @override
   Future<bool> connect() async {
@@ -110,9 +110,8 @@ class RealGoogleDriveProvider extends CloudProvider {
     if (_accessToken.isEmpty) return null;
     // Strip the prefix to get the raw file ID
     final prefix = 'gdrive://${config.id}/';
-    final rawId = fileId.startsWith(prefix)
-        ? fileId.substring(prefix.length)
-        : fileId;
+    final rawId =
+        fileId.startsWith(prefix) ? fileId.substring(prefix.length) : fileId;
     return '$_baseUrl/files/$rawId?alt=media';
   }
 
@@ -123,9 +122,8 @@ class RealGoogleDriveProvider extends CloudProvider {
   Future<void> downloadFile(String fileId, String localPath) async {
     if (_accessToken.isEmpty) return;
     final prefix = 'gdrive://${config.id}/';
-    final rawId = fileId.startsWith(prefix)
-        ? fileId.substring(prefix.length)
-        : fileId;
+    final rawId =
+        fileId.startsWith(prefix) ? fileId.substring(prefix.length) : fileId;
     final resp = await http.get(
       Uri.parse('$_baseUrl/files/$rawId?alt=media'),
       headers: _authHeaders,
@@ -152,8 +150,7 @@ class RealGoogleDriveProvider extends CloudProvider {
         ..._authHeaders,
         'Content-Type': 'multipart/related; boundary=foo_bar_baz',
       },
-      body:
-          '''
+      body: '''
 --foo_bar_baz
 Content-Type: application/json; charset=UTF-8
 
@@ -177,9 +174,8 @@ Content-Type: application/octet-stream
   Future<void> deleteFile(String fileId) async {
     if (_accessToken.isEmpty) return;
     final prefix = 'gdrive://${config.id}/';
-    final rawId = fileId.startsWith(prefix)
-        ? fileId.substring(prefix.length)
-        : fileId;
+    final rawId =
+        fileId.startsWith(prefix) ? fileId.substring(prefix.length) : fileId;
     await http.delete(
       Uri.parse('$_baseUrl/files/$rawId'),
       headers: _authHeaders,

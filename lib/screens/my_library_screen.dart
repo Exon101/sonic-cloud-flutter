@@ -83,10 +83,8 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
         if (format == null) continue;
 
         // Build a Track from the file
-        final baseName = path
-            .split('/')
-            .last
-            .replaceAll(RegExp(r'\.[^.]+$'), '');
+        final baseName =
+            path.split('/').last.replaceAll(RegExp(r'\.[^.]+$'), '');
         final parts = baseName.split(RegExp(r'\s*-\s*'));
         tracks.add(
           Track(
@@ -490,7 +488,38 @@ class _AllSongsSection extends StatelessWidget {
               ),
             ),
             TextButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (ctx) => SafeArea(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ListTile(
+                          leading: const Icon(Icons.title_rounded),
+                          title: const Text('Sort by Title'),
+                          onTap: () => Navigator.pop(ctx),
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.person_rounded),
+                          title: const Text('Sort by Artist'),
+                          onTap: () => Navigator.pop(ctx),
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.album_rounded),
+                          title: const Text('Sort by Album'),
+                          onTap: () => Navigator.pop(ctx),
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.access_time_rounded),
+                          title: const Text('Sort by Date Added'),
+                          onTap: () => Navigator.pop(ctx),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
               icon: const Icon(
                 Icons.sort_rounded,
                 size: 16,
@@ -534,12 +563,12 @@ class _AllSongsSection extends StatelessWidget {
           )
         else
           ...tracks.asMap().entries.map(
-            (e) => TrackRow(
-              track: e.value,
-              isActive: e.key == 0,
-              onTap: () => onTapTrack(e.value),
-            ),
-          ),
+                (e) => TrackRow(
+                  track: e.value,
+                  isActive: e.key == 0,
+                  onTap: () => onTapTrack(e.value),
+                ),
+              ),
       ],
     );
   }

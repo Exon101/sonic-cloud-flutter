@@ -222,7 +222,11 @@ class _ConnectedDrives extends StatelessWidget {
               ),
             ),
             TextButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Drive options coming soon.')),
+                );
+              },
               icon: const Icon(
                 Icons.add_rounded,
                 size: 16,
@@ -247,16 +251,20 @@ class _ConnectedDrives extends StatelessWidget {
               runSpacing: AppSpacing.sm,
               children: [
                 for (final d
-                    in <
-                      CloudProviderConfig
-                    >[]) // TODO: populate from connected providers
+                    in <CloudProviderConfig>[]) // TODO: populate from connected providers
                   SizedBox(
                     width: (c.maxWidth - AppSpacing.sm * (cols - 1)) / cols,
                     child: _DriveCard(drive: d),
                   ),
                 SizedBox(
                   width: (c.maxWidth - AppSpacing.sm * (cols - 1)) / cols,
-                  child: _AddNewCard(onTap: () {}),
+                  child: _AddNewCard(onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text(
+                              'Cloud provider setup requires OAuth credentials. See Settings → Developer.')),
+                    );
+                  }),
                 ),
               ],
             );
@@ -282,9 +290,8 @@ class _DriveCardState extends State<_DriveCard> {
   @override
   Widget build(BuildContext context) {
     final isGoogleDrive = widget.drive.kind == CloudProviderKind.googleDrive;
-    final accent = isGoogleDrive
-        ? AppColors.secondaryContainer
-        : AppColors.onSurface;
+    final accent =
+        isGoogleDrive ? AppColors.secondaryContainer : AppColors.onSurface;
 
     return GlassCard(
       padding: EdgeInsets.zero,
@@ -300,11 +307,10 @@ class _DriveCardState extends State<_DriveCard> {
                 width: 128,
                 height: 128,
                 decoration: BoxDecoration(
-                  color:
-                      (isGoogleDrive
-                              ? AppColors.secondaryContainer
-                              : AppColors.onTertiaryContainer)
-                          .withOpacity(0.10),
+                  color: (isGoogleDrive
+                          ? AppColors.secondaryContainer
+                          : AppColors.onTertiaryContainer)
+                      .withOpacity(0.10),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -354,9 +360,8 @@ class _DriveCardState extends State<_DriveCard> {
                   ),
                   const Spacer(),
                   _ToggleRow(
-                    label: isGoogleDrive
-                        ? 'Stream Mode'
-                        : 'Download for Offline',
+                    label:
+                        isGoogleDrive ? 'Stream Mode' : 'Download for Offline',
                     value: isGoogleDrive ? _stream : _offline,
                     onChanged: (v) => setState(() {
                       if (isGoogleDrive) {
@@ -531,9 +536,8 @@ class _SyncActivity extends StatelessWidget {
         GlassCard(
           padding: EdgeInsets.zero,
           child: Column(
-            children: <SyncActivity>[]
-                .map((a) => _SyncRow(activity: a))
-                .toList(),
+            children:
+                <SyncActivity>[].map((a) => _SyncRow(activity: a)).toList(),
           ),
         ),
       ],

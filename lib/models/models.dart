@@ -106,32 +106,33 @@ class Track {
     double? replayGainTrackGain,
     double? replayGainAlbumGain,
     String? embeddedLyrics,
-  }) => Track(
-    id: id ?? this.id,
-    title: title ?? this.title,
-    artist: artist ?? this.artist,
-    albumArtist: albumArtist ?? this.albumArtist,
-    album: album ?? this.album,
-    genre: genre ?? this.genre,
-    composer: composer ?? this.composer,
-    year: year ?? this.year,
-    trackNumber: trackNumber ?? this.trackNumber,
-    discNumber: discNumber ?? this.discNumber,
-    duration: duration ?? this.duration,
-    artUrl: artUrl ?? this.artUrl,
-    audioUrl: audioUrl ?? this.audioUrl,
-    fileSystemPath: fileSystemPath ?? this.fileSystemPath,
-    format: format ?? this.format,
-    isCloudOnly: isCloudOnly ?? this.isCloudOnly,
-    isFavorite: isFavorite ?? this.isFavorite,
-    rating: rating ?? this.rating,
-    playCount: playCount ?? this.playCount,
-    lastPlayedAt: lastPlayedAt ?? this.lastPlayedAt,
-    dateAdded: dateAdded ?? this.dateAdded,
-    replayGainTrackGain: replayGainTrackGain ?? this.replayGainTrackGain,
-    replayGainAlbumGain: replayGainAlbumGain ?? this.replayGainAlbumGain,
-    embeddedLyrics: embeddedLyrics ?? this.embeddedLyrics,
-  );
+  }) =>
+      Track(
+        id: id ?? this.id,
+        title: title ?? this.title,
+        artist: artist ?? this.artist,
+        albumArtist: albumArtist ?? this.albumArtist,
+        album: album ?? this.album,
+        genre: genre ?? this.genre,
+        composer: composer ?? this.composer,
+        year: year ?? this.year,
+        trackNumber: trackNumber ?? this.trackNumber,
+        discNumber: discNumber ?? this.discNumber,
+        duration: duration ?? this.duration,
+        artUrl: artUrl ?? this.artUrl,
+        audioUrl: audioUrl ?? this.audioUrl,
+        fileSystemPath: fileSystemPath ?? this.fileSystemPath,
+        format: format ?? this.format,
+        isCloudOnly: isCloudOnly ?? this.isCloudOnly,
+        isFavorite: isFavorite ?? this.isFavorite,
+        rating: rating ?? this.rating,
+        playCount: playCount ?? this.playCount,
+        lastPlayedAt: lastPlayedAt ?? this.lastPlayedAt,
+        dateAdded: dateAdded ?? this.dateAdded,
+        replayGainTrackGain: replayGainTrackGain ?? this.replayGainTrackGain,
+        replayGainAlbumGain: replayGainAlbumGain ?? this.replayGainAlbumGain,
+        embeddedLyrics: embeddedLyrics ?? this.embeddedLyrics,
+      );
 
   String get formattedDuration {
     final m = duration.inMinutes;
@@ -271,17 +272,18 @@ class Playlist {
     DateTime? createdAt,
     DateTime? updatedAt,
     String? artUrl,
-  }) => Playlist(
-    id: id ?? this.id,
-    name: name ?? this.name,
-    description: description ?? this.description,
-    kind: kind ?? this.kind,
-    trackIds: trackIds ?? this.trackIds,
-    rules: rules ?? this.rules,
-    createdAt: createdAt ?? this.createdAt,
-    updatedAt: updatedAt ?? this.updatedAt,
-    artUrl: artUrl ?? this.artUrl,
-  );
+  }) =>
+      Playlist(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        description: description ?? this.description,
+        kind: kind ?? this.kind,
+        trackIds: trackIds ?? this.trackIds,
+        rules: rules ?? this.rules,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+        artUrl: artUrl ?? this.artUrl,
+      );
 
   static String newId() => const Uuid().v4();
 }
@@ -523,17 +525,18 @@ class CloudProviderConfig {
     bool? streamMode,
     bool? downloadForOffline,
     DateTime? lastSyncedAt,
-  }) => CloudProviderConfig(
-    id: id,
-    kind: kind,
-    displayName: displayName,
-    account: account,
-    rootPath: rootPath,
-    status: status ?? this.status,
-    streamMode: streamMode ?? this.streamMode,
-    downloadForOffline: downloadForOffline ?? this.downloadForOffline,
-    lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
-  );
+  }) =>
+      CloudProviderConfig(
+        id: id,
+        kind: kind,
+        displayName: displayName,
+        account: account,
+        rootPath: rootPath,
+        status: status ?? this.status,
+        streamMode: streamMode ?? this.streamMode,
+        downloadForOffline: downloadForOffline ?? this.downloadForOffline,
+        lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
+      );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
