@@ -189,7 +189,7 @@ jobs:
         run: flutter build macos --release --no-tree-shake-icons
 
       - name: Tarball macOS app
-        run: tar -czf macos-release.tar.gz -C build/macos/Build/Products/Release *.app
+        run: cd build/macos/Build/Products/Release && tar -czf ../../../../macos-release.tar.gz *.app
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
