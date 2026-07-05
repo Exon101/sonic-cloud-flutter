@@ -54,7 +54,7 @@ class RealSmbProvider extends CloudProvider {
         '-c',
         'ls',
         ..._authArgs,
-      ], stdin: config.account?.split(':').elementAtOrNull(1) ?? '');
+      ]);
       return connectResult.exitCode == 0;
     } catch (_) {
       return false;

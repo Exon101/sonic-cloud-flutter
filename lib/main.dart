@@ -199,6 +199,7 @@ class _SonicCloudAppState extends State<SonicCloudApp> {
               security: _security,
               accessibility: _accessibility,
               api: _api,
+              oauth: _oauth,
               onPlayTrack: (track) {
                 _playback.playAll([track]);
                 _openPlayer();
@@ -319,7 +320,6 @@ class _HomeShell extends StatelessWidget {
                   security: security,
                   accessibility: accessibility,
                   api: api,
-                  oauth: _oauth,
                 ),
               ],
             ),

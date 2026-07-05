@@ -53,9 +53,9 @@ class OAuthService extends ChangeNotifier {
   ///   2. Set the redirect URI to: <your-app-scheme>://oauth2redirect
   ///   3. Replace [_dropboxClientId] with your app key
   Future<String> signInDropbox() async {
-    const clientId = _dropboxClientId;
-    const redirectUri = _redirectUri('dropbox');
-    const authUrl =
+    final clientId = _dropboxClientId;
+    final redirectUri = _redirectUri('dropbox');
+    final authUrl =
         'https://www.dropbox.com/oauth2/authorize?response_type=code'
         '&client_id=$clientId'
         '&redirect_uri=$redirectUri'
@@ -103,9 +103,9 @@ class OAuthService extends ChangeNotifier {
   ///   2. Add redirect URI: <your-app-scheme>://oauth2redirect
   ///   3. Replace [_msClientId] and [_msTenantId] with your values
   Future<String> signInOneDrive() async {
-    const clientId = _msClientId;
-    const tenantId = _msTenantId;
-    const redirectUri = _redirectUri('onedrive');
+    final clientId = _msClientId;
+    final tenantId = _msTenantId;
+    final redirectUri = _redirectUri('onedrive');
     final authUrl =
         'https://login.microsoftonline.com/$tenantId/oauth2/v2.0/authorize'
         '?response_type=code'

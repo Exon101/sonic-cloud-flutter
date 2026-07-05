@@ -55,7 +55,7 @@ class RealOneDriveProvider extends CloudProvider {
       // Search for audio items
       final resp = await http.get(
         Uri.parse(
-          '$_graphUrl/me/drive/search(q=\'\')?$select=name,id,size,@microsoft.graph.downloadUrl,lastModifiedDateTime',
+          '$_graphUrl/me/drive/search(q=\'\')?\$select=name,id,size,@microsoft.graph.downloadUrl,lastModifiedDateTime',
         ),
         headers: _authHeaders,
       );
