@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/mock_data.dart';
 import '../models/models.dart';
+import '../services/oauth_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart' as r;
 import '../theme/app_spacing.dart';
@@ -13,18 +14,20 @@ import '../widgets/top_app_bar.dart';
 ///
 /// Sections:
 ///   1. Storage Overview — total used, sonic-seeker progress bar, breakdown
-///   2. Connected Drives — responsive grid of cloud drive cards
+///   2. Connected Drives — responsive grid of cloud drive cards with OAuth connect
 ///   3. Recent Sync Activity — list of downloading / synced items
 class CloudStorageScreen extends StatelessWidget {
   final VoidCallback onOpenLibrary;
   final VoidCallback onOpenPlayer;
   final VoidCallback onOpenSettings;
+  final OAuthService? oauth;
 
   const CloudStorageScreen({
     super.key,
     required this.onOpenLibrary,
     required this.onOpenPlayer,
     required this.onOpenSettings,
+    this.oauth,
   });
 
   @override

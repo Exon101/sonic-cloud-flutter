@@ -18,6 +18,7 @@ import 'security/security_service.dart';
 import 'services/app_settings_service.dart';
 import 'services/equalizer_service.dart';
 import 'services/library_service.dart';
+import 'services/oauth_service.dart';
 import 'services/lyrics_service.dart';
 import 'services/playback_service.dart';
 import 'services/playlist_service.dart';
@@ -62,6 +63,7 @@ class _SonicCloudAppState extends State<SonicCloudApp> {
   late final AccessibilityService _accessibility;
   late final SyncService _sync;
   late final LocalApiService _api;
+  late final OAuthService _oauth;
 
   bool _initialized = false;
 
@@ -99,6 +101,7 @@ class _SonicCloudAppState extends State<SonicCloudApp> {
 
     // Local API (opt-in — start manually from settings)
     _api = LocalApiService(_playback, _universalLibrary);
+    _oauth = OAuthService();
 
     // Open database, load saved tracks, seed mock data if empty
     try {
@@ -258,6 +261,7 @@ class _HomeShell extends StatelessWidget {
     required this.security,
     required this.accessibility,
     required this.api,
+    required this.oauth,
     required this.onPlayTrack,
   });
 
@@ -276,6 +280,7 @@ class _HomeShell extends StatelessWidget {
   final SecurityService security;
   final AccessibilityService accessibility;
   final LocalApiService api;
+  final OAuthService oauth;
   final void Function(Track) onPlayTrack;
 
   @override
@@ -301,6 +306,7 @@ class _HomeShell extends StatelessWidget {
                 // Player tab → opens Now Playing
                 _PlayerTabPlaceholder(onOpenPlayer: onOpenPlayer),
                 CloudStorageScreen(
+                  oauth: oauth,
                   onOpenLibrary: () => onGo(0),
                   onOpenPlayer: onOpenPlayer,
                   onOpenSettings: () => onGo(3),
@@ -313,6 +319,7 @@ class _HomeShell extends StatelessWidget {
                   security: security,
                   accessibility: accessibility,
                   api: api,
+                  oauth: _oauth,
                 ),
               ],
             ),

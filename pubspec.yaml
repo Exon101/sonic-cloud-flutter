@@ -39,6 +39,12 @@ dependencies:
   shelf_router: ^1.1.4
   shelf_web_socket: ^3.0.0
 
+  # ── OAuth / cloud auth ───────────────────────────────────────────────────────
+  google_sign_in: ^6.2.1
+  oauth2: ^2.0.2
+  url_launcher: ^6.2.5
+  flutter_web_auth_2: ^3.1.2
+
   # ── Security ─────────────────────────────────────────────────────────────────
   local_auth: ^2.2.0
   flutter_secure_storage: ^9.2.2

@@ -4,6 +4,9 @@ import '../models/models.dart';
 import 'real_webdav_provider.dart';
 import 'real_google_drive_provider.dart';
 import 'real_dropbox_provider.dart';
+import 'real_onedrive_provider.dart';
+import 'real_nextcloud_provider.dart';
+import 'real_smb_provider.dart';
 
 /// CloudProvider — abstract base for all cloud storage providers.
 ///
@@ -267,14 +270,14 @@ class LocalNetworkProvider extends CloudProvider {
 
 CloudProvider makeProvider(CloudProviderConfig config) {
   return switch (config.kind) {
-    // Real implementations (using HTTP APIs)
+    // Real implementations
     CloudProviderKind.googleDrive => RealGoogleDriveProvider(config),
     CloudProviderKind.dropbox => RealDropboxProvider(config),
+    CloudProviderKind.oneDrive => RealOneDriveProvider(config),
+    CloudProviderKind.nextcloud => RealNextcloudProvider(config),
     CloudProviderKind.webdav => RealWebDavProvider(config),
-    // Stub implementations (interface only — replace with real code)
-    CloudProviderKind.oneDrive => OneDriveProvider(config),
-    CloudProviderKind.nextcloud => NextcloudProvider(config),
-    CloudProviderKind.smb => SmbProvider(config),
+    CloudProviderKind.smb => RealSmbProvider(config),
+    // Stub implementations (remaining)
     CloudProviderKind.ftp => FtpProvider(config),
     CloudProviderKind.sftp => SftpProvider(config),
     CloudProviderKind.nas => NasProvider(config),
