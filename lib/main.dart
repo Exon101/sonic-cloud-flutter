@@ -148,7 +148,17 @@ class _SonicCloudAppState extends State<SonicCloudApp> {
     final track =
         _playback.currentTrack ??
         (_playback.queue.isNotEmpty ? _playback.queue.first : null);
-    if (track == null) return; // Nothing to play — don't open player
+    if (track == null) {
+      // No track loaded — switch to Library tab so user can add music
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No track loaded. Tap "Add Music" to pick files.'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+      setState(() => _index = 0);
+      return;
+    }
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => NowPlayingScreen(

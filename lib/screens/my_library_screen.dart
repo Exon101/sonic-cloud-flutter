@@ -69,7 +69,8 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
   Future<void> _pickFiles() async {
     try {
       final result = await FilePicker.platform.pickFiles(
-        type: FileType.audio,
+        type: FileType.custom,
+        allowedExtensions: ['mp3', 'flac', 'wav', 'aac', 'ogg', 'm4a', 'opus'],
         allowMultiple: true,
       );
       if (result == null || result.files.isEmpty) return;

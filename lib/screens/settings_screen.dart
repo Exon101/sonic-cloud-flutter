@@ -582,6 +582,15 @@ class _AccentColorTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: settings,
+      builder: (context, _) {
+        return _buildContent(context);
+      },
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
     final colors = [
       const Color(0xFF00F4FE), // Sonic cyan (default)
       const Color(0xFF7F66FF), // Electric violet

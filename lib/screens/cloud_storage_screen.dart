@@ -34,6 +34,21 @@ class CloudStorageScreen extends StatelessWidget {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: SonicTopAppBar(avatarUrl: ''),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Cloud provider setup requires OAuth credentials. See Settings → Developer.',
+              ),
+            ),
+          );
+        },
+        backgroundColor: const Color(0xFF00F4FE),
+        foregroundColor: const Color(0xFF0E0E13),
+        icon: const Icon(Icons.add_rounded),
+        label: const Text('Add Provider'),
+      ),
       body: SafeArea(
         minimum: const EdgeInsets.only(top: 16),
         child: ListView(
@@ -231,7 +246,10 @@ class _ConnectedDrives extends StatelessWidget {
               spacing: AppSpacing.sm,
               runSpacing: AppSpacing.sm,
               children: [
-                for (final d in <CloudProviderConfig>[])
+                for (final d
+                    in <
+                      CloudProviderConfig
+                    >[]) // TODO: populate from connected providers
                   SizedBox(
                     width: (c.maxWidth - AppSpacing.sm * (cols - 1)) / cols,
                     child: _DriveCard(drive: d),
