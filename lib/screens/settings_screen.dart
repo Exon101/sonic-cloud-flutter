@@ -586,27 +586,31 @@ class _AccentColorTile extends StatelessWidget {
         'Accent Color',
         style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface),
       ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: colors.map((c) {
-          final selected = settings.accentColor == c;
-          return GestureDetector(
-            onTap: () => settings.setAccentColor(c),
-            child: Container(
-              width: 28,
-              height: 28,
-              margin: const EdgeInsets.only(left: 4),
-              decoration: BoxDecoration(
-                color: c,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: selected ? Colors.white : Colors.transparent,
-                  width: 2,
+      trailing: SizedBox(
+        width: 180, // Constrain to prevent overflow on narrow screens
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: colors.map((c) {
+            final selected = settings.accentColor == c;
+            return GestureDetector(
+              onTap: () => settings.setAccentColor(c),
+              child: Container(
+                width: 24,
+                height: 24,
+                margin: const EdgeInsets.only(left: 3),
+                decoration: BoxDecoration(
+                  color: c,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: selected ? Colors.white : Colors.transparent,
+                    width: 2,
+                  ),
                 ),
               ),
-            ),
-          );
-        }).toList(),
+            );
+          }).toList(),
+        ),
       ),
     );
   }

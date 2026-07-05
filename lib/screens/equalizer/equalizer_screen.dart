@@ -94,8 +94,12 @@ class _BandSliders extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Responsive height: 220 on phones, taller on tablets
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final sliderHeight = (screenHeight * 0.28).clamp(180.0, 280.0);
+
     return SizedBox(
-      height: 220,
+      height: sliderHeight,
       child: Row(
         children: List.generate(10, (i) {
           return Expanded(

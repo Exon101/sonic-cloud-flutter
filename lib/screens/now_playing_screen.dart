@@ -191,6 +191,11 @@ class _TopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Use smaller touch targets on narrow screens to prevent overflow
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isNarrow = screenWidth < 360;
+    final buttonSize = isNarrow ? 36.0 : 44.0;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
       child: Row(
@@ -204,16 +209,20 @@ class _TopBar extends StatelessWidget {
               size: 28,
             ),
             tooltip: 'Collapse',
-            constraints: const BoxConstraints(
-              minWidth: AppSpacing.touchTarget,
-              minHeight: AppSpacing.touchTarget,
+            constraints: BoxConstraints(
+              minWidth: buttonSize,
+              minHeight: buttonSize,
             ),
+            padding: EdgeInsets.zero,
           ),
-          Text(
-            'NOW PLAYING',
-            style: AppTypography.labelSm.copyWith(
-              color: AppColors.onSurfaceVariant.withOpacity(0.8),
-              letterSpacing: 2.0,
+          Flexible(
+            child: Text(
+              'NOW PLAYING',
+              style: AppTypography.labelSm.copyWith(
+                color: AppColors.onSurfaceVariant.withOpacity(0.8),
+                letterSpacing: 2.0,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
           Row(
@@ -228,10 +237,11 @@ class _TopBar extends StatelessWidget {
                     size: 22,
                   ),
                   tooltip: 'Lyrics',
-                  constraints: const BoxConstraints(
-                    minWidth: AppSpacing.touchTarget,
-                    minHeight: AppSpacing.touchTarget,
+                  constraints: BoxConstraints(
+                    minWidth: buttonSize,
+                    minHeight: buttonSize,
                   ),
+                  padding: EdgeInsets.zero,
                 ),
               if (onOpenSleepTimer != null)
                 IconButton(
@@ -242,10 +252,11 @@ class _TopBar extends StatelessWidget {
                     size: 22,
                   ),
                   tooltip: 'Sleep timer',
-                  constraints: const BoxConstraints(
-                    minWidth: AppSpacing.touchTarget,
-                    minHeight: AppSpacing.touchTarget,
+                  constraints: BoxConstraints(
+                    minWidth: buttonSize,
+                    minHeight: buttonSize,
                   ),
+                  padding: EdgeInsets.zero,
                 ),
               IconButton(
                 onPressed: () {},
@@ -255,10 +266,11 @@ class _TopBar extends StatelessWidget {
                   size: 24,
                 ),
                 tooltip: 'More',
-                constraints: const BoxConstraints(
-                  minWidth: AppSpacing.touchTarget,
-                  minHeight: AppSpacing.touchTarget,
+                constraints: BoxConstraints(
+                  minWidth: buttonSize,
+                  minHeight: buttonSize,
                 ),
+                padding: EdgeInsets.zero,
               ),
             ],
           ),
@@ -311,13 +323,18 @@ class _VinylArtState extends State<_VinylArt> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    // Responsive sizing: use min(screenWidth * 0.85, 320) for the vinyl
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final artSize = (screenWidth * 0.85).clamp(200.0, 320.0);
+    final discSize = artSize * 0.92;
+
     return SizedBox(
-      width: 320,
-      height: 320,
+      width: artSize,
+      height: artSize,
       child: Stack(
         alignment: Alignment.center,
         children: [
-          _PulsingRing(),
+          _PulsingRing(artSize: artSize),
           // Rotating vinyl disc
           AnimatedBuilder(
             animation: _rotationCtrl,
@@ -328,8 +345,8 @@ class _VinylArtState extends State<_VinylArt> with TickerProviderStateMixin {
               );
             },
             child: Container(
-              width: 295,
-              height: 295,
+              width: discSize,
+              height: discSize,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 image: DecorationImage(
@@ -347,9 +364,9 @@ class _VinylArtState extends State<_VinylArt> with TickerProviderStateMixin {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  // Vinyl grooves (subtle rings)
+                  // Vinyl grooves (subtle rings) — responsive to disc size
                   ...List.generate(5, (i) {
-                    final size = 120.0 + i * 30;
+                    final size = discSize * 0.4 + i * (discSize * 0.1);
                     return Container(
                       width: size,
                       height: size,
@@ -400,6 +417,9 @@ class _VinylArtState extends State<_VinylArt> with TickerProviderStateMixin {
 }
 
 class _PulsingRing extends StatefulWidget {
+  final double artSize;
+  const _PulsingRing({this.artSize = 320});
+
   @override
   State<_PulsingRing> createState() => _PulsingRingState();
 }
@@ -432,8 +452,8 @@ class _PulsingRingState extends State<_PulsingRing>
         final blurSigma = 40 + 30 * t;
         final glowAlpha = 0.30 + 0.30 * t;
         return Container(
-          width: 330,
-          height: 330,
+          width: widget.artSize * 1.03,
+          height: widget.artSize * 1.03,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: AppColors.surface.withOpacity(0.20),
@@ -570,8 +590,15 @@ class _Controls extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Responsive: cap at 320 but shrink on narrow screens
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final barWidth = (screenWidth - AppSpacing.edgeMargin * 2).clamp(
+      200.0,
+      360.0,
+    );
+
     return Container(
-      width: 320,
+      width: barWidth,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: AppColors.surfaceContainer.withOpacity(0.30),
@@ -586,63 +613,63 @@ class _Controls extends StatelessWidget {
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          IconButton(
-            onPressed: onShuffle,
-            icon: Icon(
-              Icons.shuffle_rounded,
-              color: shuffleEnabled
-                  ? AppColors.secondaryContainer
-                  : AppColors.onSurfaceVariant,
-              size: 20,
-            ),
-            tooltip: 'Shuffle',
-            constraints: const BoxConstraints(
-              minWidth: AppSpacing.touchTarget,
-              minHeight: AppSpacing.touchTarget,
-            ),
-          ),
-          IconButton(
-            onPressed: onPrevious,
-            icon: const Icon(
-              Icons.skip_previous_rounded,
-              color: AppColors.onSurface,
-              size: 36,
-            ),
-            tooltip: 'Previous',
-            constraints: const BoxConstraints(
-              minWidth: AppSpacing.touchTarget,
-              minHeight: AppSpacing.touchTarget,
+          Flexible(
+            child: IconButton(
+              onPressed: onShuffle,
+              icon: Icon(
+                Icons.shuffle_rounded,
+                color: shuffleEnabled
+                    ? AppColors.secondaryContainer
+                    : AppColors.onSurfaceVariant,
+                size: 20,
+              ),
+              tooltip: 'Shuffle',
+              constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+              padding: EdgeInsets.zero,
             ),
           ),
-          SonicGlowButton(isPlaying: isPlaying, onTap: onPlayPause, size: 80),
-          IconButton(
-            onPressed: onNext,
-            icon: const Icon(
-              Icons.skip_next_rounded,
-              color: AppColors.onSurface,
-              size: 36,
-            ),
-            tooltip: 'Next',
-            constraints: const BoxConstraints(
-              minWidth: AppSpacing.touchTarget,
-              minHeight: AppSpacing.touchTarget,
+          Flexible(
+            child: IconButton(
+              onPressed: onPrevious,
+              icon: const Icon(
+                Icons.skip_previous_rounded,
+                color: AppColors.onSurface,
+                size: 32,
+              ),
+              tooltip: 'Previous',
+              constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+              padding: EdgeInsets.zero,
             ),
           ),
-          IconButton(
-            onPressed: onRepeat,
-            icon: Icon(
-              Icons.repeat_rounded,
-              color: repeatMode != RepeatMode.off
-                  ? AppColors.secondaryContainer
-                  : AppColors.onSurfaceVariant,
-              size: 20,
+          SonicGlowButton(isPlaying: isPlaying, onTap: onPlayPause, size: 72),
+          Flexible(
+            child: IconButton(
+              onPressed: onNext,
+              icon: const Icon(
+                Icons.skip_next_rounded,
+                color: AppColors.onSurface,
+                size: 32,
+              ),
+              tooltip: 'Next',
+              constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+              padding: EdgeInsets.zero,
             ),
-            tooltip: 'Repeat (${repeatMode.name})',
-            constraints: const BoxConstraints(
-              minWidth: AppSpacing.touchTarget,
-              minHeight: AppSpacing.touchTarget,
+          ),
+          Flexible(
+            child: IconButton(
+              onPressed: onRepeat,
+              icon: Icon(
+                Icons.repeat_rounded,
+                color: repeatMode != RepeatMode.off
+                    ? AppColors.secondaryContainer
+                    : AppColors.onSurfaceVariant,
+                size: 20,
+              ),
+              tooltip: 'Repeat (${repeatMode.name})',
+              constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+              padding: EdgeInsets.zero,
             ),
           ),
         ],
