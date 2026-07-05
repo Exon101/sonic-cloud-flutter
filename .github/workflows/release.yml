@@ -189,7 +189,7 @@ jobs:
         run: flutter build macos --release --no-tree-shake-icons
 
       - name: Tarball macOS app
-        run: tar -czf macos-release.tar.gz -C build/macos/Build/Products/Release "Sonic Cloud.app"
+        run: tar -czf macos-release.tar.gz -C build/macos/Build/Products/Release *.app
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
