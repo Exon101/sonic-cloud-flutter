@@ -18,7 +18,7 @@ def flutterVersionName = localProperties.getProperty("flutter.versionName") ?: "
 
 android {
     namespace "com.example.sonic_cloud"
-    compileSdk 35
+    compileSdk 36
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -37,7 +37,7 @@ android {
     defaultConfig {
         applicationId "com.example.sonic_cloud"
         minSdk 21
-        targetSdk 35
+        targetSdk 36
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
