@@ -1,7 +1,7 @@
 name: sonic_cloud
 description: A premium glassmorphic music player with cloud integration, real audio playback, equalizer, lyrics, persistence, security, and a plugin architecture.
 publish_to: "none"
-version: 4.1.0+6
+version: 4.1.0+7
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
