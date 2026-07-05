@@ -1,8 +1,8 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import '../data/mock_data.dart';
 import '../models/models.dart';
 import '../services/library_service.dart';
-import '../services/playback_service.dart';
 import '../services/search_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart' as r;
@@ -16,7 +16,7 @@ import '../widgets/track_row.dart';
 
 /// Library screen — the app's home.
 ///
-/// v3.2: wired to LibraryService + SearchService for real data + instant search.
+/// v3.3: supports playing local files via file picker + folder scanning.
 class MyLibraryScreen extends StatefulWidget {
   final VoidCallback onOpenPlayer;
   final VoidCallback onOpenCloud;
@@ -46,6 +46,7 @@ class MyLibraryScreen extends StatefulWidget {
 class _MyLibraryScreenState extends State<MyLibraryScreen> {
   String _searchQuery = '';
   List<Track> _searchResults = [];
+  bool _scanning = false;
 
   void _runSearch(String query) {
     setState(() {
@@ -62,8 +63,177 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
   @override
   void initState() {
     super.initState();
-    // Index the library on first load
     widget.search.index(widget.library.tracks);
+  }
+
+  /// Pick one or more audio files from the device and play them.
+  Future<void> _pickFiles() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.audio,
+        allowMultiple: true,
+      );
+      if (result == null || result.files.isEmpty) return;
+
+      final tracks = <Track>[];
+      for (final file in result.files) {
+        final path = file.path;
+        if (path == null) continue;
+        final format = AudioFormat.fromPath(path);
+        if (format == null) continue;
+
+        // Build a Track from the file
+        final baseName = path
+            .split('/')
+            .last
+            .replaceAll(RegExp(r'\.[^.]+$'), '');
+        final parts = baseName.split(RegExp(r'\s*-\s*'));
+        tracks.add(
+          Track(
+            id: 'local:$path',
+            title: parts.length > 1 ? parts.sublist(1).join(' - ') : baseName,
+            artist: parts.length > 1 ? parts.first : 'Unknown Artist',
+            album: 'Local Files',
+            year: 0,
+            duration: Duration.zero,
+            artUrl: '',
+            audioUrl: 'file://$path',
+            fileSystemPath: path,
+            format: format,
+            dateAdded: DateTime.now(),
+          ),
+        );
+      }
+
+      if (tracks.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No supported audio files selected.')),
+          );
+        }
+        return;
+      }
+
+      // Add to library + play
+      widget.library.importCloudTracks(tracks);
+      await widget.library.saveToDatabase();
+      widget.search.index(widget.library.tracks);
+      widget.onPlayTrack(tracks.first);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Playing ${tracks.length} file(s)')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to pick files: $e')));
+      }
+    }
+  }
+
+  /// Pick a folder and scan it for audio files.
+  Future<void> _scanFolder() async {
+    try {
+      final path = await FilePicker.platform.getDirectoryPath();
+      if (path == null) return;
+
+      setState(() => _scanning = true);
+
+      // Scan the folder — LibraryService.walks the tree and parses metadata
+      final count = await widget.library.scanFolder(path);
+      await widget.library.saveToDatabase();
+      widget.search.index(widget.library.tracks);
+
+      if (mounted) {
+        setState(() => _scanning = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              count > 0
+                  ? 'Scanned $count audio file(s) from folder'
+                  : 'No audio files found in selected folder',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _scanning = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to scan folder: $e')));
+      }
+    }
+  }
+
+  void _showAddMenu() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surfaceContainer,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(r.AppRadius.xl),
+        ),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: AppSpacing.sm),
+            ListTile(
+              leading: const Icon(
+                Icons.audio_file_rounded,
+                color: AppColors.secondaryContainer,
+                size: 28,
+              ),
+              title: Text(
+                'Open Audio Files',
+                style: AppTypography.bodyMd.copyWith(
+                  color: AppColors.onSurface,
+                ),
+              ),
+              subtitle: Text(
+                'Pick one or more audio files to play',
+                style: AppTypography.labelSm.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _pickFiles();
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.folder_open_rounded,
+                color: AppColors.secondaryContainer,
+                size: 28,
+              ),
+              title: Text(
+                'Scan Folder',
+                style: AppTypography.bodyMd.copyWith(
+                  color: AppColors.onSurface,
+                ),
+              ),
+              subtitle: Text(
+                'Scan a folder for all audio files',
+                style: AppTypography.labelSm.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _scanFolder();
+              },
+            ),
+            const SizedBox(height: AppSpacing.sm),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -126,6 +296,22 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
             );
           },
         ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _scanning ? null : _showAddMenu,
+        backgroundColor: AppColors.secondaryContainer,
+        foregroundColor: AppColors.surfaceLowest,
+        icon: _scanning
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.surfaceLowest,
+                ),
+              )
+            : const Icon(Icons.add_rounded),
+        label: Text(_scanning ? 'Scanning...' : 'Add Music'),
       ),
       bottomNavigationBar: SonicBottomNavBar(
         currentIndex: 0,
@@ -252,7 +438,6 @@ class _RecentlyPlayedCarousel extends StatelessWidget {
         ),
       );
     }
-    // Convert tracks to albums for the carousel
     final albums = <Album>[];
     final seenAlbums = <String>{};
     for (final t in tracks) {
@@ -324,11 +509,27 @@ class _AllSongsSection extends StatelessWidget {
         if (tracks.isEmpty)
           Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Text(
-              'No tracks in library. Scan a folder to add music.',
-              style: AppTypography.bodyMd.copyWith(
-                color: AppColors.onSurfaceVariant,
-              ),
+            child: Column(
+              children: [
+                const Icon(
+                  Icons.library_music_rounded,
+                  size: 48,
+                  color: AppColors.onSurfaceVariant,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  'No tracks in library.',
+                  style: AppTypography.bodyMd.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+                Text(
+                  'Tap "Add Music" to pick files or scan a folder.',
+                  style: AppTypography.labelSm.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
           )
         else
