@@ -4,7 +4,49 @@ All notable changes to Sonic Cloud are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [4.0.0] — 2025-07-05
+
+### Major release — all features wired, local file playback, real cloud providers
+
+### Added
+- **Local file playback**: "Add Music" FAB on MyLibraryScreen with file picker (pick audio files) + folder scanner (scan a directory recursively). Picked/scanned tracks are persisted to SQLite.
+- **Real cloud providers**: Google Drive (google_sign_in + REST API), Dropbox (OAuth2 + API v2), OneDrive (Microsoft Graph API), Nextcloud (WebDAV), SMB (smbclient CLI), WebDAV (webdav_client) — 6 real implementations, 4 stubs remaining
+- **OAuth flows**: OAuthService with google_sign_in for Google Drive, flutter_web_auth_2 for Dropbox + OneDrive authorization code flows
+- **audiotags Rust backend**: MetadataService now reads/writes real ID3/Vorbis/MP4/FLAC tags via AudioTags.read()/write()
+- **Rotating vinyl**: album art in NowPlayingScreen rotates at 33⅓ RPM when playing, pauses when paused, with vinyl groove rings
+- **Mini-player**: persistent bottom bar with album thumbnail, title, artist, progress bar, play/pause + next buttons
+- **Lyrics + sleep timer**: NowPlayingScreen top bar has lyrics button (opens synced lyrics screen) + sleep timer button (opens timer sheet)
+- **Smart shuffle**: preserves original queue order, restores on toggle off
+- **LRC sidecar files**: reads/writes .lrc files next to audio files
+- **All screens wired to real services**: MyLibraryScreen (LibraryService + SearchService), SettingsScreen (AppSettingsService + SecurityService + AccessibilityService + LocalApiService), NowPlayingScreen (PlaybackService + LyricsService)
+- **Theme system**: 5 modes (system/dark/light/AMOLED/dynamic) + 6 accent colors
+- **Security**: PIN, biometric unlock, secure credential storage, granular per-provider permissions
+- **Accessibility**: high-contrast, font scale slider, colorblind modes, reduced motion, large touch targets
+- **Local REST API + WebSocket**: shelf-based API on port 8765 for companion apps
+- **Custom logo**: user-provided 1024×1024 PNG as app icon everywhere
+
+### Fixed
+- CI: bumped Gradle 8.9 → 8.11.1, AGP 8.7.0 → 8.9.1, compileSdk 35 → 36
+- CI: removed hand-written CMakeLists.txt (incompatible with Flutter build system)
+- CI: added --force flag to flutter create in release workflow
+- CI: publish-release uses if: always() so release is created with available artifacts
+- CI: fixed all analyzer errors (RepeatMode ambiguity, const method invocations, missing imports)
+- CI: fixed auto-merge workflow (missing checkout step)
+- Closed bogus Dependabot PRs targeting non-existent action versions
+- Updated all GitHub Actions to valid latest versions
+
+## [3.1.0] — 2025-07-04
+
+### Added
+- WebDAV provider: real implementation using webdav_client 1.2.x API
+- Smart shuffle: preserves original queue order via _shuffledOrder copy
+- LRC sidecar files: reads/writes .lrc files via dart:io
+- Metadata editing: MetadataService with read/write/batchEdit
+- Audio metadata reading: LibraryService calls MetadataService first
+
+### Fixed
+- Auto-merge workflow: added missing checkout step
+- All 3 CI jobs pass (Analyze & Test, Build Web, Build Android APK)
 
 ### Fixed
 - CI now passes — corrected all pubspec package versions to ones that exist
@@ -89,7 +131,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - 6 helper shell scripts (`build.sh`, `deploy_*.sh`)
 - README with badges, screenshots, deployment docs
 
-[Unreleased]: https://github.com/Exon101/sonic-cloud-flutter/compare/v3.0.0...HEAD
+[Unreleased]: https://github.com/Exon101/sonic-cloud-flutter/compare/v4.0.0...HEAD
+[4.0.0]: https://github.com/Exon101/sonic-cloud-flutter/releases/tag/v4.0.0
 [3.0.0]: https://github.com/Exon101/sonic-cloud-flutter/releases/tag/v3.0.0
 [2.0.0]: https://github.com/Exon101/sonic-cloud-flutter/releases/tag/v2.0.0
 [1.0.0]: https://github.com/Exon101/sonic-cloud-flutter/releases/tag/v1.0.0
