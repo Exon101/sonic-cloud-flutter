@@ -26,7 +26,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Wait for CI to pass
-        uses: lewagon/wait-on-check-action@v1
+        uses: lewagon/wait-on-check-action@v1.8.1
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           check-name: 'Analyze & Test'
