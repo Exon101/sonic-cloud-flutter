@@ -91,7 +91,7 @@ class _SonicCloudAppState extends State<SonicCloudApp> {
     // Settings + theme + security + accessibility
     final prefs = await SharedPreferences.getInstance();
     _settings = AppSettingsService(prefs);
-    _theme = ThemeService(_settings);
+    _theme = ThemeService(_settings, _accessibility);
     _security = SecurityService();
     _accessibility = AccessibilityService(prefs);
 

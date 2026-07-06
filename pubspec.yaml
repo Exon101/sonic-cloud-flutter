@@ -52,7 +52,6 @@ dependencies:
 
   # ── Utilities ────────────────────────────────────────────────────────────────
   uuid: ^4.3.3
-  intl: ^0.20.3
   rxdart: ^0.28.0
 
 dev_dependencies:

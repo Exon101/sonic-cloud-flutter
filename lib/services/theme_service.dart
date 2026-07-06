@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../models/models.dart';
 import '../services/app_settings_service.dart';
+import '../accessibility/accessibility_service.dart';
 import '../theme/app_colors.dart';
 
 /// ThemeService — exposes a [ThemeData] derived from [AppSettingsService].
@@ -11,45 +12,58 @@ import '../theme/app_colors.dart';
 /// dynamic (Material You on Android 12+). Custom accent color overrides the
 /// default cyan.
 class ThemeService extends ChangeNotifier {
-  ThemeService(this._settings) {
-    _settings.addListener(_onSettingsChanged);
+  ThemeService(this._settings, this._accessibility) {
+    _settings.addListener(_onChanged);
+    _accessibility.addListener(_onChanged);
   }
   final AppSettingsService _settings;
+  final AccessibilityService _accessibility;
 
-  void _onSettingsChanged() => notifyListeners();
+  void _onChanged() => notifyListeners();
 
   @override
   void dispose() {
-    _settings.removeListener(_onSettingsChanged);
+    _settings.removeListener(_onChanged);
+    _accessibility.removeListener(_onChanged);
     super.dispose();
   }
 
   ThemeData get themeData {
     final mode = _settings.themeMode;
     final accent = _settings.accentColor;
-    final seed = accent ?? const Color(0xFF00F4FE); // default Sonic cyan
+    final seed = accent ?? const Color(0xFF00F4FE);
+    final fontScale = _accessibility.fontScale;
+    final highContrast = _accessibility.highContrast;
 
+    ThemeData theme;
     switch (mode) {
       case ThemeModePreference.system:
-        // Flutter's platformBrightness will handle dark/light switching.
-        return _buildDarkTheme(seed, amoled: false);
+        theme = _buildDarkTheme(seed, amoled: false, highContrast: highContrast);
       case ThemeModePreference.dark:
-        return _buildDarkTheme(seed, amoled: false);
+        theme = _buildDarkTheme(seed, amoled: false, highContrast: highContrast);
       case ThemeModePreference.light:
-        return _buildLightTheme(seed);
+        theme = _buildLightTheme(seed, highContrast: highContrast);
       case ThemeModePreference.amoled:
-        return _buildDarkTheme(seed, amoled: true);
+        theme = _buildDarkTheme(seed, amoled: true, highContrast: highContrast);
       case ThemeModePreference.dynamic:
-        // Material You: on Android 12+, this would query the system's
-        // dynamic color scheme. Stubbed to fall back to dark theme w/ accent.
-        return _buildDarkTheme(seed, amoled: false);
+        theme = _buildDarkTheme(seed, amoled: false, highContrast: highContrast);
     }
+
+    // Apply font scale
+    if (fontScale != 1.0) {
+      theme = theme.copyWith(
+        textTheme: theme.textTheme.apply(fontSizeFactor: fontScale),
+      );
+    }
+
+    return theme;
   }
 
-  ThemeData _buildDarkTheme(Color seed, {required bool amoled}) {
+  ThemeData _buildDarkTheme(Color seed, {required bool amoled, required bool highContrast}) {
     final scheme = ColorScheme.fromSeed(
       seedColor: seed,
       brightness: Brightness.dark,
+      contrastLevel: highContrast ? 1.0 : 0.0,
     );
     return ThemeData(
       useMaterial3: true,
@@ -60,10 +74,11 @@ class ThemeService extends ChangeNotifier {
     );
   }
 
-  ThemeData _buildLightTheme(Color seed) {
+  ThemeData _buildLightTheme(Color seed, {required bool highContrast}) {
     final scheme = ColorScheme.fromSeed(
       seedColor: seed,
       brightness: Brightness.light,
+      contrastLevel: highContrast ? 1.0 : 0.0,
     );
     return ThemeData(
       useMaterial3: true,

@@ -65,8 +65,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
   @override
   void dispose() {
-    // Pause (but don't dispose — the service is owned higher up).
-    widget.playback.pause();
+    // Don't pause on dispose — audio_service handles background playback.
+    // Playback continues in the notification panel after the screen closes.
     super.dispose();
   }
 

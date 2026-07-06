@@ -397,35 +397,42 @@ class PlaybackService extends ChangeNotifier {
   Future<void> _buildAudioSource() async {
     if (_queue.isEmpty) return;
     try {
-      // Use MediaItem as the tag so audio_service can display it in the
-      // notification panel and lock screen.
       final sources = _queue.map((t) {
-        final uri = Uri.parse(t.audioUrl);
-        // For assets, use AudioSource.asset for proper loading
+        final mediaItem = MediaItem(
+          id: t.id,
+          album: t.album,
+          title: t.title,
+          artist: t.artist,
+          artUri: t.artUrl.isNotEmpty ? Uri.tryParse(t.artUrl) : null,
+          duration: t.duration,
+        );
+
+        // Handle different URL schemes
         if (t.audioUrl.startsWith('asset://')) {
           final assetPath = t.audioUrl.substring('asset:///'.length);
-          return AudioSource.asset(
-            assetPath,
-            tag: MediaItem(
-              id: t.id,
-              album: t.album,
-              title: t.title,
-              artist: t.artist,
-              artUri: t.artUrl.isNotEmpty ? Uri.tryParse(t.artUrl) : null,
-              duration: t.duration,
-            ),
+          return AudioSource.asset(assetPath, tag: mediaItem);
+        }
+
+        if (t.audioUrl.startsWith('file://')) {
+          // file:// URIs — parse and pass directly
+          return AudioSource.uri(
+            Uri.parse(t.audioUrl),
+            tag: mediaItem,
           );
         }
+
+        // Network URLs (http/https) or direct file paths
+        if (t.fileSystemPath != null && !t.audioUrl.startsWith('http')) {
+          // Use the raw file path — just_audio handles it natively
+          return AudioSource.uri(
+            Uri.file(t.fileSystemPath!),
+            tag: mediaItem,
+          );
+        }
+
         return AudioSource.uri(
-          uri,
-          tag: MediaItem(
-            id: t.id,
-            album: t.album,
-            title: t.title,
-            artist: t.artist,
-            artUri: t.artUrl.isNotEmpty ? Uri.tryParse(t.artUrl) : null,
-            duration: t.duration,
-          ),
+          Uri.parse(t.audioUrl),
+          tag: mediaItem,
         );
       }).toList();
       final playlist = ConcatenatingAudioSource(
