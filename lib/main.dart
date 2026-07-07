@@ -394,7 +394,12 @@ class _HomeShell extends StatelessWidget {
                 if (playback.currentTrack == null) {
                   return const SizedBox.shrink();
                 }
-                return MiniPlayer(playback: playback, onTap: onOpenPlayer);
+                return Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.paddingOf(context).bottom,
+                  ),
+                  child: MiniPlayer(playback: playback, onTap: onOpenPlayer),
+                );
               },
             ),
           ],

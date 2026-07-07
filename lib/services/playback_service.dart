@@ -407,29 +407,21 @@ class PlaybackService extends ChangeNotifier {
           duration: t.duration,
         );
 
-        // Handle different URL schemes
-        if (t.audioUrl.startsWith('asset://')) {
-          final assetPath = t.audioUrl.substring('asset:///'.length);
-          return AudioSource.asset(assetPath, tag: mediaItem);
-        }
-
-        if (t.audioUrl.startsWith('file://')) {
-          // file:// URIs — parse and pass directly
-          return AudioSource.uri(
-            Uri.parse(t.audioUrl),
-            tag: mediaItem,
-          );
-        }
-
-        // Network URLs (http/https) or direct file paths
-        if (t.fileSystemPath != null && !t.audioUrl.startsWith('http')) {
-          // Use the raw file path — just_audio handles it natively
+        // For local files, use the raw file path — most reliable on Android
+        if (t.fileSystemPath != null) {
           return AudioSource.uri(
             Uri.file(t.fileSystemPath!),
             tag: mediaItem,
           );
         }
 
+        // For assets
+        if (t.audioUrl.startsWith('asset://')) {
+          final assetPath = t.audioUrl.substring('asset:///'.length);
+          return AudioSource.asset(assetPath, tag: mediaItem);
+        }
+
+        // For network URLs (http/https)
         return AudioSource.uri(
           Uri.parse(t.audioUrl),
           tag: mediaItem,

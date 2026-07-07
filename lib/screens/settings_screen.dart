@@ -543,7 +543,10 @@ class _ThemeModeTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
+    return AnimatedBuilder(
+      animation: settings,
+      builder: (context, _) {
+        return ListTile(
       leading: const Icon(Icons.palette, color: AppColors.onSurfaceVariant),
       title: Text(
         'Theme',
@@ -574,10 +577,12 @@ class _ThemeModeTile extends StatelessWidget {
             child: Text('Dynamic'),
           ),
         ],
-        onChanged: (v) {
-          if (v != null) settings.setThemeMode(v);
-        },
-      ),
+          onChanged: (v) {
+            if (v != null) settings.setThemeMode(v);
+          },
+        ),
+      );
+      },
     );
   }
 }
@@ -647,7 +652,10 @@ class _FontScaleTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
+    return AnimatedBuilder(
+      animation: accessibility,
+      builder: (context, _) {
+        return ListTile(
       leading: const Icon(Icons.text_fields, color: AppColors.onSurfaceVariant),
       title: Text(
         'Font Size',
@@ -662,12 +670,14 @@ class _FontScaleTile extends StatelessWidget {
         activeColor: AppColors.secondaryContainer,
         onChanged: (v) => accessibility.setFontScale(v),
       ),
-      trailing: Text(
-        '${(accessibility.fontScale * 100).round()}%',
-        style: AppTypography.labelSm.copyWith(
-          color: AppColors.onSurfaceVariant,
-        ),
-      ),
+          trailing: Text(
+            '${(accessibility.fontScale * 100).round()}%',
+            style: AppTypography.labelSm.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
+          ),
+        );
+      },
     );
   }
 }
