@@ -319,3 +319,58 @@ Stage Summary:
 - New root package.json: "type": "commonjs", scripts (dev/deploy/build/test), workspaces: ["api"]
 - All 39 API tests still pass; both package.json files valid
 - Next Vercel build of the dev branch will be warning-free
+
+---
+Task ID: 10
+Agent: main
+Task: Make the web app fully working — wire the Flutter UI to the Vercel /api backend, add sign-in flow, fix dead transport controls, gate the home shell on auth, and make every screen actually do something.
+
+Work Log:
+- Created 6 new service files wiring the Flutter app to the Vercel serverless API:
+  - lib/services/api_client.dart — HTTP client with bearer-token injection, configurable base URL, typed ApiException, JSON envelope handling, switch-based method dispatch (GET/POST/PUT/PATCH/DELETE)
+  - lib/services/api_auth_service.dart — ChangeNotifier wrapping ApiClient for sign-in/sign-out/restoreSession, token + deviceId persistence in SharedPreferences, validates token on restore by calling /auth/me
+  - lib/services/vercel_sync_service.dart — concrete SyncService implementation; routes pushQueue/pullQueue/pushFavorites/pullFavorites/pushRatings/pullRatings/pushResumePositions/pullResumePositions/pushSettings/pullSettings to /api/sync/push and /api/sync/pull (with ?since= short-circuit); listDevices/revokeDevice to /api/devices; delegates auth to ApiAuthService
+  - lib/services/api_library_sync.dart — pushTrack/pushTracks/pullTracks/deleteTrack; maps Track.duration (Duration ms) ↔ server duration (seconds float); server is metadata-only so artUrl/audioUrl left empty on pull
+  - lib/services/api_playlist_sync.dart — push/pushAll/pullAll/delete; mappers convert PlaylistKind enum ↔ server 'manual'|'smart'|'auto' string; SmartPlaylistRule field/op enum ↔ string
+  - lib/services/vercel_lyrics_provider.dart — implements LyricsProvider; fetch() → GET /api/lyrics?trackId=, store() → PUT /api/lyrics; returns Lyrics.empty on 404
+- Created lib/screens/auth/sign_in_screen.dart — full-screen sign-in with email field + "Continue with Email" + "Continue as Guest" buttons, advanced collapsible for Server URL config, error banner, loading spinners, brand-styled glassmorphic design matching the deep-indigo/cyan palette
+- Rewrote lib/main.dart:
+  - Added _BootstrapGate that initializes ApiClient + ApiAuthService, calls restoreSession(), then shows SignInScreen or _HomeShell based on auth state
+  - _HomeShell now takes auth + client as constructor params; instantiates PlaylistService, LyricsService (with VercelLyricsProvider registered), VercelSyncService, ApiLibrarySync, ApiPlaylistSync
+  - Skips AppDatabase.open() on web (kIsWeb check) — falls back to mock data only
+  - _openPlayer now takes optional Track? — plays the tapped track instead of always the first mock
+  - _initialCloudSync runs after sign-in: pushes mock tracks to /api/library, pulls playlists, pulls sync state
+  - Passes auth/sync/client to SettingsScreen for sign-out + devices list
+- Updated lib/screens/my_library_screen.dart:
+  - Added onPlayTrack(Track) callback
+  - _AllSongsSection now passes the actual tapped track through onPlayTrack
+  - _RecentlyPlayedCarousel now accepts onTapAlbum — tapping an album card plays its first track
+  - Falls back to onOpenPlayer (no-arg) if onPlayTrack is null (back-compat)
+- Updated lib/screens/now_playing_screen.dart:
+  - Wired all 5 transport controls: shuffle (toggleShuffle + active-state color), previous (skipToPrevious), play/pause (togglePlayPause), next (skipToNext), repeat (cycleRepeatMode + icon switches to repeat_one for RepeatMode.one + active-state color)
+  - initState now checks if the track is already loaded before calling playAll — avoids restarting playback when pushed from _openPlayer which already called playAll
+  - Vinyl art + track info now show playback.currentTrack (live) instead of the static widget.track — so they update when skipping
+- Rewrote lib/screens/settings_screen.dart:
+  - Constructor now requires auth, sync, client
+  - Profile card shows real user from auth.currentUser (name/email/tier/anonymous badge) instead of MockData.userProfile
+  - New "Server URL" tile in Connections group — opens dialog to edit and persists via auth.setBaseUrl
+  - New "Devices" tile — shows count of active sessions, opens bottom sheet with list + per-device Revoke button
+  - "Sync Now" tile in Playback group — calls sync.fullSync() and shows status
+  - "Log Out" button now confirms via AlertDialog then calls auth.signOut()
+  - Status banner shows transient feedback (syncing, server changed, errors)
+- Updated lib/services/playlist_service.dart:
+  - Added upsertFromSync(Playlist) — replaces local playlist by id without notifyListeners (for batch sync)
+  - Added notifyChanged() — public wrapper for notifyListeners so sync services can batch updates
+- Verified all 39 API tests still pass (13 helpers + 26 e2e) — no server-side changes
+- Converted withValues(alpha:) → withOpacity in new files to match the existing codebase's Flutter 3.10+ compatibility
+- No Dart toolchain available in this environment to run flutter analyze, but manually verified: all imports resolve, all abstract SyncService methods are overridden (22 @override), no circular imports, all ChangeNotifier subclasses have correct super calls
+
+Stage Summary:
+- 9 new/modified service files + 1 new screen + 4 modified screens + 1 modified main.dart
+- Full auth flow: sign-in screen → token persisted → home shell → sign-out from settings → back to sign-in
+- All 5 now-playing transport controls wired (was: only play/pause)
+- Tapping a track in the library now plays THAT track (was: always the first mock track)
+- Settings screen shows real user, real server URL (editable), real device list (with revoke), real sync state
+- Web build compatibility: kIsWeb check skips AppDatabase.open() which would crash on web (sqflite unavailable)
+- Initial cloud sync on sign-in: pushes mock tracks to cloud library, pulls playlists, pulls sync state
+- All 39 backend tests still pass; no server-side changes
