@@ -1,8 +1,18 @@
-# Sonic Cloud API — Vercel Serverless Functions
+# Sonic Cloud API — Serverless Backend
 
-This directory contains the backend API for Sonic Cloud, deployed as Vercel
-Serverless Functions. Each `.js` file (or `index.js` inside a folder) is
-automatically exposed at the matching URL path.
+This directory contains the backend API for Sonic Cloud. The handlers use
+the standard `(event|req, response|res)` signature, so they can be hosted
+on either of:
+
+- **Vercel Serverless Functions** (dev / small-scale — zero config, runs
+  alongside the Flutter web bundle in the same project)
+- **Firebase Cloud Functions v2 (HTTP)** (production / large-scale — pairs
+  with Firebase Hosting, Auth, and Firestore; each handler needs a tiny
+  `onRequest` adapter, see `DEPLOYMENT.md` → "Pairing with the serverless API")
+
+On Vercel, each `.js` file (or `index.js` inside a folder) is automatically
+exposed at the matching URL path. On Firebase, wrap each handler in
+`functions/index.js`.
 
 ## Endpoints
 
@@ -164,15 +174,18 @@ persist.
 To make the API durable, swap the `Store` class in `api/_lib/store.js` for
 one backed by:
 
-- **Vercel KV** (Redis-compatible, free tier): https://vercel.com/docs/storage/vercel-kv
-- **Vercel Postgres**: https://vercel.com/docs/storage/vercel-postgres
-- **Upstash Redis**: https://upstash.com
-- **Supabase**: https://supabase.com
+| Target host | Recommended durable store |
+|---|---|
+| **Firebase (production)** | **Cloud Firestore** — same project as Hosting, no extra infra, server-side SDK works inside Cloud Functions natively |
+| Vercel (dev/small-scale) | **Vercel KV** (Redis-compatible, free tier) or **Vercel Postgres** |
+| Self-hosted (Docker) | **Postgres** or **Redis** alongside the nginx container |
+| Any host | **Upstash Redis** or **Supabase** — managed, portable across hosts |
 
 The public surface (`get/set/delete/list` per resource) is intentionally
 small so a real backend can be dropped in without touching the route
-handlers. A reference Vercel KV implementation is left as a TODO in
-`store.js`.
+handlers. A reference Firestore implementation is left as a TODO in
+`store.js` (key path: replace each `Map` with a Firestore collection,
+keeping the same method names).
 
 ## CORS
 

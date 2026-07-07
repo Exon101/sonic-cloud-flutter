@@ -7,9 +7,10 @@ that matches your target platform.
 
 - [Quick start: local build](#quick-start-local-build)
 - [Web deployment](#web-deployment)
-  - [Vercel](#vercel) *(recommended — also hosts the API)*
-  - [Netlify](#netlify)
-  - [Docker](#docker)
+  - [Firebase Hosting](#firebase-hosting) *(production — large-scale)*
+  - [Vercel](#vercel) *(dev / small-scale alternative — also hosts the /api backend)*
+  - [Self-hosted (Docker)](#docker) *(own server)*
+  - [Netlify](#netlify) *(alt static host)*
 - [Serverless API](#serverless-api)
 - [Android deployment](#android-deployment)
   - [Local install (debug)](#local-install-debug)
@@ -45,7 +46,74 @@ flutter pub get
 
 ## Web deployment
 
+Sonic Cloud supports four web-hosting targets. The recommended pattern is:
+
+| Tier | Host | Why |
+|---|---|---|
+| **Production (large-scale)** | Firebase Hosting | Global CDN, autoscaling, integrates with Firebase Auth/Functions/Analytics, supports multiple sites per project, atomic deploys with rollback |
+| **Dev / small-scale alternative** | Vercel | One-click deploys, ships both Flutter web bundle **and** the `/api` serverless backend in the same project, zero config |
+| **Self-hosted (own server)** | Docker (nginx) | Full control, on-prem, air-gapped, or behind your own CDN |
+| **Alt static host** | Netlify | Flutter web bundle only — no `/api` functions |
+
+### Firebase Hosting
+
+> **Recommended for production.** Firebase Hosting pairs with Firebase Auth,
+> Cloud Functions, Cloud Firestore, and Analytics — and the project already
+> uses Firebase for mobile App Distribution, so this is the natural primary.
+
+1. Install the Firebase CLI: `npm install -g firebase-tools`
+2. Log in: `firebase login`
+3. Create a project at https://console.firebase.google.com/ named `sonic-cloud-app`
+   (or update `.firebaserc` to point at your project ID).
+4. Build the web bundle:
+
+   ```bash
+   ./scripts/build.sh web
+   ```
+
+5. Deploy:
+
+   ```bash
+   ./scripts/deploy_web.sh firebase
+   # → https://<project>.web.app and https://<project>.firebaseapp.com
+   ```
+
+**Multiple environments (dev / staging / prod)**
+
+Firebase supports multiple Hosting sites per project. Configure them in
+`.firebaserc` under `targets.hosting`, then deploy by target name:
+
+```bash
+firebase deploy --only hosting:web        # production site
+firebase deploy --only hosting:web-staging # staging site
+```
+
+**Pairing with the serverless API**
+
+The `api/` serverless backend can be deployed as Firebase Cloud Functions
+instead of Vercel Functions. The handlers use the standard
+`(req, res)` signature compatible with Firebase Functions v2 (HTTP). Wrap
+each handler:
+
+```js
+// functions/index.js
+const { onRequest } = require('firebase-functions/v2/https');
+const status = require('../api/status');
+
+exports.apiStatus = onRequest({ cors: true }, (req, res) => status(req, res));
+// …repeat per endpoint…
+```
+
+A full Firebase-Functions adapter is on the roadmap (see FEATURES.md). Until
+then, the recommended production setup is **Firebase Hosting (Flutter web) +
+Vercel Functions (the API)** — they share a public origin via Firebase
+Hosting rewrites, or you can deploy the API independently and configure CORS.
+
 ### Vercel
+
+> **Recommended for development and small-scale production.** Vercel ships
+> both the Flutter web bundle **and** the `api/` serverless functions in a
+> single deployment — the simplest end-to-end option.
 
 1. Push the repo to GitHub.
 2. Go to https://vercel.com/new and import the repo.
@@ -55,7 +123,7 @@ flutter pub get
 4. Click Deploy. Your app is live at `https://<project>.vercel.app` and the
    API at `https://<project>.vercel.app/api/*`.
 
-**Live demo:** https://sonic-cloud-kappa.vercel.app/
+**Live demo (dev deployment):** https://sonic-cloud-kappa.vercel.app/
 **API status:** https://sonic-cloud-kappa.vercel.app/api/status
 
 Manual CLI deploy:
@@ -64,24 +132,6 @@ Manual CLI deploy:
 npm install -g vercel
 vercel        # link the project (first run only)
 vercel --prod # deploy to production
-```
-
-### Netlify
-
-> Netlify does not support the `api/` serverless functions as written
-> (Vercel-style). Use Vercel if you need the backend, or deploy just the
-> Flutter web bundle to Netlify without the API.
-
-1. Push the repo to GitHub.
-2. Go to https://app.netlify.com/start and import the repo.
-3. Netlify auto-detects `netlify.toml` and runs `scripts/netlify_build.sh`.
-4. Deploy.
-
-Manual CLI deploy:
-
-```bash
-npm install -g netlify-cli
-./scripts/deploy_web.sh netlify
 ```
 
 ### Docker
@@ -102,7 +152,28 @@ docker compose down
 ```
 
 The Docker image (`sonic-cloud:latest`) is ~25 MB and serves the web bundle via
-nginx on port 8080. Healthcheck hits `/` every 30s.
+nginx on port 8080. Healthcheck hits `/` every 30s. Pair with your own
+reverse proxy (Caddy / nginx / Traefik / Cloudflare) for TLS and custom
+domains.
+
+### Netlify
+
+> Static-hosting alternative. Netlify does **not** support the `api/`
+> serverless functions as written (Vercel-style). Use Firebase or Vercel
+> if you need the backend, or pair Netlify-hosted web with a separately
+> deployed API.
+
+1. Push the repo to GitHub.
+2. Go to https://app.netlify.com/start and import the repo.
+3. Netlify auto-detects `netlify.toml` and runs `scripts/netlify_build.sh`.
+4. Deploy.
+
+Manual CLI deploy:
+
+```bash
+npm install -g netlify-cli
+./scripts/deploy_web.sh netlify
+```
 
 ---
 
@@ -314,13 +385,16 @@ The release workflow builds Android APK+AAB, web tarball, iOS .app, macOS .app, 
 
 ### Codemagic
 
-`codemagic.yaml` defines three workflows:
-- **android-workflow** — triggered by tag push; builds APK+AAB; publishes to Firebase + Play Store
-- **ios-workflow** — triggered by tag push; builds IPA; publishes to Firebase + TestFlight
-- **web-workflow** — triggered by push to `main`; builds web bundle; deploys to Firebase Hosting
+`codemagic.yaml` defines four workflows:
+- **android-workflow** — triggered by tag push; builds APK+AAB; publishes to Firebase App Distribution + Play Store
+- **ios-workflow** — triggered by tag push; builds IPA; publishes to Firebase App Distribution + TestFlight
+- **web-workflow-firebase** — triggered by tag push (release); builds web bundle; deploys to **Firebase Hosting (production)**
+- **web-workflow-vercel** — triggered by push to `main`; builds web bundle; deploys to **Vercel (dev / small-scale)** — also serves the `/api` serverless functions
 
 Connect your GitHub repo at https://codemagic.io and set the required
-environment variables in the Codemagic UI.
+environment variables in the Codemagic UI. The split lets you ship to dev
+on every commit (`web-workflow-vercel`) and cut a production release by
+tagging (`web-workflow-firebase`).
 
 ---
 
@@ -345,7 +419,10 @@ repository secrets.
 | `FIREBASE_APP_ID_ANDROID` | Firebase | Firebase console → Project settings → Your apps |
 | `FIREBASE_APP_ID_IOS` | Firebase | Same as above |
 | `FIREBASE_TOKEN` | Firebase | `firebase login:ci` |
-| `FIREBASE_PROJECT_ID` | Firebase | Firebase console → Project settings |
+| `FIREBASE_PROJECT_ID` | Firebase (Hosting + App Distribution) | Firebase console → Project settings |
+| `VERCEL_TOKEN` | Vercel (dev web + /api) | https://vercel.com/account/tokens |
+| `VERCEL_SCOPE` | Vercel | Vercel team/user slug (in your dashboard URL) |
+| `VERCEL_PROJECT_ID` | Vercel (optional) | Auto-linked on first deploy if omitted |
 | `CODECOV_TOKEN` | CI | https://codecov.io |
 
 ---
@@ -357,7 +434,7 @@ All scripts live in `scripts/` and are executable (`chmod +x` already applied).
 | Script | What it does |
 |---|---|
 | `build.sh <target>` | Build any platform target (`web`, `apk`, `aab`, `ios`, `macos`, `windows`, `linux`, `all`) |
-| `deploy_web.sh <target>` | Deploy web bundle to `docker`, `vercel`, `netlify`, `firebase`, or `preview` (local http.server) |
+| `deploy_web.sh <target>` | Deploy web bundle: `firebase` (prod), `vercel` (dev + /api), `docker`, `netlify`, or `preview` (local http.server) |
 | `deploy_android.sh <target>` | Deploy Android: `install`, `firebase`, `playstore` |
 | `deploy_ios.sh <target>` | Deploy iOS: `install`, `firebase`, `testflight`, `appstore` |
 | `vercel_build.sh` | Internal: Vercel build entrypoint |

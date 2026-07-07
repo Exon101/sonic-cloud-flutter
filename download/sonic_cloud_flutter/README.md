@@ -285,14 +285,15 @@ full guide lives in [DEPLOYMENT.md](DEPLOYMENT.md); here's the quick reference:
 
 ### Web — pick your host
 
-| Host | Config file | One-liner |
-|---|---|---|
-| **Vercel** *(recommended — also hosts the `/api` serverless backend)* | `vercel.json`, `api/` | `./scripts/deploy_web.sh vercel` |
-| **Netlify** *(web bundle only — no `/api` functions)* | `netlify.toml` | `./scripts/deploy_web.sh netlify` |
-| **Docker** (nginx) | `Dockerfile`, `docker-compose.yml` | `./scripts/deploy_web.sh docker` → http://localhost:8080 |
-| **Local preview** | — | `./scripts/deploy_web.sh preview` |
+| Tier | Host | Config file | One-liner |
+|---|---|---|---|
+| **Production** (large-scale) | **Firebase Hosting** | `firebase.json`, `.firebaserc` | `./scripts/deploy_web.sh firebase` |
+| **Dev / small-scale** | **Vercel** *(also hosts the `/api` serverless backend)* | `vercel.json`, `api/` | `./scripts/deploy_web.sh vercel` |
+| **Self-hosted** (own server) | Docker (nginx) | `Dockerfile`, `docker-compose.yml` | `./scripts/deploy_web.sh docker` → http://localhost:8080 |
+| **Alt static host** | Netlify *(web bundle only — no `/api`)* | `netlify.toml` | `./scripts/deploy_web.sh netlify` |
+| **Local preview** | — | — | `./scripts/deploy_web.sh preview` |
 
-**Live demo:** https://sonic-cloud-kappa.vercel.app/  •  **API:** https://sonic-cloud-kappa.vercel.app/api/status
+**Dev demo (Vercel):** https://sonic-cloud-kappa.vercel.app/  •  **API:** https://sonic-cloud-kappa.vercel.app/api/status
 
 ### Mobile
 
@@ -320,7 +321,7 @@ full guide lives in [DEPLOYMENT.md](DEPLOYMENT.md); here's the quick reference:
 |---|---|---|
 | **GitHub Actions** (CI) | `.github/workflows/ci.yml` | every push / PR — analyze + test + build web & APK |
 | **GitHub Actions** (Release) | `.github/workflows/release.yml` | tag `v*.*.*` — builds all 6 platforms + creates GitHub Release |
-| **Codemagic** | `codemagic.yaml` | tag / push to main — Firebase App Distribution + Play Store + TestFlight + Vercel |
+| **Codemagic** | `codemagic.yaml` | tag / push to main — Firebase App Distribution + Play Store + TestFlight + Firebase Hosting (prod) + Vercel (dev) |
 | **Fastlane** | `fastlane/Fastfile.android`, `fastlane/Fastfile.ios` | invoked by scripts or CI |
 | **Dependabot** | `.github/dependabot.yml` | weekly — Flutter packages, GitHub Actions, Docker, Ruby gems |
 

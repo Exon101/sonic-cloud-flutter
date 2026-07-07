@@ -54,6 +54,11 @@ coverage/
 .env.*
 !.env.example
 
+# Firebase
+.firebase/
+.firebase/cache/
+.firebase/debug.log
+
 # Fastlane signing
 *.keystore
 *.jks
