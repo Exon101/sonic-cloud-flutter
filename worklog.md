@@ -403,3 +403,36 @@ Stage Summary:
 - Branch: feat/vercel-api-wiring → main
 - Local main HEAD: 6ab7c18 (merge commit with both lineages as parents)
 - Token cleared from git config; user should still rotate the PAT at https://github.com/settings/tokens as a precaution since it was sent over chat
+
+---
+Task ID: 12
+Agent: main
+Task: Merge PR #18 into main using the user-provided new PAT.
+
+Work Log:
+- Verified new PAT works (authenticated as Exon101, scopes: admin:repo_hook, codespace, repo, workflow, write:packages)
+- Inspected PR #18 status: mergeable=True but mergeable_state=blocked
+- Inspected branch protection on main: requires "Analyze & Test" status check, enforce_admins=False (admin can bypass), no required reviews
+- Discovered the "Analyze & Test" check had FAILED on the PR branch — downloaded CI logs via actions/runs/{id}/logs API
+- Found 13 hard errors (not info lints) in the analyzer output, falling into 3 categories:
+  1. vercel_sync_service.dart:17 — `extends SyncService` failed because SyncService was never imported
+  2. now_playing_screen.dart — `RepeatMode` ambiguous between models.dart and Flutter's own RepeatMode (from repeating_animation_builder.dart via material.dart)
+  3. sign_in_screen.dart:63 — UserAccount used as type argument but models.dart wasn't imported
+- Applied 3 one-line fixes:
+  - vercel_sync_service.dart: added `import 'sync_service.dart';`
+  - now_playing_screen.dart: changed material import to `import 'package:flutter/material.dart' hide RepeatMode;`
+  - sign_in_screen.dart: added `import '../../models/models.dart';`
+- Committed fix as c954147 ("fix: resolve CI analyze errors — missing imports + RepeatMode name clash")
+- Pushed to feat/vercel-api-wiring branch (with token in remote URL, stripped immediately after)
+- Polled CI: "Analyze & Test" check passed on second run (conclusion=success)
+- PR #18 became mergeable=True, mergeable_state=unstable (non-required checks still pending)
+- Called PUT /repos/.../pulls/18/merge with merge_method=merge — succeeded with merge commit 6c40359
+- Synced local main with origin/main via fast-forward merge
+
+Stage Summary:
+- PR #18 MERGED into main at 2026-07-07T11:23:38Z
+- Merge commit SHA: 6c40359e5f5626fd2a95ec043a164ca78e6a7a02
+- Merged by: Exon101 (admin override since enforce_admins=False)
+- Local main synced to 6c40359
+- 31 commits, +22,753 / -104 lines, 239 files changed across the PR
+- Vercel will auto-deploy main → https://sonic-cloud-kappa.vercel.app/ with sign-in, working transport, and /api/* backend
