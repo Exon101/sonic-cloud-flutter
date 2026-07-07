@@ -309,7 +309,10 @@ class _HomeShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AmbientBackground(
-      child: Column(
+      child: SafeArea(
+        top: false,
+        bottom: false,
+        child: Column(
         children: [
           // Main content fills available space
           Expanded(
@@ -357,6 +360,7 @@ class _HomeShell extends StatelessWidget {
             },
           ),
         ],
+      ),
       ),
     );
   }

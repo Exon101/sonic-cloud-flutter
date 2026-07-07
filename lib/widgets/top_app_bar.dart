@@ -25,17 +25,20 @@ class SonicTopAppBar extends StatelessWidget implements PreferredSizeWidget {
   });
 
   @override
-  Size get preferredSize => const Size.fromHeight(64);
+  Size get preferredSize => Size.fromHeight(64 + MediaQueryData.fromView(WidgetsBinding.instance.platformDispatcher.views.first).padding.top);
 
   @override
   Widget build(BuildContext context) {
+    final topPadding = MediaQuery.paddingOf(context).top;
     return ClipRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
         child: Container(
-          height: preferredSize.height,
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.edgeMargin,
+          padding: EdgeInsets.only(
+            top: topPadding,
+            left: AppSpacing.edgeMargin,
+            right: AppSpacing.edgeMargin,
+            bottom: 8,
           ),
           decoration: BoxDecoration(
             color: AppColors.surface.withOpacity(0.8),

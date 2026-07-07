@@ -52,15 +52,10 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   @override
   void initState() {
     super.initState();
-    // The caller (onPlayTrack) already calls playAll. We only need to
-    // start playback if this screen was opened directly (e.g. from
-    // notification) and nothing is playing.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (widget.playback.currentTrack?.id != widget.track.id &&
-          !widget.playback.isPlaying) {
-        widget.playback.playAll([widget.track]);
-      }
-    });
+    // The caller (onPlayTrack) already called playAll([track]) before
+    // opening this screen. We don't need to call it again here.
+    // The AnimatedBuilder will rebuild when the audio source loads
+    // and playback starts.
   }
 
   @override
@@ -80,6 +75,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
+        top: true,
+        bottom: false,
         child: GestureControls(
           onTogglePlay: () => widget.playback.togglePlayPause(),
           onNext: () => widget.playback.skipToNext(),

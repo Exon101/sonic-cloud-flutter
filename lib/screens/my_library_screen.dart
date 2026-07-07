@@ -81,6 +81,8 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
         if (path == null) continue;
         final format = AudioFormat.fromPath(path);
         if (format == null) continue;
+        // Ensure path starts with / for proper file:// URI on Android
+        final cleanPath = path.startsWith('/') ? path : '/$path';
 
         // Build a Track from the file
         final baseName =
@@ -88,15 +90,15 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
         final parts = baseName.split(RegExp(r'\s*-\s*'));
         tracks.add(
           Track(
-            id: 'local:$path',
+            id: 'local:$cleanPath',
             title: parts.length > 1 ? parts.sublist(1).join(' - ') : baseName,
             artist: parts.length > 1 ? parts.first : 'Unknown Artist',
             album: 'Local Files',
             year: 0,
             duration: Duration.zero,
             artUrl: '',
-            audioUrl: 'file://$path',
-            fileSystemPath: path,
+            audioUrl: 'file://$cleanPath',
+            fileSystemPath: cleanPath,
             format: format,
             dateAdded: DateTime.now(),
           ),
