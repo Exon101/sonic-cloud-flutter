@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide RepeatMode;
 import '../gestures/gesture_controls.dart';
 import '../models/models.dart';
 import '../services/playback_service.dart';

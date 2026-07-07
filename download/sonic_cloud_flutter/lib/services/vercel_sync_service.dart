@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../models/models.dart';
 import 'api_auth_service.dart';
 import 'api_client.dart';
+import 'sync_service.dart';
 
 /// Vercel-backed implementation of [SyncService].
 ///
