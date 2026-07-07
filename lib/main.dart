@@ -29,11 +29,7 @@ import 'theme/app_theme.dart';
 import 'widgets/glass_card.dart';
 import 'widgets/mini_player.dart';
 
-/// Sonic Cloud v3.2 — entry point.
-///
-/// All services are instantiated here and passed down to screens.
-/// This is the single source of truth for the service graph.
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const SonicCloudApp());
 }
@@ -46,87 +42,94 @@ class SonicCloudApp extends StatefulWidget {
 }
 
 class _SonicCloudAppState extends State<SonicCloudApp> {
-  // ── Core services ──────────────────────────────────────────────────────────
-  late final AudioPlayer _audioPlayer;
-  late final PlaybackService _playback;
-  late final EqualizerService _equalizer;
-  late final LibraryService _library;
-  late final UniversalLibraryService _universalLibrary;
-  late final SearchService _search;
-  late final LyricsService _lyrics;
-  late final PlaylistService _playlists;
-  late final AudioFingerprinter _fingerprinter;
-  late final AppSettingsService _settings;
-  late final ThemeService _theme;
-  late final SecurityService _security;
-  late final AccessibilityService _accessibility;
-  late final SyncService _sync;
-  late final LocalApiService _api;
-  late final OAuthService _oauth;
+  AudioPlayer? _audioPlayer;
+  PlaybackService? _playback;
+  EqualizerService? _equalizer;
+  LibraryService? _library;
+  UniversalLibraryService? _universalLibrary;
+  SearchService? _search;
+  LyricsService? _lyrics;
+  PlaylistService? _playlists;
+  AudioFingerprinter? _fingerprinter;
+  AppSettingsService? _settings;
+  ThemeService? _theme;
+  SecurityService? _security;
+  AccessibilityService? _accessibility;
+  SyncService? _sync;
+  LocalApiService? _api;
+  OAuthService? _oauth;
 
   bool _initialized = false;
+  String? _initError;
 
   @override
   void initState() {
     super.initState();
-    // Start initialization but don't block the UI
     _initServices();
   }
 
   Future<void> _initServices() async {
-    // Core audio
-    _audioPlayer = AudioPlayer();
-    _playback = PlaybackService(player: _audioPlayer);
-    _equalizer = EqualizerService(player: _audioPlayer);
-
-    // Library + search
-    _library = LibraryService(database: AppDatabase.instance);
-    _universalLibrary = UniversalLibraryService(_library, []);
-    _search = SearchService();
-
-    // Lyrics + playlists + fingerprinting
-    _lyrics = LyricsService();
-    _playlists = PlaylistService();
-    _fingerprinter = AudioFingerprinter();
-
-    // Settings + theme + security + accessibility
-    final prefs = await SharedPreferences.getInstance();
-    _settings = AppSettingsService(prefs);
-    _theme = ThemeService(_settings, _accessibility);
-    _security = SecurityService();
-    _accessibility = AccessibilityService(prefs);
-
-    // Sync (local-only default)
-    _sync = LocalSyncService();
-
-    // Local API (opt-in — start manually from settings)
-    _api = LocalApiService(_playback, _universalLibrary);
-    _oauth = OAuthService();
-
-    // Open database, load saved tracks
     try {
-      await AppDatabase.instance.open();
-      await _library.loadFromDatabase();
+      // Step 1: Create all services synchronously
+      _audioPlayer = AudioPlayer();
+      _playback = PlaybackService(player: _audioPlayer!);
+      _equalizer = EqualizerService(player: _audioPlayer!);
+      _library = LibraryService(database: AppDatabase.instance);
+      _universalLibrary = UniversalLibraryService(_library!, []);
+      _search = SearchService();
+      _lyrics = LyricsService();
+      _playlists = PlaylistService();
+      _fingerprinter = AudioFingerprinter();
+      _security = SecurityService();
+      _oauth = OAuthService();
+      _sync = LocalSyncService();
+
+      // Step 2: SharedPreferences (3s timeout)
+      SharedPreferences prefs;
+      try {
+        prefs = await SharedPreferences.getInstance()
+            .timeout(const Duration(seconds: 3));
+      } catch (e) {
+        debugPrint('SharedPreferences failed, retrying: $e');
+        prefs = await SharedPreferences.getInstance();
+      }
+
+      _settings = AppSettingsService(prefs);
+      _accessibility = AccessibilityService(prefs);
+      // CRITICAL: _accessibility must be created BEFORE _theme
+      _theme = ThemeService(_settings!, _accessibility!);
+      _api = LocalApiService(_playback!, _universalLibrary!);
+
+      // Step 3: Database (5s timeout)
+      try {
+        await AppDatabase.instance.open().timeout(const Duration(seconds: 5));
+        await _library!.loadFromDatabase().timeout(const Duration(seconds: 5));
+      } catch (e) {
+        debugPrint('Database init failed: $e');
+      }
+
+      // Step 4: Index search
+      _search!.index(_library!.tracks);
+
+      // Step 5: Audio service (5s timeout, non-fatal)
+      try {
+        await _playback!.initAudioService().timeout(const Duration(seconds: 5));
+      } catch (e) {
+        debugPrint('AudioService init failed: $e');
+      }
+
+      // Step 6: EQ (3s timeout, non-fatal)
+      try {
+        await _equalizer!.init().timeout(const Duration(seconds: 3));
+      } catch (e) {
+        debugPrint('EQ init failed: $e');
+      }
     } catch (e) {
-      debugPrint('Database load failed: $e');
+      debugPrint('_initServices error: $e');
+      _initError = e.toString();
     }
 
-    // Index search
-    _search.index(_library.tracks);
-
-    // Init audio service (for notification + lock screen controls).
-    // This MUST succeed for playback to work — don't swallow errors.
-    try {
-      await _playback.initAudioService();
-    } catch (e) {
-      debugPrint(
-        'AudioService init failed (playback will still work without notification controls): $e',
-      );
-    }
-
-    // Init EQ (non-fatal)
-    _equalizer.init().catchError((_) {});
-
+    // ALWAYS set _initialized = true
     if (mounted) {
       setState(() => _initialized = true);
     }
@@ -134,22 +137,23 @@ class _SonicCloudAppState extends State<SonicCloudApp> {
 
   @override
   void dispose() {
-    _playback.dispose();
-    _equalizer.dispose();
-    _library.dispose();
-    _api.stop();
+    _playback?.dispose();
+    _equalizer?.dispose();
+    _library?.dispose();
+    _api?.stop();
     AppDatabase.instance.close();
     super.dispose();
   }
 
-  void _go(int i) => setState(() => _index = i);
   int _index = 0;
+  void _go(int i) => setState(() => _index = i);
 
   void _openPlayer() {
-    final track = _playback.currentTrack ??
-        (_playback.queue.isNotEmpty ? _playback.queue.first : null);
+    final playback = _playback;
+    if (playback == null) return;
+    final track = playback.currentTrack ??
+        (playback.queue.isNotEmpty ? playback.queue.first : null);
     if (track == null) {
-      // No track loaded — switch to Library tab so user can add music
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('No track loaded. Tap "Add Music" to pick files.'),
@@ -164,7 +168,7 @@ class _SonicCloudAppState extends State<SonicCloudApp> {
         builder: (_) => NowPlayingScreen(
           track: track,
           onClose: () => Navigator.of(context).pop(),
-          playback: _playback,
+          playback: playback,
           lyricsService: _lyrics,
         ),
         fullscreenDialog: true,
@@ -173,19 +177,21 @@ class _SonicCloudAppState extends State<SonicCloudApp> {
   }
 
   void _openEqualizer() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => EqualizerScreen(eq: _equalizer)));
+    if (_equalizer == null) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => EqualizerScreen(eq: _equalizer!)),
+    );
   }
 
   void _openLibraryBrowse() {
+    if (_library == null || _universalLibrary == null) return;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => LibraryBrowseScreen(
-          library: _library,
-          universalLibrary: _universalLibrary,
+          library: _library!,
+          universalLibrary: _universalLibrary!,
           onPlayTrack: (t) async {
-            await _playback.playAll([t]);
+            await _playback?.playAll([t]);
             _openPlayer();
           },
         ),
@@ -195,75 +201,113 @@ class _SonicCloudAppState extends State<SonicCloudApp> {
 
   @override
   Widget build(BuildContext context) {
-    // AnimatedBuilder ensures the entire app rebuilds when theme/settings change
+    // Not initialized — show splash (separate MaterialApp, no nesting)
+    if (!_initialized) {
+      return MaterialApp(
+        title: 'Sonic Cloud',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.dark(),
+        home: Scaffold(
+          backgroundColor: const Color(0xFF131318),
+          body: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: CircularProgressIndicator(
+                    color: Color(0xFF00F4FE),
+                    strokeWidth: 3,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Sonic Cloud',
+                  style: TextStyle(
+                    color: Color(0xFFC5C3E5),
+                    fontSize: 24,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Init failed — show error
+    if (_settings == null || _theme == null || _playback == null) {
+      return MaterialApp(
+        title: 'Sonic Cloud',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.dark(),
+        home: Scaffold(
+          backgroundColor: const Color(0xFF131318),
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.error_outline,
+                      size: 64, color: Color(0xFFFFB4AB)),
+                  const SizedBox(height: 16),
+                  const Text('Initialization Failed',
+                      style: TextStyle(
+                          color: Color(0xFFE4E1E9),
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  Text(_initError ?? 'Unknown error',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                          color: Color(0xFFC8C5CE), fontSize: 14)),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Normal app
     return AnimatedBuilder(
-      animation: Listenable.merge([_theme, _settings, _accessibility]),
+      animation: Listenable.merge([_theme!, _settings!, _accessibility!]),
       builder: (context, _) {
         return MaterialApp(
           title: 'Sonic Cloud',
           debugShowCheckedModeBanner: false,
-          theme: _initialized ? _theme.themeData : AppTheme.dark(),
-          home: _initialized
-              ? _HomeShell(
-                  index: _index,
-                  onGo: _go,
-                  onOpenPlayer: _openPlayer,
-                  onOpenEqualizer: _openEqualizer,
-                  onOpenLibraryBrowse: _openLibraryBrowse,
-                  playback: _playback,
-                  library: _library,
-                  universalLibrary: _universalLibrary,
-                  search: _search,
-                  lyrics: _lyrics,
-                  playlists: _playlists,
-                  settings: _settings,
-                  security: _security,
-                  accessibility: _accessibility,
-                  api: _api,
-                  oauth: _oauth,
-                  onPlayTrack: (track) async {
-                    await _playback.playAll([track]);
-                    _openPlayer();
-                  },
-                )
-              : const _SplashScreen(),
+          theme: _theme!.themeData,
+          home: _HomeShell(
+            index: _index,
+            onGo: _go,
+            onOpenPlayer: _openPlayer,
+            onOpenEqualizer: _openEqualizer,
+            onOpenLibraryBrowse: _openLibraryBrowse,
+            playback: _playback!,
+            library: _library!,
+            universalLibrary: _universalLibrary!,
+            search: _search!,
+            lyrics: _lyrics!,
+            playlists: _playlists!,
+            settings: _settings!,
+            security: _security!,
+            accessibility: _accessibility!,
+            api: _api!,
+            oauth: _oauth!,
+            onPlayTrack: (track) async {
+              await _playback!.playAll([track]);
+              _openPlayer();
+            },
+          ),
         );
       },
     );
   }
 }
 
-/// Splash screen shown while services initialize.
-class _SplashScreen extends StatelessWidget {
-  const _SplashScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF131318),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const CircularProgressIndicator(color: Color(0xFF00F4FE)),
-            const SizedBox(height: 24),
-            Text(
-              'Sonic Cloud',
-              style: TextStyle(
-                color: const Color(0xFFC5C3E5),
-                fontSize: 24,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Montserrat',
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Home shell with bottom navigation and all screens.
 class _HomeShell extends StatelessWidget {
   const _HomeShell({
     required this.index,
@@ -311,7 +355,6 @@ class _HomeShell extends StatelessWidget {
         bottom: false,
         child: Column(
           children: [
-            // Main content fills available space
             Expanded(
               child: IndexedStack(
                 index: index,
@@ -326,7 +369,6 @@ class _HomeShell extends StatelessWidget {
                     search: search,
                     onPlayTrack: onPlayTrack,
                   ),
-                  // Player tab → opens Now Playing
                   _PlayerTabPlaceholder(onOpenPlayer: onOpenPlayer),
                   CloudStorageScreen(
                     oauth: oauth,
@@ -346,7 +388,6 @@ class _HomeShell extends StatelessWidget {
                 ],
               ),
             ),
-            // Mini-player bar (shown when a track is loaded)
             AnimatedBuilder(
               animation: playback,
               builder: (context, _) {
@@ -371,33 +412,27 @@ class _PlayerTabPlaceholder extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: GlassCard(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.play_circle_outline,
-                size: 64,
-                color: Color(0xFF00F4FE),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.play_circle_outline,
+                size: 64, color: Color(0xFF00F4FE)),
+            const SizedBox(height: 16),
+            Text('Open a track to start playback',
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(color: const Color(0xFFC8C5CE))),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: onOpenPlayer,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF00F4FE),
+                foregroundColor: const Color(0xFF0E0E13),
               ),
-              const SizedBox(height: 16),
-              Text(
-                'Open a track to start playback',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: const Color(0xFFC8C5CE),
-                    ),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: onOpenPlayer,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00F4FE),
-                  foregroundColor: const Color(0xFF0E0E13),
-                ),
-                child: const Text('Open Now Playing'),
-              ),
-            ],
-          ),
+              child: const Text('Open Now Playing'),
+            ),
+          ],
         ),
       ),
     );
