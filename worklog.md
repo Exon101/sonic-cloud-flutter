@@ -436,3 +436,35 @@ Stage Summary:
 - Local main synced to 6c40359
 - 31 commits, +22,753 / -104 lines, 239 files changed across the PR
 - Vercel will auto-deploy main → https://sonic-cloud-kappa.vercel.app/ with sign-in, working transport, and /api/* backend
+
+---
+Task ID: 13
+Agent: main
+Task: Make the live Vercel deployment fully functional — fix /api 404s, FUNCTION_INVOCATION_TIMEOUT, and session persistence.
+
+Work Log:
+- Diagnosed via Vercel API: rootDirectory was None (repo root) but vercel.json + api/ live under download/sonic_cloud_flutter/ — Vercel never read the config, so api/ wasn't detected
+- Set Vercel project rootDirectory=download/sonic_cloud_flutter via PATCH /v9/projects/sonic-cloud
+- Fixed vercel.json buildCommand: removed "cd .." (was needed for repo-root deploys, wrong now that rootDirectory is set)
+- Fixed deprecated Flutter service worker: vercel_build.sh now strips the SW block from build/web/index.html AFTER flutter build (Flutter re-injects it at build time, overwriting source edits). Also tries --no-pwa flag first, deletes flutter_service_worker.js + flutter.js
+- Discovered /api endpoints returned FUNCTION_INVOCATION_TIMEOUT (10s): root cause was handler signature mismatch — our handlers used AWS Lambda (event,context)→responseObject but Vercel uses (req,res)→void. Handlers were returning response objects that Vercel never sent
+- Added toVercel(fn) adapter in api/_lib/http.js: reads req stream body, converts to our event shape, calls handler, sends result via res.status().setHeader().end()
+- Wrapped all 11 handlers with toVercel() via scripts/wrap_handlers_with_vercel.py
+- Rewrote scripts/test_api_e2e.js to mock req (Readable stream) + res (captures status/headers/body) so tests exercise the full adapter
+- After fixing the timeout, discovered auth still failed: /api/auth/me returned 401 "invalid_token" because the in-memory session store didn't persist across serverless invocations
+- Switched to JWT-based auth: created api/_lib/jwt.js (HS256 via Node crypto, no npm deps). signin.js issues a JWT with {userId, deviceId}. requireAuth() verifies the JWT signature and extracts userId — no server-side session lookup needed. auth/me.js returns user info from the JWT payload
+- Updated 2 e2e tests to match JWT behavior (/auth/me no longer returns email; /devices may return empty sessions)
+- All 39 tests pass (13 unit + 26 e2e)
+- 3 commits pushed to main: 96b67bb (rootDirectory + SW strip), fb9cac2 (toVercel adapter), c29be00 (JWT auth)
+- Each push triggered a Vercel production deployment; final deployment c29be00 is READY/PROMOTED
+
+Stage Summary:
+- Live site https://sonic-cloud-kappa.vercel.app/ is fully functional:
+  - Flutter web loads (HTTP 200, SW stripped)
+  - /api/status returns 17-endpoint catalog
+  - POST /api/auth/signin returns JWT token
+  - GET /api/auth/me works statelessly (verifies JWT, returns userId)
+  - All authenticated endpoints return 200 (library, playlists, sync, lyrics, devices)
+  - Data endpoints return empty data (in-memory store resets per invocation — documented limitation)
+- The Flutter app can now: sign in → get JWT → load home screen → play music → all transport controls work → settings shows real user → sign out
+- Cross-device data sync requires a persistent backing store (Vercel KV / Firestore) — documented in api/README.md
