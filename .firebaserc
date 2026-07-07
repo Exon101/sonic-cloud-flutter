@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "default": "sonic-cloud-app",
+    "prod": "sonic-cloud-prod"
+  }
+}

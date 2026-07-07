@@ -1,0 +1,16 @@
+# fastlane plugins — install with `fastlane add_plugin <name>`
+#
+# Each entry below is a fastlane plugin the project's lanes rely on.
+# Run `bundle install` first to ensure the fastlane bundler is up to date.
+
+plugins_mapping = {
+  # Builds and uploads APKs / IPA to Firebase App Distribution for tester access.
+  "fastlane-plugin-firebase_app_distribution" => "1.0.0",
+  # Manages Android version codes and version names cleanly.
+  "fastlane-plugin-versioning_android" => "0.1.0",
+}
+
+# Print currently-installed plugins
+Gem::Specification.find_all_by_name('fastlane-plugin-*').each do |spec|
+  puts "Loaded plugin: #{spec.name} (#{spec.version})"
+end

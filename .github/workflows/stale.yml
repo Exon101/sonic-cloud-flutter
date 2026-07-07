@@ -1,0 +1,44 @@
+name: Mark stale issues and pull requests
+
+on:
+  schedule:
+    # Run daily at 01:30 UTC
+    - cron: '30 1 * * *'
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v10
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          # Issues
+          days-before-issue-stale: 60
+          days-before-issue-close: 14
+          stale-issue-label: 'stale'
+          stale-issue-message: |
+            This issue has been inactive for 60 days and is being marked as
+            stale. It will be closed in 14 days unless there's new activity or
+            the `stale` label is removed. Comment to keep it open.
+          close-issue-message: |
+            Closing as stale. Please open a new issue if this is still
+            relevant, and reference this issue for context.
+          # PRs — shorter window since code rots faster
+          days-before-pr-stale: 30
+          days-before-pr-close: 14
+          stale-pr-label: 'stale'
+          stale-pr-message: |
+            This PR has been inactive for 30 days. It will be closed in 14
+            days unless there's new activity. Rebase onto `main` and push to
+            keep it alive.
+          close-pr-message: |
+            Closing as stale. Feel free to reopen after rebasing on `main`.
+          # Don't auto-mark things with these labels
+          exempt-issue-labels: 'pinned,security,enhancement,good first issue'
+          exempt-pr-labels: 'pinned,security,dependencies'
+          # Only run on this repo (not forks)
+          operations-per-run: 30
