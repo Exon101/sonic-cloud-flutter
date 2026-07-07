@@ -37,7 +37,9 @@
     <div class="loading-text">Sonic Cloud</div>
   </div>
   <script>
-    var serviceWorkerVersion = null;
+    // Flutter's service worker (flutter_service_worker.js) is deprecated and
+    // will be removed in a future Flutter release. We load main.dart.js
+    // directly instead — see https://github.com/flutter/flutter/issues/156910
     var scriptLoaded = false;
     function loadMainDartJs() {
       if (scriptLoaded) { return; }
@@ -47,16 +49,7 @@
       scriptTag.type = 'application/javascript';
       document.body.append(scriptTag);
     }
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function () {
-        navigator.serviceWorker.register('flutter_service_worker.js?v=' + serviceWorkerVersion);
-        wait for registration to finish before proceeding
-        navigator.serviceWorker.getRegistration().then(function() {});
-        loadMainDartJs();
-      });
-    } else {
-      loadMainDartJs();
-    }
+    window.addEventListener('load', loadMainDartJs);
   </script>
 </body>
 </html>

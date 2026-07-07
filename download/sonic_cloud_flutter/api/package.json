@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "Serverless backend for Sonic Cloud — runs on Vercel Functions (Node.js).",
+  "type": "commonjs",
   "engines": {
     "node": ">=18"
   },
