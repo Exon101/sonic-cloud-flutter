@@ -1,0 +1,15 @@
+version:
+  revision: "stable"
+  channel: "stable"
+
+project_type: app
+
+migration:
+  platforms:
+    - platform: root
+    - platform: android
+    - platform: ios
+    - platform: linux
+    - platform: macos
+    - platform: web
+    - platform: windows

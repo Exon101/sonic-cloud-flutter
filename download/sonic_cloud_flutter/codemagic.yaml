@@ -1,0 +1,204 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Codemagic CI/CD configuration for Sonic Cloud.
+#
+# Docs: https://docs.codemagic.io/yaml/yaml-getting-started/
+#
+# Workflows:
+#   1. android-workflow         — builds APK + AAB, distributes via Firebase + Play
+#   2. ios-workflow             — builds IPA, distributes via TestFlight
+#   3. web-workflow-firebase    — builds web bundle, deploys to Firebase Hosting (PROD)
+#   4. web-workflow-vercel      — builds web bundle + /api functions, deploys to Vercel (DEV)
+#
+# Required Codemagic environment variables (set in the Codemagic UI):
+#   ANDROID_KEYSTORE_PATH          / ANDROID_KEYSTORE_PASSWORD
+#   ANDROID_KEY_ALIAS              / ANDROID_KEY_PASSWORD
+#   PLAY_STORE_JSON_KEY            — path to Google Play service-account JSON
+#   APPLE_ID / APPLE_APP_SPECIFIC_PASSWORD / TEAM_ID
+#   MATCH_GIT_URL / MATCH_PASSWORD
+#   FIREBASE_APP_ID_ANDROID / FIREBASE_APP_ID_IOS  (mobile App Distribution only)
+#   FIREBASE_TOKEN / FIREBASE_PROJECT_ID           (Firebase Hosting — production)
+#   VERCEL_TOKEN / VERCEL_SCOPE                    (Vercel — dev / small-scale)
+# ─────────────────────────────────────────────────────────────────────────────
+
+workflows:
+  # ───────────────────────────────────────────────────────────────────────────
+  # Android
+  # ───────────────────────────────────────────────────────────────────────────
+  android-workflow:
+    name: Android Release
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      groups:
+        - android_keystore
+        - playstore_credentials
+        - firebase_credentials
+      flutter: stable
+      java: 17
+    cache:
+      cache_paths:
+        - $HOME/.gradle/caches
+        - $HOME/.pub-cache
+        - $FLUTTER_ROOT/.pub-cache
+    triggering:
+      events:
+        - tag
+      branch_patterns:
+        - pattern: main
+          include: tag
+      cancel_previous_builds: true
+    scripts:
+      - name: Flutter pub get
+        script: flutter pub get
+      - name: Run tests
+        script: flutter test
+      - name: Write key.properties
+        script: |
+          cat > "$CM_BUILD_DIR/android/key.properties" <<EOF
+          storePassword=$ANDROID_KEYSTORE_PASSWORD
+          storeFile=keystore.jks
+          keyAlias=$ANDROID_KEY_ALIAS
+          keyPassword=$ANDROID_KEY_PASSWORD
+          EOF
+          echo $ANDROID_KEYSTORE_BASE64 | base64 --decode > "$CM_BUILD_DIR/android/app/keystore.jks"
+      - name: Build APK
+        script: flutter build apk --release
+      - name: Build AAB
+        script: flutter build appbundle --release
+    artifacts:
+      - build/**/outputs/**/*.apk
+      - build/**/outputs/**/*.aab
+    publishing:
+      firebase:
+        firebase_service_account_file_prefix: firebase_sa
+        android:
+          app_id: $FIREBASE_APP_ID_ANDROID
+          groups: internal-testers
+      google_play:
+        service_account_json: $PLAY_STORE_JSON_KEY
+        track: production
+        submit_as_draft: true
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # iOS
+  # ───────────────────────────────────────────────────────────────────────────
+  ios-workflow:
+    name: iOS Release
+    instance_type: mac_mini_m2
+    max_build_duration: 90
+    environment:
+      groups:
+        - apple_credentials
+        - match_credentials
+        - firebase_credentials
+      flutter: stable
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.example.sonicCloud
+    cache:
+      cache_paths:
+        - $HOME/.pub-cache
+        - $FLUTTER_ROOT/.pub-cache
+    triggering:
+      events:
+        - tag
+      cancel_previous_builds: true
+    scripts:
+      - name: Flutter pub get
+        script: flutter pub get
+      - name: Install pods
+        script: |
+          cd ios && pod install --repo-update
+      - name: Run tests
+        script: flutter test
+      - name: Build IPA
+        script: flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - $HOME/Library/Developer/Xcode/dynosign/*.dSYM.zip
+    publishing:
+      firebase:
+        firebase_service_account_file_prefix: firebase_sa
+        ios:
+          app_id: $FIREBASE_APP_ID_IOS
+          groups: internal-testers
+      app_store_connect:
+        apple_id: $APPLE_ID
+        password: $APPLE_APP_SPECIFIC_PASSWORD
+        submit_to_testflight: true
+        submit_to_app_store: false
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Web — PRODUCTION (deploy to Firebase Hosting)
+  # Triggered by tag pushes (releases) → builds web bundle, ships to Firebase.
+  # ───────────────────────────────────────────────────────────────────────────
+  web-workflow-firebase:
+    name: Web Production (Firebase)
+    instance_type: linux_x2
+    max_build_duration: 30
+    environment:
+      groups:
+        - firebase_credentials
+      flutter: stable
+    triggering:
+      events:
+        - tag
+      branch_patterns:
+        - pattern: main
+          include: tag
+      cancel_previous_builds: true
+    scripts:
+      - name: Flutter pub get
+        script: flutter pub get
+      - name: Build web
+        script: flutter build web --release --web-renderer canvaski
+      - name: Install Firebase CLI
+        script: npm install -g firebase-tools
+    artifacts:
+      - build/web/**
+    publishing:
+      scripts:
+        - name: Deploy to Firebase Hosting (production)
+          script: |
+            firebase deploy \
+              --token "$FIREBASE_TOKEN" \
+              --only hosting \
+              --project "$FIREBASE_PROJECT_ID" \
+              --public build/web
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # Web — DEV / SMALL-SCALE (deploy to Vercel — Flutter web bundle + /api)
+  # Triggered by every push to main → builds web + deploys to Vercel with the
+  # serverless API functions.
+  # ───────────────────────────────────────────────────────────────────────────
+  web-workflow-vercel:
+    name: Web Dev (Vercel)
+    instance_type: linux_x2
+    max_build_duration: 30
+    environment:
+      groups:
+        - vercel_credentials
+      flutter: stable
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: source
+      cancel_previous_builds: true
+    scripts:
+      - name: Flutter pub get
+        script: flutter pub get
+      - name: Build web
+        script: flutter build web --release --web-renderer canvaski
+      - name: Install Vercel CLI
+        script: npm install -g vercel
+    artifacts:
+      - build/web/**
+    publishing:
+      scripts:
+        - name: Deploy to Vercel (web bundle + API functions)
+          script: |
+            vercel deploy --prod --yes \
+              --token "$VERCEL_TOKEN" \
+              --scope "$VERCEL_SCOPE"

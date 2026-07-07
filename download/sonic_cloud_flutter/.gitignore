@@ -56,6 +56,8 @@ coverage/
 
 # Firebase
 .firebase/
+.firebase/cache/
+.firebase/debug.log
 
 # Fastlane signing
 *.keystore
@@ -81,11 +83,3 @@ node_modules/
 api/node_modules/
 package-lock.json
 api/package-lock.json
-
-# Internal agent context (do not track — contains redacted secrets that
-# trigger GitHub Push Protection false positives)
-.agent-ctx/
-
-# Tooling
-skills/
-tool-results/

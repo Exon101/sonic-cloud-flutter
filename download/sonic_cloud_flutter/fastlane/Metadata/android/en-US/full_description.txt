@@ -1,0 +1,10 @@
+Sonic Cloud — a premium glassmorphic music player with cloud integration.
+
+FEATURES
+• Beautiful glassmorphic dark UI built on a strict design system
+• Cloud storage integration for streaming from Google Drive, Dropbox, and more
+• Vibrant "sonic" cyan glow accents and waveform seek bar
+• Real audio playback powered by just_audio
+• Mobile-first responsive layout that works across 6 platforms
+
+BUILT WITH FLUTTER

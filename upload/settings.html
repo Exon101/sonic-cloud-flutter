@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sonic Cloud - Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-lowest": "#0e0e13",
+                      "surface": "#131318",
+                      "on-tertiary-fixed-variant": "#441cc8",
+                      "on-primary-fixed-variant": "#444460",
+                      "inverse-on-surface": "#303036",
+                      "surface-container-low": "#1b1b20",
+                      "on-tertiary": "#2e009c",
+                      "on-secondary-fixed-variant": "#004f53",
+                      "on-secondary": "#003739",
+                      "outline": "#928f98",
+                      "surface-tint": "#c5c3e5",
+                      "surface-container-highest": "#35343a",
+                      "error-container": "#93000a",
+                      "tertiary": "#c9bfff",
+                      "primary-fixed-dim": "#c5c3e5",
+                      "primary-fixed": "#e2dfff",
+                      "on-secondary-container": "#006c71",
+                      "on-secondary-fixed": "#002021",
+                      "background": "#131318",
+                      "on-primary-fixed": "#191932",
+                      "secondary": "#e6feff",
+                      "on-primary": "#2e2e48",
+                      "on-error": "#690005",
+                      "surface-container": "#1f1f25",
+                      "surface-container-high": "#2a292f",
+                      "inverse-surface": "#e4e1e9",
+                      "on-tertiary-container": "#7f66ff",
+                      "on-background": "#e4e1e9",
+                      "surface-dim": "#131318",
+                      "error": "#ffb4ab",
+                      "on-surface": "#e4e1e9",
+                      "secondary-fixed": "#63f7ff",
+                      "inverse-primary": "#5c5c79",
+                      "secondary-container": "#00f4fe",
+                      "on-primary-container": "#7d7c9b",
+                      "secondary-fixed-dim": "#00dce5",
+                      "on-tertiary-fixed": "#1a0063",
+                      "surface-bright": "#39383e",
+                      "tertiary-container": "#130051",
+                      "tertiary-fixed": "#e5deff",
+                      "primary-container": "#12122b",
+                      "primary": "#c5c3e5",
+                      "surface-variant": "#35343a",
+                      "on-error-container": "#ffdad6",
+                      "tertiary-fixed-dim": "#c9bfff",
+                      "on-surface-variant": "#c8c5ce",
+                      "outline-variant": "#47464d"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "base": "4px",
+                      "xl": "48px",
+                      "xs": "8px",
+                      "md": "24px",
+                      "gutter": "16px",
+                      "sm": "16px",
+                      "lg": "32px",
+                      "edge-margin": "20px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Montserrat"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Montserrat"
+                      ],
+                      "headline-xl": [
+                              "Montserrat"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-xl": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        body {
+            background: linear-gradient(to bottom, #12122B, #0A0A0F);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom Toggle */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #00f4fe;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: rgba(0, 244, 254, 0.2);
+        }
+        .toggle-checkbox:checked + .toggle-label:after {
+            transform: translateX(100%);
+            background-color: #00f4fe;
+            box-shadow: 0 0 8px rgba(0, 244, 254, 0.5);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-surface font-body-md bg-background pb-24 md:pb-0 pt-16">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 border-b border-white/10 flat no shadows bg-surface/80 dark:bg-surface/80 backdrop-blur-xl flex justify-between items-center px-edge-margin h-16">
+<div class="flex items-center gap-sm">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="A close up, high resolution portrait of a young adult with a calm expression, wearing stylish headphones, set against a dark, moody studio background with subtle cyan lighting highlights, maintaining a premium and modern aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcdInEnwpcO6zkWUD6b5WDVSjDf07u4oLCL30trZwPSCHVnDC-laQEiM_W7dkkSERCR6TYa5okX4piYFRHXjLcxPPrUBTldgxGstWSp8ea5WtRoh_H2x82hYRSWT220jExDYxct8ZNiA_iVX0fMXaij6HBNqSXQOfCvIbRsJl1EeXhergQSarm82dVPK6gCTMW7kklwF0hU8f88j4qjkzKi5XVXMFHEBJySYyaXsGdtjHEvqqV-rs"/>
+<span class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary">Sonic Cloud</span>
+</div>
+<button class="text-primary hover:opacity-80 transition-opacity active:scale-95 transition-transform flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</header>
+<main class="px-edge-margin mt-lg max-w-4xl mx-auto space-y-lg hidden md:block">
+<h1 class="font-headline-xl text-headline-xl text-on-surface">Settings</h1>
+<p class="text-on-surface-variant font-body-lg">Navigation is suppressed on transactional/settings screens per guidelines.</p>
+</main>
+<main class="px-edge-margin mt-lg max-w-lg mx-auto space-y-lg md:hidden">
+<!-- Profile Section -->
+<section class="glass-card rounded-xl p-md flex items-center gap-md">
+<img class="w-16 h-16 rounded-full object-cover border border-white/20" data-alt="A close up, high resolution portrait of a young adult with a calm expression, wearing stylish headphones, set against a dark, moody studio background with subtle cyan lighting highlights, maintaining a premium and modern aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAufadkKodnLWwnOzCiziJ8-zDTysx74SCWhbGcgnhNY2QX3dOdwZeUS0ode4SdVtpygDCSYi-UOkotK5dW73-6iW94CF5HGmgJ5RskGTeuUapgBswEhQYVj1ZI25aNWoP4EjZbYHlOgA8cYceL3jkWoP5wNaZHW9d7Ah3uhksCiBm02xTpw82hQHH1OA455h1Tw5hOJ5O5et7uNY64pJSKloV_qbUVbuj3ZMv3uN0p_il2MmX2LtQ"/>
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Alex Mercer</h2>
+<p class="font-label-md text-label-md text-on-surface-variant">Premium Member</p>
+</div>
+<button class="ml-auto text-secondary-container hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</section>
+<!-- Settings List -->
+<div class="space-y-sm">
+<!-- Cloud Accounts -->
+<div class="glass-card rounded-xl overflow-hidden">
+<div class="px-md py-sm border-b border-white/5 bg-white/5">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase">Connections</h3>
+</div>
+<button class="w-full flex items-center justify-between p-md hover:bg-white/5 transition-colors group">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-secondary-container transition-colors">cloud_sync</span>
+<div class="text-left">
+<p class="font-body-md text-on-surface">Cloud Accounts</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Link or unlink external drives</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+</button>
+</div>
+<!-- Audio Quality -->
+<div class="glass-card rounded-xl overflow-hidden">
+<div class="px-md py-sm border-b border-white/5 bg-white/5">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase">Playback</h3>
+</div>
+<button class="w-full flex items-center justify-between p-md border-b border-white/5 hover:bg-white/5 transition-colors group">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-secondary-container transition-colors">graphic_eq</span>
+<div class="text-left">
+<p class="font-body-md text-on-surface">Audio Quality</p>
+<p class="font-label-sm text-label-sm text-secondary-container">High (Lossless)</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+</button>
+<!-- Offline Mode Toggle -->
+<div class="w-full flex items-center justify-between p-md border-b border-white/5 hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-on-surface-variant">offline_pin</span>
+<div class="text-left">
+<p class="font-body-md text-on-surface">Offline Mode</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Play downloaded tracks only</p>
+</div>
+</div>
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+<input class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 opacity-0" id="offline-toggle" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-surface-container-highest cursor-pointer border border-white/20 relative before:absolute before:inset-0 before:transition-colors before:duration-300 after:absolute after:top-[2px] after:left-[2px] after:w-[18px] after:h-[18px] after:bg-on-surface-variant after:rounded-full after:transition-transform after:duration-300" for="offline-toggle"></label>
+</div>
+</div>
+<button class="w-full flex items-center justify-between p-md hover:bg-white/5 transition-colors group">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-secondary-container transition-colors">sync_alt</span>
+<div class="text-left">
+<p class="font-body-md text-on-surface">Sync Preferences</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Wi-Fi only</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+</button>
+</div>
+<button class="w-full py-md text-error hover:bg-error/10 rounded-xl transition-colors font-label-md text-label-md">
+                Log Out
+            </button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-xl border-t border-white/10 shadow-lg bg-surface-container/90 dark:bg-surface-container/90 backdrop-blur-2xl fixed bottom-0 left-0 w-full h-20 flex justify-around items-center px-4 pb-safe md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:opacity-100 transition-all active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="library_music">library_music</span>
+<span class="font-label-sm text-label-sm">Library</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:opacity-100 transition-all active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="play_circle">play_circle</span>
+<span class="font-label-sm text-label-sm">Player</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:opacity-100 transition-all active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="cloud_sync">cloud_sync</span>
+<span class="font-label-sm text-label-sm">Cloud</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary-container drop-shadow-[0_0_8px_rgba(0,244,254,0.5)] hover:opacity-100 transition-all active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="settings" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</a>
+</nav>
+</body></html>

@@ -1,0 +1,1 @@
+Initial release with 4 screens: My Library, Now Playing, Cloud Storage, Settings. Real audio playback and glassmorphic UI.

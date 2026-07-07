@@ -1,0 +1,83 @@
+name: sonic_cloud
+description: A premium glassmorphic music player with cloud integration, real audio playback, equalizer, lyrics, persistence, security, and a plugin architecture.
+publish_to: "none"
+version: 3.1.0+4
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  google_fonts: ^6.1.0
+  cupertino_icons: ^1.0.6
+
+  # ── Audio engine ────────────────────────────────────────────────────────────
+  just_audio: ^0.9.37
+  audio_service: ^0.18.13
+  # Audio metadata reading (ID3, Vorbis, MP4, FLAC) — uses on-platform tags.
+  audiotags: ^1.4.5
+
+  # ── Library / file system ────────────────────────────────────────────────────
+  file_picker: ^8.0.0
+  path_provider: ^2.1.2
+  path: ^1.9.0
+  collection: ^1.18.0
+
+  # ── Persistence (sqflite — no codegen required, simpler than Drift) ─────────
+  sqflite: ^2.3.2
+  shared_preferences: ^2.2.2
+
+  # ── State management ─────────────────────────────────────────────────────────
+  provider: ^6.1.2
+
+  # ── Networking ───────────────────────────────────────────────────────────────
+  http: ^1.2.0
+  webdav_client: ^1.2.2
+  shelf: ^1.4.1
+  shelf_router: ^1.1.4
+  shelf_web_socket: ^3.0.0
+
+  # ── Security ─────────────────────────────────────────────────────────────────
+  local_auth: ^2.2.0
+  flutter_secure_storage: ^9.2.2
+  crypto: ^3.0.3
+
+  # ── Utilities ────────────────────────────────────────────────────────────────
+  uuid: ^4.3.3
+  intl: ^0.19.0
+  rxdart: ^0.27.7
+
+dev_dependencies:
+  flutter_lints: ^3.0.0
+  flutter_test:
+    sdk: flutter
+  flutter_launcher_icons: ^0.13.1
+  mocktail: ^1.0.3
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/icon.png"
+  min_sdk_android: 21
+  remove_alpha_ios: true
+  background_color_ios: "#131318"
+  web:
+    generate: true
+    image_path: "assets/icon/icon.png"
+    background_color: "#131318"
+    theme_color: "#131318"
+  windows:
+    generate: true
+    image_path: "assets/icon/icon.png"
+    icon_size: 48
+  macos:
+    generate: true
+    image_path: "assets/icon/icon.png"
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icon/
+    - assets/audio/

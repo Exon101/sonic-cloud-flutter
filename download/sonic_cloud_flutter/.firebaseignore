@@ -1,0 +1,55 @@
+# Firebase deploy ignores — files/dirs that should NOT be uploaded to Hosting.
+#
+# Anything not listed here under the project tree will be deployed when you
+# run `firebase deploy --only hosting`. Keep this list tight so the Hosting
+# bundle stays small.
+
+# Flutter build artifacts (we only ship build/web/ to Hosting):
+.dart_tool/
+build/
+!build/web/
+
+# Source code — Hosting only needs the compiled web bundle:
+lib/
+test/
+api/
+android/
+ios/
+macos/
+linux/
+windows/
+web/
+fastlane/
+docker/
+scripts/
+screenshots/
+.github/
+
+# Tooling / env:
+.git/
+.gitignore
+.env
+.env.*
+!.env.example
+.metadata
+analysis_options.yaml
+pubspec.lock
+*.iml
+.idea/
+.vscode/
+
+# Misc docs (kept in repo, not needed in the Hosting bundle):
+DEPLOYMENT.md
+FEATURES.md
+CHANGELOG.md
+CONTRIBUTING.md
+README.md
+
+# Mobile / desktop deployment configs (Hosting is web-only):
+Dockerfile
+docker-compose.yml
+netlify.toml
+vercel.json
+codemagic.yaml
+Gemfile
+Gemfile.lock

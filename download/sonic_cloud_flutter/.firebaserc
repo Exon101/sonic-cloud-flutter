@@ -1,0 +1,12 @@
+{
+  "projects": {
+    "default": "sonic-cloud-app"
+  },
+  "targets": {
+    "sonic-cloud-app": {
+      "hosting": {
+        "web": "sonic-cloud-web"
+      }
+    }
+  }
+}

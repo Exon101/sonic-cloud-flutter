@@ -1,0 +1,22 @@
+{
+  "name": "sonic-cloud",
+  "version": "3.0.0",
+  "private": true,
+  "description": "Sonic Cloud — premium glassmorphic music player (Flutter web bundle + Vercel serverless API).",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod",
+    "deploy:firebase": "./scripts/deploy_web.sh firebase",
+    "deploy:vercel": "./scripts/deploy_web.sh vercel",
+    "deploy:docker": "./scripts/deploy_web.sh docker",
+    "build:web": "./scripts/build.sh web",
+    "test:api": "node scripts/test_api_helpers.js && node scripts/test_api_e2e.js"
+  },
+  "keywords": ["sonic-cloud", "flutter", "music-player", "vercel", "serverless"],
+  "license": "MIT",
+  "workspaces": ["api"]
+}

@@ -1,0 +1,62 @@
+# Dependabot — keeps dependencies fresh across the Flutter app, GitHub Actions,
+# Docker, and Fastlane.
+#
+# Docs: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+#
+# Note: GitHub Actions uses MAJOR version pinning (e.g. "v4", not "v4.5.2").
+# Dependabot will only bump within the same major by default.
+
+version: 2
+
+updates:
+  # ── pubspec.yaml (Flutter / Dart deps) ──────────────────────────────────────
+  - package-ecosystem: "pub"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "dart"]
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      flutter-packages:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+    # Allow major bumps only for packages we vet
+    allow:
+      - dependency-type: "all"
+
+  # ── GitHub Actions workflows ────────────────────────────────────────────────
+  # Use MAJOR version pinning (e.g. @v4) — Dependabot will bump to the next
+  # major when a new one is released, not invent non-existent versions.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "ci"]
+    commit-message:
+      prefix: "chore(ci)"
+    groups:
+      github-actions:
+        patterns: ["*"]
+
+  # ── Docker base images ──────────────────────────────────────────────────────
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels: ["dependencies", "docker"]
+    commit-message:
+      prefix: "chore(docker)"
+
+  # ── Fastlane Ruby gems ──────────────────────────────────────────────────────
+  - package-ecosystem: "bundler"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels: ["dependencies", "fastlane"]
+    commit-message:
+      prefix: "chore(fastlane)"

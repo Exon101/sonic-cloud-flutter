@@ -1,0 +1,15 @@
+# Fastlane — App metadata (Android + iOS share the same package id below)
+# Replace with your real Google Play / App Store credentials.
+package_name("com.example.sonic_cloud")
+
+# iOS app identifier
+app_identifier("com.example.sonicCloud")
+
+# Apple developer team ID (find at https://developer.apple.com/account)
+# team_id("ABCD1234XY")
+
+# iTunes Connect / App Store Connect account email
+# apple_id("you@example.com")
+
+# Optional: Firebase App Distribution project
+# firebase_app_id("1:0000000000000:ios:abcdef0123456789")
