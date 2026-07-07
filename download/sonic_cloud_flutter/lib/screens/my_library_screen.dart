@@ -24,6 +24,9 @@ class MyLibraryScreen extends StatelessWidget {
   final VoidCallback onOpenSettings;
   final VoidCallback? onOpenBrowse;
   final VoidCallback? onOpenEqualizer;
+  /// Called when the user taps a specific track in the All Songs list.
+  /// If null, falls back to [onOpenPlayer] (which plays the first track).
+  final ValueChanged<Track>? onPlayTrack;
 
   const MyLibraryScreen({
     super.key,
@@ -32,6 +35,7 @@ class MyLibraryScreen extends StatelessWidget {
     required this.onOpenSettings,
     this.onOpenBrowse,
     this.onOpenEqualizer,
+    this.onPlayTrack,
   });
 
   @override
@@ -70,9 +74,30 @@ class MyLibraryScreen extends StatelessWidget {
             const SizedBox(height: AppSpacing.lg),
             const _SectionTitle('Recently Played'),
             const SizedBox(height: AppSpacing.md),
-            const _RecentlyPlayedCarousel(),
+            _RecentlyPlayedCarousel(
+              onTapAlbum: (album) {
+                // Play the first track from the tapped album, if any.
+                final track = MockData.allSongs.firstWhere(
+                  (t) => t.album == album.title,
+                  orElse: () => MockData.allSongs.first,
+                );
+                if (onPlayTrack != null) {
+                  onPlayTrack!(track);
+                } else {
+                  onOpenPlayer();
+                }
+              },
+            ),
             const SizedBox(height: AppSpacing.lg),
-            _AllSongsSection(onTapTrack: (_) => onOpenPlayer()),
+            _AllSongsSection(
+              onTapTrack: (t) {
+                if (onPlayTrack != null) {
+                  onPlayTrack!(t);
+                } else {
+                  onOpenPlayer();
+                }
+              },
+            ),
           ],
         ),
       ),
@@ -195,7 +220,8 @@ class _SectionTitle extends StatelessWidget {
 }
 
 class _RecentlyPlayedCarousel extends StatelessWidget {
-  const _RecentlyPlayedCarousel();
+  final ValueChanged<Album>? onTapAlbum;
+  const _RecentlyPlayedCarousel({this.onTapAlbum});
 
   @override
   Widget build(BuildContext context) {
@@ -206,8 +232,10 @@ class _RecentlyPlayedCarousel extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 4),
         itemCount: MockData.recentlyPlayed.length,
         separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.md),
-        itemBuilder: (context, i) =>
-            AlbumCard(album: MockData.recentlyPlayed[i]),
+        itemBuilder: (context, i) => AlbumCard(
+          album: MockData.recentlyPlayed[i],
+          onTap: onTapAlbum != null ? () => onTapAlbum!(MockData.recentlyPlayed[i]) : null,
+        ),
       ),
     );
   }

@@ -47,10 +47,12 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
   @override
   void initState() {
     super.initState();
-    // Start playing the track. PlaybackService.playAll handles loading the
-    // audio source via ConcatenatingAudioSource.
+    // If the caller hasn't already loaded this track, load it now so the
+    // screen works when pushed standalone (e.g. from the Player nav tab).
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      widget.playback.playAll([widget.track]);
+      if (widget.playback.currentTrack?.id != widget.track.id) {
+        widget.playback.playAll([widget.track]);
+      }
     });
   }
 
@@ -95,9 +97,9 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                   children: [
                     _TopBar(onClose: widget.onClose),
                     const Spacer(),
-                    _VinylArt(artUrl: widget.track.artUrl),
+                    _VinylArt(artUrl: widget.playback.currentTrack?.artUrl ?? widget.track.artUrl),
                     const SizedBox(height: AppSpacing.md),
-                    _TrackInfo(track: widget.track),
+                    _TrackInfo(track: widget.playback.currentTrack ?? widget.track),
                     const Spacer(),
                     _WaveformSection(
                       progress: progress,
@@ -108,7 +110,13 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                     const SizedBox(height: AppSpacing.xs),
                     _Controls(
                       isPlaying: widget.playback.isPlaying,
+                      shuffleEnabled: widget.playback.shuffleEnabled,
+                      repeatMode: widget.playback.repeatMode,
                       onPlayPause: () => widget.playback.togglePlayPause(),
+                      onShuffle: () => widget.playback.toggleShuffle(),
+                      onPrevious: () => widget.playback.skipToPrevious(),
+                      onNext: () => widget.playback.skipToNext(),
+                      onRepeat: () => widget.playback.cycleRepeatMode(),
                     ),
                     const SizedBox(height: AppSpacing.lg),
                   ],
@@ -396,12 +404,37 @@ class _WaveformSection extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 class _Controls extends StatelessWidget {
   final bool isPlaying;
+  final bool shuffleEnabled;
+  final RepeatMode repeatMode;
   final VoidCallback onPlayPause;
+  final VoidCallback onShuffle;
+  final VoidCallback onPrevious;
+  final VoidCallback onNext;
+  final VoidCallback onRepeat;
 
-  const _Controls({required this.isPlaying, required this.onPlayPause});
+  const _Controls({
+    required this.isPlaying,
+    required this.shuffleEnabled,
+    required this.repeatMode,
+    required this.onPlayPause,
+    required this.onShuffle,
+    required this.onPrevious,
+    required this.onNext,
+    required this.onRepeat,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final shuffleColor = shuffleEnabled
+        ? AppColors.secondaryContainer
+        : AppColors.onSurfaceVariant;
+    final repeatColor = repeatMode != RepeatMode.off
+        ? AppColors.secondaryContainer
+        : AppColors.onSurfaceVariant;
+    final repeatIcon = repeatMode == RepeatMode.one
+        ? Icons.repeat_one_rounded
+        : Icons.repeat_rounded;
+
     return Container(
       width: 320,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -421,20 +454,20 @@ class _Controls extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
-            onPressed: () {},
+            onPressed: onShuffle,
             icon: Icon(
               Icons.shuffle_rounded,
-              color: AppColors.onSurfaceVariant,
+              color: shuffleColor,
               size: 20,
             ),
-            tooltip: 'Shuffle',
+            tooltip: shuffleEnabled ? 'Shuffle on' : 'Shuffle',
             constraints: const BoxConstraints(
               minWidth: AppSpacing.touchTarget,
               minHeight: AppSpacing.touchTarget,
             ),
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: onPrevious,
             icon: const Icon(
               Icons.skip_previous_rounded,
               color: AppColors.onSurface,
@@ -448,7 +481,7 @@ class _Controls extends StatelessWidget {
           ),
           SonicGlowButton(isPlaying: isPlaying, onTap: onPlayPause, size: 80),
           IconButton(
-            onPressed: () {},
+            onPressed: onNext,
             icon: const Icon(
               Icons.skip_next_rounded,
               color: AppColors.onSurface,
@@ -461,13 +494,17 @@ class _Controls extends StatelessWidget {
             ),
           ),
           IconButton(
-            onPressed: () {},
-            icon: const Icon(
-              Icons.repeat_rounded,
-              color: AppColors.secondaryContainer,
+            onPressed: onRepeat,
+            icon: Icon(
+              repeatIcon,
+              color: repeatColor,
               size: 20,
             ),
-            tooltip: 'Repeat',
+            tooltip: repeatMode == RepeatMode.one
+                ? 'Repeat one'
+                : repeatMode == RepeatMode.all
+                    ? 'Repeat all'
+                    : 'Repeat off',
             constraints: const BoxConstraints(
               minWidth: AppSpacing.touchTarget,
               minHeight: AppSpacing.touchTarget,

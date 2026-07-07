@@ -71,6 +71,19 @@ class PlaylistService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Upserts a playlist that arrived from a sync source (cloud API).
+  ///
+  /// Replaces any local playlist with the same id; otherwise creates a new
+  /// entry. Does NOT trigger [notifyListeners] — the caller (sync service)
+  /// is responsible for batching notifications.
+  void upsertFromSync(Playlist pl) {
+    _playlists[pl.id] = pl;
+  }
+
+  /// Notifies listeners — exposed so sync services can batch updates and
+  /// fire a single notification after pulling many playlists.
+  void notifyChanged() => notifyListeners();
+
   // ── Smart playlists ────────────────────────────────────────────────────────
   Playlist createSmartPlaylist(
     String name, {
