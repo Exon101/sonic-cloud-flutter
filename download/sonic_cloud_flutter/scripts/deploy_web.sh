@@ -4,9 +4,8 @@
 #
 # Targets:
 #   ./scripts/deploy_web.sh docker     # build & run Docker container locally
-#   ./scripts/deploy_web.sh vercel     # deploy to Vercel (requires `npm i -g vercel`)
-#   ./scripts/deploy_web.sh netlify    # deploy to Netlify (requires `npm i -g netlify-cli`)
-#   ./scripts/deploy_web.sh firebase   # deploy to Firebase Hosting (requires `firebase` CLI)
+#   ./scripts/deploy_web.sh vercel     # deploy web bundle + /api functions to Vercel
+#   ./scripts/deploy_web.sh netlify    # deploy web bundle only to Netlify (no /api)
 #   ./scripts/deploy_web.sh preview    # serve build/web locally on :8080
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -35,8 +34,16 @@ case "$TARGET" in
       echo "Error: vercel CLI not installed. Run: npm i -g vercel" >&2
       exit 1
     fi
-    echo "▶ Deploying to Vercel…"
-    vercel --prod
+    # Vercel needs the build script to run from the project root.
+    # `vercel.json` already wires up the Flutter build + the /api functions.
+    echo "▶ Deploying to Vercel (web bundle + /api serverless functions)…"
+    if [ -n "${VERCEL_TOKEN:-}" ]; then
+      vercel deploy --prod --yes \
+        ${VERCEL_SCOPE:+--scope "$VERCEL_SCOPE"} \
+        --token "$VERCEL_TOKEN"
+    else
+      vercel --prod
+    fi
     ;;
 
   netlify)
@@ -45,18 +52,8 @@ case "$TARGET" in
       exit 1
     fi
     ensure_web_build
-    echo "▶ Deploying build/web to Netlify…"
+    echo "▶ Deploying build/web to Netlify (no /api functions)…"
     netlify deploy --prod --dir=build/web
-    ;;
-
-  firebase)
-    if ! command -v firebase >/dev/null 2>&1; then
-      echo "Error: firebase CLI not installed. Run: npm i -g firebase-tools" >&2
-      exit 1
-    fi
-    ensure_web_build
-    echo "▶ Deploying build/web to Firebase Hosting…"
-    firebase deploy --only hosting --public build/web
     ;;
 
   preview)
@@ -76,9 +73,8 @@ Usage: $0 <target>
 
 Targets:
   docker     Build and run the Docker image on http://localhost:8080
-  vercel     Deploy to Vercel (requires 'vercel' CLI)
-  netlify    Deploy to Netlify (requires 'netlify' CLI)
-  firebase   Deploy to Firebase Hosting (requires 'firebase' CLI)
+  vercel     Deploy to Vercel (Flutter web bundle + /api serverless functions)
+  netlify    Deploy web bundle only to Netlify (no /api functions)
   preview    Serve build/web locally on :8080 via python3 http.server
 USAGE
     exit 1

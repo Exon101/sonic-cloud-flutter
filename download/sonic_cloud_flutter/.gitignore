@@ -54,9 +54,6 @@ coverage/
 .env.*
 !.env.example
 
-# Firebase
-.firebase/
-
 # Fastlane signing
 *.keystore
 *.jks
@@ -75,3 +72,9 @@ codemagic.sh
 
 # Netlify
 .netlify/
+
+# Node (api/)
+node_modules/
+api/node_modules/
+package-lock.json
+api/package-lock.json

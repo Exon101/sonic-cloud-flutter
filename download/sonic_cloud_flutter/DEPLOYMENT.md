@@ -7,10 +7,10 @@ that matches your target platform.
 
 - [Quick start: local build](#quick-start-local-build)
 - [Web deployment](#web-deployment)
-  - [Vercel](#vercel)
+  - [Vercel](#vercel) *(recommended — also hosts the API)*
   - [Netlify](#netlify)
-  - [Firebase Hosting](#firebase-hosting)
   - [Docker](#docker)
+- [Serverless API](#serverless-api)
 - [Android deployment](#android-deployment)
   - [Local install (debug)](#local-install-debug)
   - [Firebase App Distribution](#firebase-app-distribution)
@@ -49,17 +49,28 @@ flutter pub get
 
 1. Push the repo to GitHub.
 2. Go to https://vercel.com/new and import the repo.
-3. Vercel auto-detects `vercel.json` and runs `scripts/vercel_build.sh`.
-4. Click Deploy. Your app is live at `https://<project>.vercel.app`.
+3. Vercel auto-detects `vercel.json` and runs `scripts/vercel_build.sh`. The
+   `api/` directory is automatically detected and deployed as Serverless
+   Functions alongside the Flutter web bundle.
+4. Click Deploy. Your app is live at `https://<project>.vercel.app` and the
+   API at `https://<project>.vercel.app/api/*`.
+
+**Live demo:** https://sonic-cloud-kappa.vercel.app/
+**API status:** https://sonic-cloud-kappa.vercel.app/api/status
 
 Manual CLI deploy:
 
 ```bash
 npm install -g vercel
-./scripts/deploy_web.sh vercel
+vercel        # link the project (first run only)
+vercel --prod # deploy to production
 ```
 
 ### Netlify
+
+> Netlify does not support the `api/` serverless functions as written
+> (Vercel-style). Use Vercel if you need the backend, or deploy just the
+> Flutter web bundle to Netlify without the API.
 
 1. Push the repo to GitHub.
 2. Go to https://app.netlify.com/start and import the repo.
@@ -71,18 +82,6 @@ Manual CLI deploy:
 ```bash
 npm install -g netlify-cli
 ./scripts/deploy_web.sh netlify
-```
-
-### Firebase Hosting
-
-1. Install the Firebase CLI: `npm install -g firebase-tools`
-2. Log in: `firebase login`
-3. Create a project at https://console.firebase.google.com/ named `sonic-cloud-app`
-4. Update `.firebaserc` to point to your project ID.
-5. Deploy:
-
-```bash
-./scripts/deploy_web.sh firebase
 ```
 
 ### Docker
@@ -104,6 +103,76 @@ docker compose down
 
 The Docker image (`sonic-cloud:latest`) is ~25 MB and serves the web bundle via
 nginx on port 8080. Healthcheck hits `/` every 30s.
+
+---
+
+## Serverless API
+
+The `api/` directory contains a Node.js serverless backend that ships with the
+repo and is automatically deployed to Vercel Functions alongside the web
+bundle. See [`api/README.md`](api/README.md) for the full endpoint reference.
+
+### Endpoints at a glance
+
+| Method | Path                       | Auth | Description |
+|--------|----------------------------|------|-------------|
+| GET    | `/api/status`              | No   | Health + version + endpoint list |
+| POST   | `/api/auth/signin`         | No   | Email or anonymous sign-in → `token` |
+| GET    | `/api/auth/me`             | Yes  | Current user + session |
+| GET    | `/api/library`             | Yes  | List user's cloud tracks |
+| POST   | `/api/library`             | Yes  | Upsert a track |
+| GET    | `/api/library/:id`         | Yes  | Fetch one track |
+| PUT    | `/api/library/:id`         | Yes  | Replace one track |
+| DELETE | `/api/library/:id`         | Yes  | Delete one track |
+| GET    | `/api/playlists`           | Yes  | List playlists |
+| POST   | `/api/playlists`           | Yes  | Create playlist (manual / smart / auto) |
+| GET    | `/api/playlists/:id`       | Yes  | Fetch one playlist |
+| PUT    | `/api/playlists/:id`       | Yes  | Replace |
+| PATCH  | `/api/playlists/:id`       | Yes  | Partial patch (`addTrackIds`, `removeTrackIds`, …) |
+| DELETE | `/api/playlists/:id`       | Yes  | Delete |
+| GET    | `/api/lyrics?trackId=`     | Yes  | Fetch parsed lyrics |
+| PUT    | `/api/lyrics?trackId=`     | Yes  | Store lyrics |
+| POST   | `/api/sync/push`           | Yes  | Merge queue/favorites/ratings/positions/settings |
+| GET    | `/api/sync/pull?since=`    | Yes  | Fetch full sync state |
+| GET    | `/api/devices`             | Yes  | List active sessions |
+| DELETE | `/api/devices?prefix=`     | Yes  | Revoke a session by token prefix |
+
+### Quick smoke test
+
+```bash
+# Anonymous sign-in
+curl -X POST https://sonic-cloud-kappa.vercel.app/api/auth/signin \
+  -H 'Content-Type: application/json' \
+  -d '{"anonymous": true}'
+# → { "ok": true, "token": "a1b2…", "userId": "usr_…" }
+
+# Use the token to list your library
+curl https://sonic-cloud-kappa.vercel.app/api/library \
+  -H "Authorization: Bearer a1b2…"
+```
+
+### Production storage ⚠️
+
+Out of the box, `api/_lib/store.js` uses an in-memory `Map` so the API runs
+with zero infrastructure. In production, serverless functions are
+stateless — each invocation may land on a different instance, so writes
+will not reliably persist.
+
+To make the API durable, swap the `Store` class for one backed by:
+- **Vercel KV** (Redis-compatible, free tier) — easiest, same vendor
+- **Vercel Postgres** — for relational queries
+- **Upstash Redis** or **Supabase** — managed alternatives
+
+The public surface (`get/set/delete/list` per resource) is intentionally
+small so a real backend can be dropped in without touching the route
+handlers. See `api/_lib/store.js` for the swap point.
+
+### Local API development
+
+```bash
+npm install -g vercel
+vercel dev  # serves both Flutter web + /api/* at http://localhost:3000
+```
 
 ---
 

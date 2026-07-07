@@ -1,9 +1,0 @@
-# Firebase configuration files
-.firebaserc
-firebase.json
-
-# Firebase CLI cache
-.firebase/
-
-# Functions dependencies
-functions/node_modules/
