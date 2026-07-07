@@ -222,3 +222,31 @@ Stage Summary:
 - 5 new test files covering each new service
 - Companion apps (Wear OS / TV / browser extension / CLI) documented as planned — each requires a separate codebase
 - All pushed to https://github.com/Exon101/sonic-cloud-flutter (commit 612365b)
+
+---
+Task ID: 7
+Agent: main
+Task: Add Vercel serverless /api backend, remove Firebase Hosting configs, update deployment docs to reflect Vercel-only web hosting.
+
+Work Log:
+- Created api/ tree with 14 Node.js serverless functions covering: /api/status, /api/auth/{signin,me}, /api/library/{index,[id]}, /api/playlists/{index,[id]}, /api/lyrics, /api/sync/{push,pull}, /api/devices
+- Created api/_lib/{store,http,lrc}.js: in-memory Store class with users/sessions/tracks/playlists/lyrics/sync namespaces; JSON response helpers (ok/error/handle), Bearer auth + requireAuth, parseLrc mirroring lib/services/lyrics_service.dart
+- Created api/README.md with full endpoint reference, wire formats, and production-storage swap notes (Vercel KV / Postgres / Upstash)
+- Created api/package.json pinning Node >=18
+- Updated vercel.json: added `functions` block (256MB / 10s), split rewrites so /api/* is routed to functions and /((?!api/).*) falls through to Flutter web's index.html, scoped security headers to non-API paths
+- Removed Firebase Hosting config files: .firebaserc, .firebaseignore, firebase.json (kept Firebase App Distribution env vars for mobile beta testing)
+- Updated DEPLOYMENT.md: removed "Firebase Hosting" section from TOC and body, added new "Serverless API" section with full endpoint table, smoke-test curl examples, and production storage guidance
+- Updated codemagic.yaml: web-workflow now deploys to Vercel (--prod --token) instead of Firebase Hosting
+- Updated .env.example: removed FIREBASE_PROJECT_ID, added VERCEL_TOKEN/VERCEL_SCOPE/VERCEL_PROJECT_ID section
+- Updated scripts/deploy_web.sh: removed `firebase` target, `vercel` target now uses `vercel deploy --prod --yes` with optional token/scope env vars
+- Updated README.md: dropped Firebase Hosting row from web-host table, added "Live demo" line pointing at https://sonic-cloud-kappa.vercel.app/, added api/ subtree to the project-structure tree, clarified Codemagic row
+- Updated .gitignore: removed `.firebase/` entry, added `node_modules/` + `package-lock.json` for the new api/ backend
+- Wrote 2 test scripts: scripts/test_api_helpers.js (13 tests for LRC parser + Store class), scripts/test_api_e2e.js (26 tests simulating Vercel function events for every endpoint including auth flow, library CRUD, playlist CRUD with PATCH add/remove trackIds, lyrics PUT+GET, sync push+pull+since, ratings clamping, devices list)
+- All 39 tests pass: `node scripts/test_api_helpers.js` → 13 passed, `node scripts/test_api_e2e.js` → 26 passed
+
+Stage Summary:
+- api/ backend: 14 serverless functions + 3 shared libs + README + package.json — 0 runtime dependencies (Node stdlib only)
+- Backend surface: 19 endpoints covering auth, library, playlists, lyrics, sync, devices — all Bearer-token authenticated (except /status and /auth/signin)
+- Firebase Hosting removed; Firebase App Distribution retained for mobile beta
+- 39 backend tests passing locally (helpers + e2e)
+- Live deployment: https://sonic-cloud-kappa.vercel.app/ (Flutter web) — /api/* will activate on next Vercel build of this commit
