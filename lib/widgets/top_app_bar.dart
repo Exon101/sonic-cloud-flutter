@@ -25,7 +25,11 @@ class SonicTopAppBar extends StatelessWidget implements PreferredSizeWidget {
   });
 
   @override
-  Size get preferredSize => Size.fromHeight(64 + MediaQueryData.fromView(WidgetsBinding.instance.platformDispatcher.views.first).padding.top);
+  Size get preferredSize => Size.fromHeight(64 +
+      MediaQueryData.fromView(
+              WidgetsBinding.instance.platformDispatcher.views.first)
+          .padding
+          .top);
 
   @override
   Widget build(BuildContext context) {

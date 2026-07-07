@@ -38,15 +38,18 @@ class ThemeService extends ChangeNotifier {
     ThemeData theme;
     switch (mode) {
       case ThemeModePreference.system:
-        theme = _buildDarkTheme(seed, amoled: false, highContrast: highContrast);
+        theme =
+            _buildDarkTheme(seed, amoled: false, highContrast: highContrast);
       case ThemeModePreference.dark:
-        theme = _buildDarkTheme(seed, amoled: false, highContrast: highContrast);
+        theme =
+            _buildDarkTheme(seed, amoled: false, highContrast: highContrast);
       case ThemeModePreference.light:
         theme = _buildLightTheme(seed, highContrast: highContrast);
       case ThemeModePreference.amoled:
         theme = _buildDarkTheme(seed, amoled: true, highContrast: highContrast);
       case ThemeModePreference.dynamic:
-        theme = _buildDarkTheme(seed, amoled: false, highContrast: highContrast);
+        theme =
+            _buildDarkTheme(seed, amoled: false, highContrast: highContrast);
     }
 
     // Apply font scale
@@ -59,7 +62,8 @@ class ThemeService extends ChangeNotifier {
     return theme;
   }
 
-  ThemeData _buildDarkTheme(Color seed, {required bool amoled, required bool highContrast}) {
+  ThemeData _buildDarkTheme(Color seed,
+      {required bool amoled, required bool highContrast}) {
     final scheme = ColorScheme.fromSeed(
       seedColor: seed,
       brightness: Brightness.dark,

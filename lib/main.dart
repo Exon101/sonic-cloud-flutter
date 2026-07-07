@@ -69,6 +69,7 @@ class _SonicCloudAppState extends State<SonicCloudApp> {
   @override
   void initState() {
     super.initState();
+    // Start initialization but don't block the UI
     _initServices();
   }
 
@@ -238,28 +239,24 @@ class _SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark(),
-      home: Scaffold(
-        backgroundColor: const Color(0xFF131318),
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const CircularProgressIndicator(color: Color(0xFF00F4FE)),
-              const SizedBox(height: 24),
-              Text(
-                'Sonic Cloud',
-                style: TextStyle(
-                  color: const Color(0xFFC5C3E5),
-                  fontSize: 24,
-                  fontWeight: FontWeight.w600,
-                  fontFamily: 'Montserrat',
-                ),
+    return Scaffold(
+      backgroundColor: const Color(0xFF131318),
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(color: Color(0xFF00F4FE)),
+            const SizedBox(height: 24),
+            Text(
+              'Sonic Cloud',
+              style: TextStyle(
+                color: const Color(0xFFC5C3E5),
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Montserrat',
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -313,54 +310,54 @@ class _HomeShell extends StatelessWidget {
         top: false,
         bottom: false,
         child: Column(
-        children: [
-          // Main content fills available space
-          Expanded(
-            child: IndexedStack(
-              index: index,
-              children: [
-                MyLibraryScreen(
-                  onOpenPlayer: onOpenPlayer,
-                  onOpenCloud: () => onGo(2),
-                  onOpenSettings: () => onGo(3),
-                  onOpenBrowse: onOpenLibraryBrowse,
-                  onOpenEqualizer: onOpenEqualizer,
-                  library: library,
-                  search: search,
-                  onPlayTrack: onPlayTrack,
-                ),
-                // Player tab → opens Now Playing
-                _PlayerTabPlaceholder(onOpenPlayer: onOpenPlayer),
-                CloudStorageScreen(
-                  oauth: oauth,
-                  onOpenLibrary: () => onGo(0),
-                  onOpenPlayer: onOpenPlayer,
-                  onOpenSettings: () => onGo(3),
-                ),
-                SettingsScreen(
-                  onOpenLibrary: () => onGo(0),
-                  onOpenPlayer: onOpenPlayer,
-                  onOpenCloud: () => onGo(2),
-                  settings: settings,
-                  security: security,
-                  accessibility: accessibility,
-                  api: api,
-                ),
-              ],
+          children: [
+            // Main content fills available space
+            Expanded(
+              child: IndexedStack(
+                index: index,
+                children: [
+                  MyLibraryScreen(
+                    onOpenPlayer: onOpenPlayer,
+                    onOpenCloud: () => onGo(2),
+                    onOpenSettings: () => onGo(3),
+                    onOpenBrowse: onOpenLibraryBrowse,
+                    onOpenEqualizer: onOpenEqualizer,
+                    library: library,
+                    search: search,
+                    onPlayTrack: onPlayTrack,
+                  ),
+                  // Player tab → opens Now Playing
+                  _PlayerTabPlaceholder(onOpenPlayer: onOpenPlayer),
+                  CloudStorageScreen(
+                    oauth: oauth,
+                    onOpenLibrary: () => onGo(0),
+                    onOpenPlayer: onOpenPlayer,
+                    onOpenSettings: () => onGo(3),
+                  ),
+                  SettingsScreen(
+                    onOpenLibrary: () => onGo(0),
+                    onOpenPlayer: onOpenPlayer,
+                    onOpenCloud: () => onGo(2),
+                    settings: settings,
+                    security: security,
+                    accessibility: accessibility,
+                    api: api,
+                  ),
+                ],
+              ),
             ),
-          ),
-          // Mini-player bar (shown when a track is loaded)
-          AnimatedBuilder(
-            animation: playback,
-            builder: (context, _) {
-              if (playback.currentTrack == null) {
-                return const SizedBox.shrink();
-              }
-              return MiniPlayer(playback: playback, onTap: onOpenPlayer);
-            },
-          ),
-        ],
-      ),
+            // Mini-player bar (shown when a track is loaded)
+            AnimatedBuilder(
+              animation: playback,
+              builder: (context, _) {
+                if (playback.currentTrack == null) {
+                  return const SizedBox.shrink();
+                }
+                return MiniPlayer(playback: playback, onTap: onOpenPlayer);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
