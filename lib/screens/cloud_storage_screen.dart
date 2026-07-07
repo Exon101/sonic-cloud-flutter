@@ -5,7 +5,6 @@ import '../theme/app_colors.dart';
 import '../theme/app_radius.dart' as r;
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
-import '../widgets/bottom_nav_bar.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/top_app_bar.dart';
 
@@ -66,14 +65,6 @@ class CloudStorageScreen extends StatelessWidget {
             const _SyncActivity(),
           ],
         ),
-      ),
-      bottomNavigationBar: SonicBottomNavBar(
-        currentIndex: 2,
-        onTap: (i) {
-          if (i == 0) onOpenLibrary();
-          if (i == 1) onOpenPlayer();
-          if (i == 3) onOpenSettings();
-        },
       ),
     );
   }

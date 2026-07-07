@@ -8,7 +8,6 @@ import '../theme/app_radius.dart' as r;
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
 import '../widgets/album_card.dart';
-import '../widgets/bottom_nav_bar.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/top_app_bar.dart';
 import '../widgets/track_row.dart';
@@ -312,14 +311,6 @@ class _MyLibraryScreenState extends State<MyLibraryScreen> {
               )
             : const Icon(Icons.add_rounded),
         label: Text(_scanning ? 'Scanning...' : 'Add Music'),
-      ),
-      bottomNavigationBar: SonicBottomNavBar(
-        currentIndex: 0,
-        onTap: (i) {
-          if (i == 1) widget.onOpenPlayer();
-          if (i == 2) widget.onOpenCloud();
-          if (i == 3) widget.onOpenSettings();
-        },
       ),
     );
   }

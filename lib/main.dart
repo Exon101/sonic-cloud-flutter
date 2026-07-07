@@ -28,6 +28,7 @@ import 'services/universal_library_service.dart';
 import 'theme/app_theme.dart';
 import 'widgets/glass_card.dart';
 import 'widgets/mini_player.dart';
+import 'widgets/bottom_nav_bar.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -160,7 +161,7 @@ class _SonicCloudAppState extends State<SonicCloudApp> {
           duration: Duration(seconds: 3),
         ),
       );
-      setState(() => _index = 0);
+      setState(() => _index = 1);
       return;
     }
     Navigator.of(context).push(
@@ -355,6 +356,7 @@ class _HomeShell extends StatelessWidget {
         bottom: false,
         child: Column(
           children: [
+            // Main content
             Expanded(
               child: IndexedStack(
                 index: index,
@@ -388,18 +390,25 @@ class _HomeShell extends StatelessWidget {
                 ],
               ),
             ),
+            // Mini player (above bottom nav bar)
             AnimatedBuilder(
               animation: playback,
               builder: (context, _) {
                 if (playback.currentTrack == null) {
                   return const SizedBox.shrink();
                 }
-                return Padding(
-                  padding: EdgeInsets.only(
-                    bottom: MediaQuery.paddingOf(context).bottom,
-                  ),
-                  child: MiniPlayer(playback: playback, onTap: onOpenPlayer),
-                );
+                return MiniPlayer(playback: playback, onTap: onOpenPlayer);
+              },
+            ),
+            // Shared bottom navigation bar
+            SonicBottomNavBar(
+              currentIndex: index,
+              onTap: (i) {
+                if (i == 1) {
+                  onOpenPlayer();
+                } else {
+                  onGo(i);
+                }
               },
             ),
           ],

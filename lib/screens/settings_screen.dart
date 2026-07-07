@@ -8,7 +8,6 @@ import '../theme/app_colors.dart';
 import '../theme/app_radius.dart' as r;
 import '../theme/app_spacing.dart';
 import '../theme/app_typography.dart';
-import '../widgets/bottom_nav_bar.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/top_app_bar.dart';
 
@@ -440,14 +439,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           },
         ),
       ),
-      bottomNavigationBar: SonicBottomNavBar(
-        currentIndex: 3,
-        onTap: (i) {
-          if (i == 0) widget.onOpenLibrary();
-          if (i == 1) widget.onOpenPlayer();
-          if (i == 2) widget.onOpenCloud();
-        },
-      ),
     );
   }
 }
@@ -547,41 +538,41 @@ class _ThemeModeTile extends StatelessWidget {
       animation: settings,
       builder: (context, _) {
         return ListTile(
-      leading: const Icon(Icons.palette, color: AppColors.onSurfaceVariant),
-      title: Text(
-        'Theme',
-        style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface),
-      ),
-      trailing: DropdownButton<ThemeModePreference>(
-        value: settings.themeMode,
-        underline: const SizedBox(),
-        items: const [
-          DropdownMenuItem(
-            value: ThemeModePreference.system,
-            child: Text('System'),
+          leading: const Icon(Icons.palette, color: AppColors.onSurfaceVariant),
+          title: Text(
+            'Theme',
+            style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface),
           ),
-          DropdownMenuItem(
-            value: ThemeModePreference.dark,
-            child: Text('Dark'),
+          trailing: DropdownButton<ThemeModePreference>(
+            value: settings.themeMode,
+            underline: const SizedBox(),
+            items: const [
+              DropdownMenuItem(
+                value: ThemeModePreference.system,
+                child: Text('System'),
+              ),
+              DropdownMenuItem(
+                value: ThemeModePreference.dark,
+                child: Text('Dark'),
+              ),
+              DropdownMenuItem(
+                value: ThemeModePreference.light,
+                child: Text('Light'),
+              ),
+              DropdownMenuItem(
+                value: ThemeModePreference.amoled,
+                child: Text('AMOLED'),
+              ),
+              DropdownMenuItem(
+                value: ThemeModePreference.dynamic,
+                child: Text('Dynamic'),
+              ),
+            ],
+            onChanged: (v) {
+              if (v != null) settings.setThemeMode(v);
+            },
           ),
-          DropdownMenuItem(
-            value: ThemeModePreference.light,
-            child: Text('Light'),
-          ),
-          DropdownMenuItem(
-            value: ThemeModePreference.amoled,
-            child: Text('AMOLED'),
-          ),
-          DropdownMenuItem(
-            value: ThemeModePreference.dynamic,
-            child: Text('Dynamic'),
-          ),
-        ],
-          onChanged: (v) {
-            if (v != null) settings.setThemeMode(v);
-          },
-        ),
-      );
+        );
       },
     );
   }
@@ -656,20 +647,21 @@ class _FontScaleTile extends StatelessWidget {
       animation: accessibility,
       builder: (context, _) {
         return ListTile(
-      leading: const Icon(Icons.text_fields, color: AppColors.onSurfaceVariant),
-      title: Text(
-        'Font Size',
-        style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface),
-      ),
-      subtitle: Slider(
-        value: accessibility.fontScale,
-        min: 0.85,
-        max: 1.5,
-        divisions: 13,
-        label: '${(accessibility.fontScale * 100).round()}%',
-        activeColor: AppColors.secondaryContainer,
-        onChanged: (v) => accessibility.setFontScale(v),
-      ),
+          leading:
+              const Icon(Icons.text_fields, color: AppColors.onSurfaceVariant),
+          title: Text(
+            'Font Size',
+            style: AppTypography.bodyMd.copyWith(color: AppColors.onSurface),
+          ),
+          subtitle: Slider(
+            value: accessibility.fontScale,
+            min: 0.85,
+            max: 1.5,
+            divisions: 13,
+            label: '${(accessibility.fontScale * 100).round()}%',
+            activeColor: AppColors.secondaryContainer,
+            onChanged: (v) => accessibility.setFontScale(v),
+          ),
           trailing: Text(
             '${(accessibility.fontScale * 100).round()}%',
             style: AppTypography.labelSm.copyWith(
