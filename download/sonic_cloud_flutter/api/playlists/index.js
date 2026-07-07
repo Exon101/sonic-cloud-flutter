@@ -9,6 +9,14 @@ module.exports = toVercel(async (event) => {
   const { userId } = requireAuth(event, null);
 
   if (event.httpMethod === 'GET') {
+    const since = event.queryStringParameters?.since ? parseInt(event.queryStringParameters.since, 10) : null;
+    if (since != null) {
+      const playlists = await db.listPlaylistsChangedSince(userId, since);
+      if (playlists.length === 0) {
+        return ok({ unchanged: true, serverTime: Date.now() });
+      }
+      return ok({ playlists, count: playlists.length, serverTime: Date.now() });
+    }
     const playlists = await db.listPlaylists(userId);
     return ok({ playlists, count: playlists.length });
   }

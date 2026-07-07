@@ -146,6 +146,17 @@ const db = {
     return { tracks, count: tracks.length, total, nextCursor };
   },
 
+  /// Incremental polling: return only tracks with updated_at > since.
+  async listTracksChangedSince(userId, since) {
+    await ensureSchema();
+    const client = getClient();
+    const r = await client.execute({
+      sql: 'SELECT * FROM tracks WHERE user_id = ? AND updated_at > ? ORDER BY updated_at ASC LIMIT 500',
+      args: [userId, since],
+    });
+    return { tracks: r.rows.map(rowFromTrackRow) };
+  },
+
   async getTrack(userId, trackId) {
     await ensureSchema();
     const client = getClient();

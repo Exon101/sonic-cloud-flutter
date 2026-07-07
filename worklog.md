@@ -468,3 +468,41 @@ Stage Summary:
   - Data endpoints return empty data (in-memory store resets per invocation — documented limitation)
 - The Flutter app can now: sign in → get JWT → load home screen → play music → all transport controls work → settings shows real user → sign out
 - Cross-device data sync requires a persistent backing store (Vercel KV / Firestore) — documented in api/README.md
+
+---
+Task ID: 14
+Agent: main
+Task: M1 — replace in-memory store with Turso (libSQL/SQLite) for durable cross-device sync.
+
+Work Log:
+- Created api/_lib/schema.sql: 6 tables (users, tracks, playlists, lyrics, devices, sync_state) + 7 indexes. SQLite-compatible → portable to Cloudflare D1 / local SQLite / PocketBase / Postgres
+- Added @libsql/client ^0.14.0 to api/package.json (the only runtime dependency)
+- Created api/_lib/db.js: Turso client wrapper exposing the SAME method names as the old Store class (upsertUser, getTrack, putPlaylist, getSync, etc.) so handler code changes are minimal. Falls back to in-memory libSQL when TURSO_DB_URL is unset (for tests). Auto-applies schema on first call via ensureSchema()
+- Fixed schema splitter: original regex split on `;\n` but skipped CREATE TABLE statements because they ended with `);` followed by comment lines. New version splits on `;\n`, then strips comment-only lines from each statement
+- Fixed infinite recursion in getSync: original version auto-created an empty row by calling putSync, which called getSync again. New version returns a default empty state object without writing
+- Updated all 11 handlers to use db.X() instead of store.X(): auth/signin, auth/me, library/index, library/[id], playlists/index, playlists/[id], lyrics/index, sync/push, sync/pull, devices/index, status
+- signin.js now persists user + device rows to Turso (was: in-memory only)
+- me.js now returns user + devices list from Turso
+- status.js reports database='turso' or 'memory' + live table stats
+- lyrics/index.js GET + PUT now return parsed lines + metadata (server parses LRC so client doesn't have to)
+- Created scripts/migrate.js: idempotent schema migration script (CREATE TABLE IF NOT EXISTS). Reports applied/skipped/failed counts + verifies all 6 tables
+- Applied schema to live Turso DB (libsql://sonic-cloud-exon101.aws-ap-south-1.turso.io): 13/13 statements applied, 6/6 tables verified
+- Set TURSO_DB_URL, TURSO_AUTH_TOKEN, SONIC_JWT_SECRET env vars on Vercel for production + preview + development environments (9 env vars total, all HTTP 201)
+- All 39 tests pass (13 unit + 26 e2e) against in-memory libSQL fallback
+- Pushed commit cdbd37b to main; Vercel auto-deployed; deployment READY/PROMOTED
+
+Live verification (the key M1 test — cross-device sync):
+  1. /api/status reports database=turso, stats show real row counts
+  2. Sign in with email on Device A (web) → userId usr_6db61e6dcbcf2390e4a46af4
+  3. Add track "Sync Demo Track" on Device A → persisted to Turso
+  4. Sign in with SAME email on Device B (android) → same userId usr_6db61e6dcbcf2390e4a46af4
+  5. Device B lists library → sees Device A's track (tr_sync_demo) ✅ CROSS-DEVICE SYNC WORKS
+  6. /api/auth/me on Device B → lists both devices (devA: Web Browser, devB: Android Phone)
+
+Stage Summary:
+- M1 of the backend sync plan is COMPLETE
+- Data now persists across cold starts — the single biggest gap is fixed
+- Cross-device sync works end-to-end: same email on 2 devices → same library, same playlists, same favorites
+- Cost: $0/month (Turso free tier, Vercel free tier)
+- Open source friendly: anyone forking creates a free Turso account + free Vercel project, runs `node scripts/migrate.js`, done
+- Next up: M2 (realtime polling via SyncEngine in Flutter) and M3 (email/password + Google OAuth)
