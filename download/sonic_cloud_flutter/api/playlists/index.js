@@ -1,26 +1,15 @@
 // GET  /api/playlists     — list user's playlists
 // POST /api/playlists     — create a new playlist
-//
-// Playlist shape mirrors lib/models/models.dart:
-// {
-//   id: string,
-//   name: string,
-//   kind: 'manual' | 'smart' | 'auto',   // default 'manual'
-//   rules?: SmartPlaylistRule[],         // for kind='smart'
-//   autoKind?: string,                   // for kind='auto' (e.g. 'favorites')
-//   trackIds: string[],
-//   createdAt, updatedAt
-// }
 
 const crypto = require('crypto');
-const { store } = require('../_lib/store');
-const { ok, error, readJson, requireAuth, handle, toVercel} = require('../_lib/http');
+const { ok, error, readJson, requireAuth, toVercel } = require('../_lib/http');
+const { db } = require('../_lib/db');
 
 module.exports = toVercel(async (event) => {
-  const { userId } = requireAuth(event, store);
+  const { userId } = requireAuth(event, null);
 
   if (event.httpMethod === 'GET') {
-    const playlists = store.listPlaylists(userId);
+    const playlists = await db.listPlaylists(userId);
     return ok({ playlists, count: playlists.length });
   }
 
@@ -30,13 +19,14 @@ module.exports = toVercel(async (event) => {
       return error('Missing required field: name', 400, 'invalid_request');
     }
     const id = body.id || ('pl_' + crypto.randomBytes(8).toString('hex'));
-    const playlist = store.putPlaylist(userId, id, {
+    const playlist = await db.putPlaylist(userId, id, {
       name: String(body.name).slice(0, 200),
       kind: ['manual', 'smart', 'auto'].includes(body.kind) ? body.kind : 'manual',
       rules: Array.isArray(body.rules) ? body.rules : [],
       autoKind: body.autoKind ? String(body.autoKind) : null,
       trackIds: Array.isArray(body.trackIds) ? body.trackIds.map(String) : [],
-      createdAt: Date.now(),
+      description: body.description || null,
+      artUrl: body.artUrl || null,
     });
     return ok({ playlist }, 201);
   }

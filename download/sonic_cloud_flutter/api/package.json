@@ -1,8 +1,8 @@
 {
   "name": "sonic-cloud-api",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
-  "description": "Serverless backend for Sonic Cloud — runs on Vercel Functions (Node.js).",
+  "description": "Serverless backend for Sonic Cloud — runs on Vercel Functions (Node.js) backed by Turso (libSQL/SQLite).",
   "type": "commonjs",
   "engines": {
     "node": ">=18"
@@ -10,8 +10,13 @@
   "scripts": {
     "dev": "vercel dev",
     "deploy": "vercel --prod",
-    "lint": "echo 'No linter configured for api/' && exit 0"
+    "lint": "echo 'No linter configured for api/' && exit 0",
+    "migrate": "node scripts/migrate.js",
+    "test": "node ../scripts/test_api_helpers.js && node ../scripts/test_api_e2e.js"
   },
-  "keywords": ["sonic-cloud", "music", "vercel", "serverless", "api"],
+  "dependencies": {
+    "@libsql/client": "^0.14.0"
+  },
+  "keywords": ["sonic-cloud", "music", "vercel", "serverless", "api", "turso", "libsql"],
   "license": "MIT"
 }

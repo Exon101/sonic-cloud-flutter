@@ -4,17 +4,13 @@
 //
 // Issues a JWT containing { userId, deviceId } so subsequent requests can
 // authenticate without a server-side session lookup — essential for
-// serverless where the in-memory store doesn't persist across invocations.
-//
-// Anonymous mode is the default — pass { anonymous: true } or omit email to
-// get a fresh ephemeral user. Passing an email address will return the same
-// userId every time (idempotent) so it can be used as a lightweight
-// cross-device identity without a password flow.
+// serverless. Persists the user + device rows in Turso so other devices can
+// enumerate active sessions.
 
 const crypto = require('crypto');
-const { store } = require('../_lib/store');
 const { ok, error, readJson, toVercel } = require('../_lib/http');
 const { sign } = require('../_lib/jwt');
+const { db } = require('../_lib/db');
 
 function hashEmail(email) {
   return crypto.createHash('sha256').update(email.toLowerCase().trim()).digest('hex');
@@ -27,24 +23,37 @@ module.exports = toVercel(async (event) => {
   const body = await readJson(event);
   const deviceId = body.deviceId ? String(body.deviceId).slice(0, 64) : null;
 
-  let userId, email;
+  let userId, email, isAnonymous;
   if (body.email && typeof body.email === 'string') {
     email = body.email.toLowerCase().trim();
     userId = 'usr_' + hashEmail(email).slice(0, 24);
-    store.upsertUser(userId, email);
+    isAnonymous = false;
   } else {
     userId = 'usr_' + crypto.randomBytes(12).toString('hex');
-    store.upsertUser(userId, null);
+    isAnonymous = true;
   }
 
-  // Issue a self-contained JWT. The token carries the userId + deviceId so
-  // /auth/me and requireAuth can work without looking up the session.
+  // Persist user + device in Turso (idempotent).
+  await db.upsertUser(userId, email, {
+    isAnonymous,
+    displayName: email || 'Anonymous User',
+    tier: isAnonymous ? 'guest' : 'member',
+  });
+  if (deviceId) {
+    await db.upsertDevice(userId, deviceId, {
+      name: body.deviceName || deviceId,
+      platform: body.platform || null,
+      appVersion: body.appVersion || null,
+    });
+  }
+
   const token = sign({ userId, deviceId });
+  const user = await db.getUser(userId);
 
   return ok({
     token,
     userId,
-    user: store.getUser(userId),
+    user,
     deviceId,
     createdAt: Date.now(),
   });

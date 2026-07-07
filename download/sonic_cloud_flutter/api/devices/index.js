@@ -1,33 +1,28 @@
 // GET    /api/devices         — list the user's active sessions
-// DELETE /api/devices/:token  — revoke a specific session by token prefix
+// DELETE /api/devices?prefix= — revoke a specific device by id (or id prefix)
 //
-// Token prefixes are returned by GET so callers can revoke without ever
-// seeing the full token again. The prefix must match the first 8 chars of
-// the token (the part shown in `session.token`).
+// Devices are identified by a stable deviceId (set by the client at sign-in).
+// For backward-compat with the old API that used token prefixes, the DELETE
+// endpoint matches devices whose id starts with the given prefix.
 
-const { store } = require('../_lib/store');
-const { ok, error, requireAuth, handle, toVercel} = require('../_lib/http');
+const { ok, error, requireAuth, toVercel } = require('../_lib/http');
+const { db } = require('../_lib/db');
 
 module.exports = toVercel(async (event) => {
-  const { userId } = requireAuth(event, store);
+  const { userId } = requireAuth(event, null);
 
   if (event.httpMethod === 'GET') {
-    return ok({ sessions: store.listSessions(userId) });
+    const devices = await db.listDevices(userId);
+    return ok({ sessions: devices, count: devices.length });
   }
 
   if (event.httpMethod === 'DELETE') {
     const prefix = event.queryStringParameters?.prefix
       || (event.path || '').split('/').pop();
-    if (!prefix) return error('Missing session prefix', 400, 'invalid_request');
+    if (!prefix) return error('Missing device id / prefix', 400, 'invalid_request');
 
-    let revoked = 0;
-    for (const [token] of [...store.sessions.entries()]) {
-      if (token.startsWith(prefix)) {
-        store.sessions.delete(token);
-        revoked++;
-      }
-    }
-    if (revoked === 0) return error('Session not found', 404, 'not_found');
+    const revoked = await db.revokeDeviceByPrefix(userId, prefix);
+    if (revoked === 0) return error('Device not found', 404, 'not_found');
     return ok({ revoked, prefix });
   }
 

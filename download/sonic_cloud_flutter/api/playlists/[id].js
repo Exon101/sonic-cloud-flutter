@@ -3,8 +3,8 @@
 // PATCH  /api/playlists/:id  — partial patch (e.g. add/remove trackIds)
 // DELETE /api/playlists/:id  — delete
 
-const { store } = require('../_lib/store');
-const { ok, error, readJson, requireAuth, handle, toVercel} = require('../_lib/http');
+const { ok, error, readJson, requireAuth, toVercel } = require('../_lib/http');
+const { db } = require('../_lib/db');
 
 function patchPlaylist(existing, patch) {
   const next = { ...existing };
@@ -14,6 +14,8 @@ function patchPlaylist(existing, patch) {
   }
   if (Array.isArray(patch.rules)) next.rules = patch.rules;
   if ('autoKind' in patch) next.autoKind = patch.autoKind ? String(patch.autoKind) : null;
+  if ('description' in patch) next.description = patch.description || null;
+  if ('artUrl' in patch) next.artUrl = patch.artUrl || null;
 
   if (Array.isArray(patch.trackIds)) {
     next.trackIds = patch.trackIds.map(String);
@@ -27,32 +29,33 @@ function patchPlaylist(existing, patch) {
 }
 
 module.exports = toVercel(async (event) => {
-  const { userId } = requireAuth(event, store);
+  const { userId } = requireAuth(event, null);
   const id = event.queryStringParameters?.id || (event.path || '').split('/').pop();
   if (!id) return error('Missing playlist id', 400, 'invalid_request');
 
   if (event.httpMethod === 'GET') {
-    const playlist = store.getPlaylist(userId, id);
+    const playlist = await db.getPlaylist(userId, id);
     if (!playlist) return error('Playlist not found', 404, 'not_found');
     return ok({ playlist });
   }
 
   if (event.httpMethod === 'PUT') {
     const body = await readJson(event);
-    const saved = store.putPlaylist(userId, id, body || {});
+    const saved = await db.putPlaylist(userId, id, body || {});
     return ok({ playlist: saved });
   }
 
   if (event.httpMethod === 'PATCH') {
-    const existing = store.getPlaylist(userId, id);
+    const existing = await db.getPlaylist(userId, id);
     if (!existing) return error('Playlist not found', 404, 'not_found');
     const patch = await readJson(event);
-    const saved = store.putPlaylist(userId, id, patchPlaylist(existing, patch));
+    const merged = patchPlaylist(existing, patch);
+    const saved = await db.putPlaylist(userId, id, merged);
     return ok({ playlist: saved });
   }
 
   if (event.httpMethod === 'DELETE') {
-    const removed = store.deletePlaylist(userId, id);
+    const removed = await db.deletePlaylist(userId, id);
     if (!removed) return error('Playlist not found', 404, 'not_found');
     return ok({ deleted: true, id });
   }
