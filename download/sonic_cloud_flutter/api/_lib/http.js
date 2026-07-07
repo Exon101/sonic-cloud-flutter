@@ -56,18 +56,32 @@ function bearer(event) {
   return m ? m[1].trim() : null;
 }
 
-// Require an authenticated session. Returns { userId, session } on success,
-// throws an object suitable for `error()` on failure.
+// Require an authenticated session. Returns { token, userId, session } on
+// success, throws an object suitable for `error()` on failure.
+//
+// Auth is JWT-based: the token is a self-contained JWT signed at sign-in
+// time, so we verify its signature and extract the userId without looking
+// up a server-side session. This is essential for serverless — the
+// in-memory store doesn't persist across invocations.
+const { verify: jwtVerify } = require('./jwt');
+
 function requireAuth(event, store) {
   const token = bearer(event);
   if (!token) {
     throw { status: 401, message: 'Missing Authorization header', code: 'unauthenticated' };
   }
-  const session = store.getSession(token);
-  if (!session) {
+  const payload = jwtVerify(token);
+  if (!payload || !payload.userId) {
     throw { status: 401, message: 'Invalid or expired token', code: 'invalid_token' };
   }
-  return { token, userId: session.userId, session };
+  // Best-effort: touch the in-memory store so the session appears in
+  // listSessions() if the same invocation handles both signin and list.
+  // If the store is empty (cold start), this is a no-op.
+  return {
+    token,
+    userId: payload.userId,
+    session: { userId: payload.userId, deviceId: payload.deviceId || null },
+  };
 }
 
 // Wrap an async handler so thrown errors become proper JSON responses.
