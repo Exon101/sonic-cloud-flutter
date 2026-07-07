@@ -374,3 +374,32 @@ Stage Summary:
 - Web build compatibility: kIsWeb check skips AppDatabase.open() which would crash on web (sqflite unavailable)
 - Initial cloud sync on sign-in: pushes mock tracks to cloud library, pulls playlists, pulls sync state
 - All 39 backend tests still pass; no server-side changes
+
+---
+Task ID: 11
+Agent: main
+Task: Push local main (with Vercel API wiring) to remote GitHub repo and open a PR — local and remote had diverged with no common ancestor.
+
+Work Log:
+- Inspected local vs remote state: local main had 29 commits ending at 53d1b31, remote main had 17+ commits ending at 275a23d — no common ancestor
+- Configured remote with user-provided PAT, fetched origin/main
+- First push attempt blocked by GitHub Push Protection: commit 9b478e5 contained .agent-ctx/SESSION_MEMORY.md with the literal text "[REDACTED:github_token]" which the secret scanner flagged as a leaked PAT (false positive on the redaction marker)
+- Ran `git filter-branch --index-filter 'git rm --cached --ignore-unmatch .agent-ctx/SESSION_MEMORY.md' --prune-empty -- --all` from the true repo root (/home/z/my-project) to strip the file from all 29 commits
+- Verified post-rewrite: no commits in HEAD contain the file, no "ghp_" pattern remains in any tracked file
+- Added .agent-ctx/ to .gitignore (also tool-results/ and skills/ for hygiene)
+- First PR open attempt failed with 422 "branch has no history in common with main" — GitHub refuses to compute a diff between unrelated histories
+- Resolved by performing an unrelated-histories merge: checked out origin/main as feat/vercel-api-wiring-merge, merged local main with `--allow-unrelated-histories --no-ff`
+- Resolved the single .gitignore conflict by taking the union (both Flutter ignores and the new .agent-ctx/ + tool-results/ entries)
+- Commit 6ab7c18 has two parents: e797a27 (our line) and 275a23d (origin/main) — now branches share history
+- Force-pushed (with --force-with-lease) the merge commit to feat/vercel-api-wiring branch
+- Opened PR #18 via GitHub API with full description, test plan, and a note explaining the history rewrite + merge
+- Stripped the token from the remote URL (git remote set-url origin https://github.com/Exon101/sonic-cloud-flutter.git) — verified token no longer in any git config
+
+Stage Summary:
+- PR #18: https://github.com/Exon101/sonic-cloud-flutter/pull/18
+- Title: "feat: wire Flutter app to Vercel API — full auth, sync, working transport"
+- State: open, Mergeable: True, mergeable_state: blocked (branch protection rules pending)
+- 29 commits, +22,722 / -104 lines, 239 files changed
+- Branch: feat/vercel-api-wiring → main
+- Local main HEAD: 6ab7c18 (merge commit with both lineages as parents)
+- Token cleared from git config; user should still rotate the PAT at https://github.com/settings/tokens as a precaution since it was sent over chat
