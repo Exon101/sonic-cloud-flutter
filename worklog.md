@@ -250,3 +250,47 @@ Stage Summary:
 - Firebase Hosting removed; Firebase App Distribution retained for mobile beta
 - 39 backend tests passing locally (helpers + e2e)
 - Live deployment: https://sonic-cloud-kappa.vercel.app/ (Flutter web) — /api/* will activate on next Vercel build of this commit
+
+---
+Task ID: 8
+Agent: main
+Task: Restore Firebase Hosting as the production primary, demote Vercel to dev/small-scale alternative, keep Docker as self-host option. User clarified: "Don't drop firebase (it is for large-scale production) while we using vercel for development and small scale use".
+
+Work Log:
+- Restored .firebaserc (project: sonic-cloud-app, hosting target: web)
+- Restored .firebaseignore (excludes everything except build/web/ — lib/, test/, api/, platform runners, source docs, .env)
+- Restored firebase.json (hosting config: public=build/web, SPA rewrite to /index.html, HSTS + X-Frame-Options + CSP-style security headers, immutable Cache-Control for /assets/**, /icons/**, /main.dart.js)
+- Restored .firebase/ entries in .gitignore
+- Updated DEPLOYMENT.md:
+  - Reordered TOC: Firebase Hosting (production) → Vercel (dev) → Docker (self-host) → Netlify (alt static)
+  - Added a tier-comparison table at the top of "Web deployment"
+  - New "Firebase Hosting" section with multi-site dev/staging/prod pattern (firebase deploy --only hosting:web-staging) and Firebase Cloud Functions adapter snippet for the /api backend
+  - Vercel section retitled "Recommended for development and small-scale production"
+  - Restored Netlify section that was lost in the previous commit
+  - Codemagic section now lists 4 workflows (was 3 then 1): android, ios, web-workflow-firebase (prod, tag-triggered), web-workflow-vercel (dev, push-to-main triggered)
+  - Added VERCEL_TOKEN/SCOPE/PROJECT_ID to the Required environment variables table
+  - Updated deploy_web.sh one-liner description to show production→dev→alt ordering
+- Updated codemagic.yaml:
+  - Header now lists 4 workflows including both web-workflow-firebase and web-workflow-vercel
+  - Added web-workflow-firebase (tag-triggered, deploys to Firebase Hosting with --token + --project)
+  - Renamed web-workflow → web-workflow-vercel (push-to-main triggered, deploys to Vercel)
+  - The split lets every commit ship to Vercel dev while tags cut Firebase production releases
+- Updated .env.example: restored FIREBASE_PROJECT_ID=sonic-cloud-app at the top of the Firebase section, kept VERCEL_* section verbatim, organized comments to make the prod/dev distinction clear
+- Updated scripts/deploy_web.sh: restored the `firebase` target as the first option (uses --token + --project when FIREBASE_TOKEN is set), updated banner comments and help text to show production→dev→alt ordering
+- Updated README.md:
+  - Web-host table now has 4 tier rows: Production (Firebase), Dev/small-scale (Vercel), Self-hosted (Docker), Alt static (Netlify) + Local preview
+  - "Live demo (Vercel)" renamed to "Dev demo (Vercel)" to signal it's the dev environment
+  - Codemagic row updated to mention both Firebase Hosting (prod) and Vercel (dev) workflows
+- Updated api/README.md: retitled from "Vercel Serverless Functions" to "Serverless Backend", added a top section explaining the handlers work on both Vercel (zero-config) and Firebase Cloud Functions v2 (with a small onRequest adapter), and the production-storage table now lists Cloud Firestore as the recommended backing store for Firebase deployments
+- Re-ran all 39 tests (13 helpers + 26 e2e): all pass — no behavior change, only config/doc changes
+- Validated all JSON (vercel.json, firebase.json, .firebaserc, api/package.json) and YAML (codemagic.yaml) parse cleanly
+
+Stage Summary:
+- Firebase Hosting fully restored as production primary (3 files: .firebaserc, .firebaseignore, firebase.json + .gitignore entry)
+- Vercel repositioned as dev/small-scale alternative (still ships both Flutter web + /api backend in one deploy)
+- Docker remains the self-hosted/own-server option (Dockerfile + docker-compose unchanged)
+- Netlify retained as alt static-host option (no /api)
+- codemagic.yaml now has 4 workflows: android, ios, web-firebase (prod tag-triggered), web-vercel (dev push-triggered)
+- scripts/deploy_web.sh supports all 5 targets: firebase (prod) | vercel (dev) | docker (self) | netlify (alt) | preview (local)
+- All 39 API tests still pass
+- All JSON + YAML configs parse cleanly
