@@ -13,9 +13,9 @@
 // can store it for next pull's `?since=` query.
 
 const { store } = require('../_lib/store');
-const { ok, error, readJson, requireAuth, handle } = require('../_lib/http');
+const { ok, error, readJson, requireAuth, handle, toVercel} = require('../_lib/http');
 
-module.exports = handle(async (event) => {
+module.exports = toVercel(async (event) => {
   if (event.httpMethod !== 'POST') {
     return error('Method not allowed', 405, 'method_not_allowed');
   }

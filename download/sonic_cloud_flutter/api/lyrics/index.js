@@ -8,10 +8,10 @@
 // the lyrics came from (embedded ID3 tag, .lrc file, third-party provider).
 
 const { store } = require('../_lib/store');
-const { ok, error, readJson, requireAuth, handle } = require('../_lib/http');
+const { ok, error, readJson, requireAuth, handle, toVercel} = require('../_lib/http');
 const { parseLrc } = require('../_lib/lrc');
 
-module.exports = handle(async (event) => {
+module.exports = toVercel(async (event) => {
   const { userId } = requireAuth(event, store);
   const trackId = event.queryStringParameters?.trackId;
   if (!trackId) return error('Missing query param: trackId', 400, 'invalid_request');

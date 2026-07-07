@@ -1,9 +1,9 @@
 // GET /api/auth/me — return the current authenticated user.
 
 const { store } = require('../_lib/store');
-const { ok, error, requireAuth, handle } = require('../_lib/http');
+const { ok, error, requireAuth, handle, toVercel} = require('../_lib/http');
 
-module.exports = handle(async (event) => {
+module.exports = toVercel(async (event) => {
   if (event.httpMethod !== 'GET') {
     return error('Method not allowed', 405, 'method_not_allowed');
   }

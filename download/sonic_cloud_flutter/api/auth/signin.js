@@ -8,13 +8,13 @@
 
 const crypto = require('crypto');
 const { store } = require('../_lib/store');
-const { ok, error, readJson, handle } = require('../_lib/http');
+const { ok, error, readJson, handle, toVercel} = require('../_lib/http');
 
 function hashEmail(email) {
   return crypto.createHash('sha256').update(email.toLowerCase().trim()).digest('hex');
 }
 
-module.exports = handle(async (event) => {
+module.exports = toVercel(async (event) => {
   if (event.httpMethod !== 'POST') {
     return error('Method not allowed', 405, 'method_not_allowed');
   }

@@ -4,7 +4,7 @@
 // DELETE /api/playlists/:id  — delete
 
 const { store } = require('../_lib/store');
-const { ok, error, readJson, requireAuth, handle } = require('../_lib/http');
+const { ok, error, readJson, requireAuth, handle, toVercel} = require('../_lib/http');
 
 function patchPlaylist(existing, patch) {
   const next = { ...existing };
@@ -26,7 +26,7 @@ function patchPlaylist(existing, patch) {
   return next;
 }
 
-module.exports = handle(async (event) => {
+module.exports = toVercel(async (event) => {
   const { userId } = requireAuth(event, store);
   const id = event.queryStringParameters?.id || (event.path || '').split('/').pop();
   if (!id) return error('Missing playlist id', 400, 'invalid_request');

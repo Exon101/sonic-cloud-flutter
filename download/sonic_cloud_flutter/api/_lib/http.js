@@ -1,4 +1,15 @@
 // Shared HTTP helpers for the Sonic Cloud API.
+//
+// HANDLER SIGNATURE
+// -----------------
+// Each route handler is an async function `async (event) => responseObject`
+// where `event` has the shape:
+//   { httpMethod, path, headers, body, isBase64Encoded, queryStringParameters }
+// and `responseObject` is `{ statusCode, headers, body }`.
+//
+// This is the AWS Lambda / Netlify-style signature. Vercel's serverless
+// functions use the Node.js (req, res) signature instead, so we expose
+// `toVercel(fn)` which adapts our handlers to Vercel's runtime.
 
 const VERSION = process.env.SONIC_API_VERSION || '1.0.0';
 
@@ -77,4 +88,60 @@ function handle(fn) {
   };
 }
 
-module.exports = { VERSION, json, ok, error, readJson, bearer, requireAuth, handle };
+// ── Vercel adapter ───────────────────────────────────────────────────────────
+//
+// Convert a handler with our `(event) => responseObject` signature to the
+// Vercel `(req, res) => void` signature. The adapter:
+//   1. Reads the request body from the `req` stream
+//   2. Converts `req` to our `event` shape
+//   3. Calls the handler (wrapped in `handle()` for error catching)
+//   4. Sends the returned response object via `res.status().setHeader().end()`
+
+function toVercel(fn) {
+  const wrapped = handle(fn);
+  return async (req, res) => {
+    // Read the body from the req stream. For GET/DELETE there's usually no
+    // body; for POST/PUT/PATCH we read it as a string.
+    let body = null;
+    if (req.method && req.method !== 'GET' && req.method !== 'HEAD') {
+      const chunks = [];
+      for await (const chunk of req) {
+        chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+      }
+      body = chunks.length > 0 ? Buffer.concat(chunks).toString('utf-8') : null;
+    }
+
+    // Build the `event` shape our handlers expect.
+    const event = {
+      httpMethod: req.method,
+      path: req.url || '',
+      headers: req.headers || {},
+      body,
+      isBase64Encoded: false,
+      queryStringParameters: req.query || null,
+    };
+
+    // Call the handler and send the response.
+    try {
+      const result = await wrapped(event, {});
+      if (!result) {
+        res.status(204).end();
+        return;
+      }
+      const status = result.statusCode || 200;
+      const headers = result.headers || {};
+      for (const [k, v] of Object.entries(headers)) {
+        res.setHeader(k, v);
+      }
+      res.status(status).end(result.body || '');
+    } catch (e) {
+      console.error('Vercel adapter error:', e);
+      if (!res.headersSent) {
+        res.status(500).setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ ok: false, error: 'Internal server error', code: 'internal' }));
+      }
+    }
+  };
+}
+
+module.exports = { VERSION, json, ok, error, readJson, bearer, requireAuth, handle, toVercel };

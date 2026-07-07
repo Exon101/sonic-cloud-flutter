@@ -3,9 +3,9 @@
 // DELETE /api/library/:id   — remove a track from the cloud library
 
 const { store } = require('../_lib/store');
-const { ok, error, readJson, requireAuth, handle } = require('../_lib/http');
+const { ok, error, readJson, requireAuth, handle, toVercel} = require('../_lib/http');
 
-module.exports = handle(async (event) => {
+module.exports = toVercel(async (event) => {
   const { userId } = requireAuth(event, store);
   const id = event.queryStringParameters?.id || (event.path || '').split('/').pop();
   if (!id) return error('Missing track id', 400, 'invalid_request');

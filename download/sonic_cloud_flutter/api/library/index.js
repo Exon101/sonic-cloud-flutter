@@ -7,9 +7,9 @@
 // synced across devices.
 
 const { store } = require('../_lib/store');
-const { ok, error, readJson, requireAuth, handle } = require('../_lib/http');
+const { ok, error, readJson, requireAuth, handle, toVercel} = require('../_lib/http');
 
-module.exports = handle(async (event) => {
+module.exports = toVercel(async (event) => {
   const { userId } = requireAuth(event, store);
 
   if (event.httpMethod === 'GET') {

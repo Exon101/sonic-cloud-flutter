@@ -1,10 +1,10 @@
 // GET /api/status — health check + version info.
 // Public, no auth required.
 
-const { ok, VERSION } = require('./_lib/http');
+const { ok, VERSION, toVercel } = require('./_lib/http');
 const { store } = require('./_lib/store');
 
-module.exports = async (event) => {
+module.exports = toVercel(async (event) => {
   if (event.httpMethod !== 'GET') {
     return require('./_lib/http').error('Method not allowed', 405, 'method_not_allowed');
   }
@@ -38,4 +38,4 @@ module.exports = async (event) => {
       'DELETE /api/devices/:token',
     ],
   });
-};
+});

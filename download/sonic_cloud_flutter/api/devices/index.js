@@ -6,9 +6,9 @@
 // the token (the part shown in `session.token`).
 
 const { store } = require('../_lib/store');
-const { ok, error, requireAuth, handle } = require('../_lib/http');
+const { ok, error, requireAuth, handle, toVercel} = require('../_lib/http');
 
-module.exports = handle(async (event) => {
+module.exports = toVercel(async (event) => {
   const { userId } = requireAuth(event, store);
 
   if (event.httpMethod === 'GET') {
