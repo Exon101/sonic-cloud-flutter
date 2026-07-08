@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Vercel build script — installs Flutter, builds the web bundle, strips the
-# deprecated service worker, and leaves the output at build/web.
+# Vercel build script — installs Flutter, builds the web bundle, and leaves
+# the output at build/web.
 #
 # Vercel runs this from the project's rootDirectory (set to
 # download/sonic_cloud_flutter/ in the Vercel project settings).
@@ -22,25 +22,29 @@ flutter --version
 flutter pub get
 flutter build web --release --no-pwa || flutter build web --release
 
-# ── Strip the deprecated service worker (Flutter regenerates it at build ─────
-# time even if removed from web/index.html — see flutter/flutter#156910).
-echo "▶ Stripping deprecated service worker from build output"
+# ── Strip ONLY the deprecated service worker (NOT flutter.js) ────────────────
+# flutter_service_worker.js is deprecated (flutter/flutter#156910) but
+# flutter.js is REQUIRED — it's the Flutter web framework loader that
+# main.dart.js depends on. Without it, the app hangs on the loading screen.
+echo "▶ Stripping deprecated service worker (keeping flutter.js)"
 rm -f build/web/flutter_service_worker.js
-rm -f build/web/flutter.js
+# DO NOT delete flutter.js — it's needed for _flutter.loader.loadEntrypoint()
 
-# Remove the SW registration block from the built index.html. Flutter injects
-# this block during build; we use a Python one-liner so we don't depend on
-# sed dialect differences across CI environments.
+# ── Fix index.html: replace SW registration with proper Flutter init ────────
+# Flutter's build injects a script block that registers the service worker.
+# We replace it with the modern _flutter.loader.loadEntrypoint() pattern
+# that doesn't use a service worker but still properly initializes Flutter.
 python3 - <<'PY'
 import re
 from pathlib import Path
 
 idx = Path('build/web/index.html')
 if not idx.exists():
-    print(f"  WARN: {idx} not found — skipping SW strip")
+    print(f"  WARN: {idx} not found — skipping")
     raise SystemExit(0)
 
 html = idx.read_text()
+
 # Match the SW registration block Flutter injects:
 #   <script>
 #     const serviceWorkerVersion = "..." /* ... */;
@@ -48,37 +52,60 @@ html = idx.read_text()
 #     function loadMainDartJs() { ... }
 #     if ('serviceWorker' in navigator) { ... } else { loadMainDartJs(); }
 #   </script>
-# Replace with a minimal block that just loads main.dart.js on load.
 pattern = re.compile(
     r'<script>\s*'
     r'const serviceWorkerVersion.*?'
     r'loadMainDartJs\(\);\s*\}\s*</script>',
     re.DOTALL,
 )
+
+# Modern Flutter web initialization — uses _flutter.loader.loadEntrypoint()
+# which is provided by flutter.js. This is the standard pattern from
+# Flutter 3.x+ that doesn't require a service worker.
 replacement = (
     '<script>\n'
-    '    var scriptLoaded = false;\n'
-    '    function loadMainDartJs() {\n'
-    '      if (scriptLoaded) { return; }\n'
-    '      scriptLoaded = true;\n'
-    '      var s = document.createElement("script");\n'
-    '      s.src = "main.dart.js";\n'
-    '      s.type = "application/javascript";\n'
-    '      document.body.append(s);\n'
-    '    }\n'
-    '    window.addEventListener("load", loadMainDartJs);\n'
+    '    window.addEventListener(\'load\', function () {\n'
+    '      _flutter.loader.loadEntrypoint({\n'
+    '        onEntrypointLoaded: async function(engineInitializer) {\n'
+    '          let appRunner = await engineInitializer.initializeEngine();\n'
+    '          await appRunner.runApp();\n'
+    '        }\n'
+    '      });\n'
+    '    });\n'
     '  </script>'
 )
+
 new_html, n = pattern.subn(replacement, html)
 if n > 0:
     idx.write_text(new_html)
-    print(f"  Stripped SW block from build/web/index.html ({n} match)")
+    print(f"  Replaced SW block with modern Flutter init ({n} match)")
 else:
-    print(f"  No SW block found in build/web/index.html (already clean)")
+    # Check if the block is already the modern pattern
+    if '_flutter.loader.loadEntrypoint' in html:
+        print(f"  index.html already uses modern Flutter init (no change needed)")
+    else:
+        print(f"  WARNING: No SW block found and no modern init — Flutter may not load")
+        # Inject a fallback: load flutter.js + init
+        if 'flutter.js' not in html:
+            html = html.replace('</head>', '  <script src="flutter.js" defer></script>\n</head>')
+        if '_flutter.loader' not in html:
+            fallback = (
+                '\n  <script>\n'
+                '    window.addEventListener(\'load\', function () {\n'
+                '      _flutter.loader.loadEntrypoint({\n'
+                '        onEntrypointLoaded: async function(engineInitializer) {\n'
+                '          let appRunner = await engineInitializer.initializeEngine();\n'
+                '          await appRunner.runApp();\n'
+                '        }\n'
+                '      });\n'
+                '    });\n'
+                '  </script>\n'
+            )
+            html = html.replace('</body>', f'{fallback}</body>')
+            idx.write_text(html)
+            print(f"  Injected flutter.js + modern init as fallback")
 
 # ── Enforce full-screen CSS ──────────────────────────────────────────────────
-# Flutter's build process may strip or override the margin:0 on <body>. This
-# step ensures the full-screen reset is always present in the built output.
 html = idx.read_text()
 fullscreen_css = """
     <style id="fullscreen-reset">
@@ -87,12 +114,18 @@ fullscreen_css = """
     </style>
 """
 if 'fullscreen-reset' not in html:
-    # Inject right before </head>
     html = html.replace('</head>', f'{fullscreen_css}</head>')
     idx.write_text(html)
-    print("  Injected full-screen CSS reset into build/web/index.html")
+    print("  Injected full-screen CSS reset")
 else:
-    print("  Full-screen CSS reset already present")
+    print("  Full-screen CSS already present")
+
+# ── Verify flutter.js exists ─────────────────────────────────────────────────
+flutter_js = Path('build/web/flutter.js')
+if flutter_js.exists():
+    print(f"  ✓ flutter.js exists ({flutter_js.stat().st_size} bytes)")
+else:
+    print(f"  ✗ WARNING: flutter.js NOT FOUND — app will hang on loading screen!")
 PY
 
 echo "▶ Vercel build complete: build/web"
