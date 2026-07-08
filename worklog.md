@@ -653,3 +653,50 @@ Stage Summary:
   - Mobile: everything works (local files + cloud sync + audio_service media notifications)
   - Desktop: everything works (local files + cloud sync + just_audio_media_kit)
 - All 38 API tests pass; Vercel deployment is live and verified
+
+---
+Task ID: 18
+Agent: main
+Task: Add music file upload feature — works on web + mobile + desktop.
+
+Work Log:
+- Added @vercel/blob ^0.23.0 to api/package.json for server-side file storage
+- Created api/upload.js — POST /api/upload endpoint:
+  * Accepts multipart/form-data with 'file' field + optional title/artist/album
+  * Parses multipart body manually (no npm dep — pure Node buffer parsing)
+  * Validates file format (mp3/flac/wav/aac/ogg/m4a/opus) + size (100MB max)
+  * Uploads to Vercel Blob via put() — returns public URL
+  * Creates track record in Turso with sourceId = blob URL
+  * Returns {track, blobUrl, uploadSize} on success
+  * Returns helpful 'blob_not_configured' error if BLOB_READ_WRITE_TOKEN not set
+- Created api/stream.js — GET /api/stream?trackId=X returns the blob URL
+- Created lib/services/upload_service.dart — Flutter UploadService:
+  * ChangeNotifier with isUploading, progress, lastError, lastUploadedTrack
+  * uploadFile() builds MultipartRequest with auth header, sends bytes, parses response
+  * Returns a Track object with audioUrl = blobUrl
+- Created lib/screens/upload/upload_music_sheet.dart — bottom sheet UI:
+  * File picker button (uses file_picker package — works on all platforms)
+  * Title/artist/album text fields (auto-filled from filename)
+  * Upload button with progress indicator
+  * Error display with helpful messages
+  * Web-specific warning if file >4MB (Vercel Hobby payload limit)
+- Updated lib/main.dart — instantiates UploadService, adds _showUploadSheet() method
+  that shows the sheet + on upload: adds track to library + pushes via SyncEngine
+  + shows 'Uploaded: Title' snackbar with Play action
+- Updated lib/screens/my_library_screen.dart — added onUploadMusic callback +
+  cloud_upload icon button in the app bar (left of EQ + Browse buttons)
+- Pushed commit e309f21 to main; Vercel auto-deployed; deployment READY/PROMOTED
+- Verified: upload endpoint returns helpful 'blob_not_configured' error when
+  BLOB_READ_WRITE_TOKEN env var is not set
+
+To enable uploads:
+  1. Go to https://vercel.com/stores → Create Store → Blob
+  2. Name it "sonic-cloud-uploads"
+  3. Copy the BLOB_READ_WRITE_TOKEN
+  4. Go to Vercel project Settings → Environment Variables
+  5. Add BLOB_READ_WRITE_TOKEN = <token> for all environments
+  6. Redeploy — uploads will work
+
+All 38 API tests pass. The upload feature is live but requires the blob store
+to be created via the Vercel dashboard (the API doesn't expose blob store
+creation — only the dashboard does).
