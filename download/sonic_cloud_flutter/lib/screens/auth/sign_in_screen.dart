@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../models/models.dart';
 import '../../services/api_auth_service.dart';
@@ -116,13 +117,11 @@ class _SignInScreenState extends State<SignInScreen> {
 
   /// Returns a GoogleSignIn instance configured with the client ID from the
   /// environment, or null if Google Sign-In isn't configured.
-  Future<dynamic> _getGoogleSignIn() async {
+  GoogleSignIn? _getGoogleSignIn() {
+    final clientId = const String.fromEnvironment('GOOGLE_SIGN_IN_CLIENT_ID');
+    if (clientId.isEmpty) return null;
     try {
-      // ignore: depend_on_referenced_packages
-      final module = await import('package:google_sign_in/google_sign_in.dart');
-      final clientId = const String.fromEnvironment('GOOGLE_SIGN_IN_CLIENT_ID');
-      if (clientId.isEmpty) return null;
-      return module.GoogleSignIn(scopes: ['email'], serverClientId: clientId);
+      return GoogleSignIn(scopes: ['email'], serverClientId: clientId);
     } catch (_) {
       return null;
     }
