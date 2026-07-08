@@ -700,3 +700,59 @@ To enable uploads:
 All 38 API tests pass. The upload feature is live but requires the blob store
 to be created via the Vercel dashboard (the API doesn't expose blob store
 creation — only the dashboard does).
+
+---
+Task ID: 19
+Agent: main
+Task: Expand upload to support ZIP files, multiple file types, lyrics pairing, metadata.json, batch upload.
+
+Work Log:
+- Added adm-zip ^0.5.16 to api/package.json for server-side ZIP extraction
+- Rewrote api/upload.js to handle 3 upload modes:
+  1. Single audio file — same as before (with optional title/artist/album form fields)
+  2. ZIP archive — server extracts, categorizes each file (audio/lyrics/metadata), processes each
+  3. Multiple files (batch) — pick several files at once, same processing as ZIP
+- ZIP processing:
+  - Extracts all entries, skips macOS hidden files (__MACOSX/, .DS_Store)
+  - Categorizes: audio (.mp3/.flac/.wav/.aac/.ogg/.m4a/.opus) → Vercel Blob + track record
+  - Lyrics (.lrc/.txt) → paired with track by base filename (track1.mp3 ↔ track1.lrc)
+  - metadata.json → provides title/artist/album/year for each track
+  - metadata.json format: {"tracks": [{"file": "track1.mp3", "title": "...", ...}]} or flat {"track1.mp3": {...}}
+- Added uploadMultiple() to lib/services/upload_service.dart — sends multiple files in one multipart request
+- Rewrote lib/screens/upload/upload_music_sheet.dart:
+  - Multiple file selection (FilePicker allowMultiple: true)
+  - Supports .zip, .lrc, .json, and all audio formats
+  - File list preview with type-specific icons (audio=blue, zip=amber, lyrics=green, metadata=blue)
+  - Remove individual files before upload
+  - Total size display
+  - Results card after upload: X tracks, Y lyrics, Z errors, total size
+  - Error list (first 5 errors shown)
+  - Auto-close after 3s if no errors
+- Fixed Vercel 12-function limit issue:
+  - Old api/auth/me.js, api/auth/signin.js, api/sync/pull.js, api/sync/push.js were still tracked (survived the M3 consolidation due to git filter-branch rewrite)
+  - Removed api/stream.js (convenience endpoint — blob URL is already in track.sourceId)
+  - Current count: 10 functions (well under 12 limit)
+- 3 commits pushed: 9808739 (ZIP + multi-file), 73efb9e (cleanup old files + remove stream.js)
+- Vercel deployment 73efb9e is READY/PROMOTED
+- All 38 API tests pass
+
+Live verification:
+  1. Root: HTTP 200 ✅
+  2. /api/status: database=turso, 5 users, 5 tracks, 9 devices ✅
+  3. /api/upload: returns blob_not_configured (needs BLOB_READ_WRITE_TOKEN) ✅
+  4. 10 serverless functions (under 12 limit) ✅
+
+To enable uploads:
+  1. Create a Vercel Blob store at https://vercel.com/stores (free: 1GB storage, 10GB bandwidth)
+  2. Copy BLOB_READ_WRITE_TOKEN
+  3. Add as Vercel env var: BLOB_READ_WRITE_TOKEN for all environments
+  4. Redeploy
+
+ZIP file structure supported:
+  my-album.zip
+  ├── track1.mp3       → uploaded to Blob, track record created
+  ├── track1.lrc       → paired with track1 by filename, stored in lyrics table
+  ├── track2.flac      → uploaded to Blob, track record created
+  ├── track2.lrc       → paired with track2 by filename, stored in lyrics table
+  ├── metadata.json    → provides title/artist/album/year for each track
+  └── cover.jpg        → ignored (future: album art support)

@@ -29,6 +29,7 @@
   ],
   "dependencies": {
     "@libsql/client": "^0.17.4",
-    "@vercel/blob": "^2.6.1"
+    "@vercel/blob": "^2.6.1",
+    "adm-zip": "^0.5.18"
   }
 }
