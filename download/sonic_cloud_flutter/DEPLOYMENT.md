@@ -33,6 +33,11 @@ that matches your target platform.
 
 ---
 
+## Quick start: fork + deploy in 10 minutes
+
+See **[FORKING.md](FORKING.md)** for the complete step-by-step guide to
+running your own Sonic Cloud backend with free Turso + Vercel accounts.
+
 ## Quick start: local build
 
 ```bash

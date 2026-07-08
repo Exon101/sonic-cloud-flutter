@@ -196,12 +196,80 @@ class _HomeShellState extends State<_HomeShell> {
       _playlists.notifyChanged();
       // Pull sync state (queue / favorites / ratings / positions / settings).
       await _sync.pullAll();
+      // Check if another device was playing — show "Resume?" prompt.
+      _checkResumeFromOtherDevice();
       // Start the SyncEngine for continuous polling + write queue.
       _syncEngine.start();
     } catch (e) {
       debugPrint('Initial cloud sync failed (non-fatal): $e');
       // Still start the engine — it'll retry on the next poll interval.
       _syncEngine.start();
+    }
+  }
+
+  /// Checks the cloud sync_state for a track that was playing on another
+  /// device. If found, shows a "Resume from {position}?" snackbar.
+  void _checkResumeFromOtherDevice() {
+    try {
+      final res = _sync.lastSyncAt;
+      if (res == null || res == 0) return;
+
+      // The VercelSyncService.pullAll() stores the sync state internally.
+      // We use the SyncEngine's _lastSyncAt to check if there's data.
+      // For now, we make a direct API call to get the full sync state.
+      widget.client.get('sync/pull').then((syncRes) {
+        if (!mounted) return;
+        final sync = syncRes['sync'] as Map<String, dynamic>?;
+        if (sync == null) return;
+
+        final queue = (sync['queue'] as List?) ?? [];
+        final currentIndex = (sync['currentIndex'] as num?)?.toInt() ?? 0;
+        final positionSec = (sync['positionSec'] as num?)?.toDouble() ?? 0;
+        final playing = sync['playing'] == true;
+
+        // Only show the prompt if there's a queue and a position > 5 seconds
+        if (queue.isEmpty || positionSec < 5) return;
+
+        // Get the track at the current index
+        if (currentIndex >= queue.length) return;
+        final trackId = queue[currentIndex] as String;
+        final track = _library.trackById(trackId) ??
+            MockData.allSongs.firstWhere(
+              (t) => t.id == trackId,
+              orElse: () => MockData.allSongs.first,
+            );
+
+        // Format the position as M:SS
+        final mins = (positionSec / 60).floor();
+        final secs = (positionSec % 60).round().toString().padLeft(2, '0');
+        final positionStr = '$mins:$secs';
+
+        // Show a snackbar with a "Resume" action
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              playing
+                  ? 'Now playing on another device: ${track.title} ($positionStr)'
+                  : 'Resume "${track.title}" from $positionStr?',
+            ),
+            duration: const Duration(seconds: 8),
+            action: SnackBarAction(
+              label: playing ? 'Listen here' : 'Resume',
+              onPressed: () {
+                _activeTrack = track;
+                _playback.playAll([track]);
+                // Seek to the saved position after a brief delay (let the audio load)
+                Future.delayed(const Duration(milliseconds: 500), () {
+                  _playback.seek(Duration(seconds: positionSec.toInt()));
+                });
+                _openPlayer(track);
+              },
+            ),
+          ),
+        );
+      }).catchError((_) {});
+    } catch (_) {
+      // Non-fatal — just skip the resume prompt
     }
   }
 
