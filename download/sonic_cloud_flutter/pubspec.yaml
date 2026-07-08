@@ -17,7 +17,7 @@ dependencies:
   # just_audio handles Web, Android, iOS, macOS natively.
   # Desktop (Windows/Linux) needs just_audio_media_kit (libVLC backend).
   just_audio: ^0.9.37
-  just_audio_media_kit: ^0.0.1+14
+  just_audio_media_kit: ^2.1.0
   audio_service: ^0.18.13
   # Audio metadata reading (ID3, Vorbis, MP4, FLAC) — uses on-platform tags.
   audiotags: ^1.4.5
