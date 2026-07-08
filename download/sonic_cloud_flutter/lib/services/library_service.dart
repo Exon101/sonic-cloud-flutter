@@ -391,17 +391,26 @@ class LibraryService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setFavorite(String trackId, bool favorite) {
+  void setFavorite(String trackId, bool favorite, {bool notify = true}) {
     final t = _tracksById[trackId];
     if (t == null) return;
     _tracksById[trackId] = t.copyWith(isFavorite: favorite);
-    notifyListeners();
+    if (notify) notifyListeners();
   }
 
-  void setRating(String trackId, int rating) {
+  void setRating(String trackId, int rating, {bool notify = true}) {
     final t = _tracksById[trackId];
     if (t == null) return;
     _tracksById[trackId] = t.copyWith(rating: rating.clamp(0, 5));
+    if (notify) notifyListeners();
+  }
+
+  /// Upsert a track that arrived from a cloud sync source.
+  /// Replaces any local track with the same id; otherwise creates a new
+  /// entry. Rebuilds indices + notifies.
+  void upsertFromCloud(Track track) {
+    _tracksById[track.id] = track;
+    _rebuildIndices();
     notifyListeners();
   }
 

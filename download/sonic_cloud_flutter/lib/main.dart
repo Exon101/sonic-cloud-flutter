@@ -22,6 +22,7 @@ import 'services/library_service.dart';
 import 'services/lyrics_service.dart';
 import 'services/playback_service.dart';
 import 'services/playlist_service.dart';
+import 'services/sync_engine.dart';
 import 'services/universal_library_service.dart';
 import 'services/vercel_lyrics_provider.dart';
 import 'services/vercel_sync_service.dart';
@@ -131,6 +132,7 @@ class _HomeShellState extends State<_HomeShell> {
   late final VercelSyncService _sync;
   late final ApiLibrarySync _librarySync;
   late final ApiPlaylistSync _playlistSync;
+  late final SyncEngine _syncEngine;
 
   /// The track currently playing or last played. Used by NowPlayingScreen as
   /// the fallback for art/title/duration while the audio source loads.
@@ -149,6 +151,12 @@ class _HomeShellState extends State<_HomeShell> {
     _sync = VercelSyncService(widget.client, widget.auth);
     _librarySync = ApiLibrarySync(widget.client);
     _playlistSync = ApiPlaylistSync(widget.client, _playlists);
+    _syncEngine = SyncEngine(
+      client: widget.client,
+      sync: _sync,
+      library: _library,
+      playlists: _playlists,
+    );
 
     // Open the database, load saved tracks, then seed mock data if empty.
     // On web, sqflite is unavailable — fall back to mock data only.
@@ -188,13 +196,18 @@ class _HomeShellState extends State<_HomeShell> {
       _playlists.notifyChanged();
       // Pull sync state (queue / favorites / ratings / positions / settings).
       await _sync.pullAll();
+      // Start the SyncEngine for continuous polling + write queue.
+      _syncEngine.start();
     } catch (e) {
       debugPrint('Initial cloud sync failed (non-fatal): $e');
+      // Still start the engine — it'll retry on the next poll interval.
+      _syncEngine.start();
     }
   }
 
   @override
   void dispose() {
+    _syncEngine.dispose();
     _playback.dispose();
     _equalizer.dispose();
     _library.dispose();
@@ -272,6 +285,7 @@ class _HomeShellState extends State<_HomeShell> {
             auth: widget.auth,
             sync: _sync,
             client: widget.client,
+            syncEngine: _syncEngine,
           ),
         ],
       ),

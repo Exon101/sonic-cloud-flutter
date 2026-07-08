@@ -250,6 +250,17 @@ const db = {
     return r.rows.map(rowFromPlaylistRow);
   },
 
+  /// Incremental polling: return only playlists with updated_at > since.
+  async listPlaylistsChangedSince(userId, since) {
+    await ensureSchema();
+    const client = getClient();
+    const r = await client.execute({
+      sql: 'SELECT * FROM playlists WHERE user_id = ? AND updated_at > ? ORDER BY updated_at ASC LIMIT 200',
+      args: [userId, since],
+    });
+    return r.rows.map(rowFromPlaylistRow);
+  },
+
   async getPlaylist(userId, playlistId) {
     await ensureSchema();
     const client = getClient();

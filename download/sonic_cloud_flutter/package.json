@@ -16,7 +16,18 @@
     "build:web": "./scripts/build.sh web",
     "test:api": "node scripts/test_api_helpers.js && node scripts/test_api_e2e.js"
   },
-  "keywords": ["sonic-cloud", "flutter", "music-player", "vercel", "serverless"],
+  "keywords": [
+    "sonic-cloud",
+    "flutter",
+    "music-player",
+    "vercel",
+    "serverless"
+  ],
   "license": "MIT",
-  "workspaces": ["api"]
+  "workspaces": [
+    "api"
+  ],
+  "dependencies": {
+    "@libsql/client": "^0.17.4"
+  }
 }

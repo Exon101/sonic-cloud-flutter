@@ -3,6 +3,7 @@ import '../data/mock_data.dart';
 import '../models/models.dart';
 import '../services/api_auth_service.dart';
 import '../services/api_client.dart';
+import '../services/sync_engine.dart';
 import '../services/vercel_sync_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart' as r;
@@ -26,6 +27,7 @@ class SettingsScreen extends StatefulWidget {
   final ApiAuthService auth;
   final VercelSyncService sync;
   final ApiClient client;
+  final SyncEngine? syncEngine;
 
   const SettingsScreen({
     super.key,
@@ -35,6 +37,7 @@ class SettingsScreen extends StatefulWidget {
     required this.auth,
     required this.sync,
     required this.client,
+    this.syncEngine,
   });
 
   @override
@@ -52,6 +55,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.initState();
     widget.auth.addListener(_onAuthChange);
     widget.sync.addListener(_onSyncChange);
+    widget.syncEngine?.addListener(_onSyncEngineChange);
     _refreshDevices();
   }
 
@@ -59,7 +63,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void dispose() {
     widget.auth.removeListener(_onAuthChange);
     widget.sync.removeListener(_onSyncChange);
+    widget.syncEngine?.removeListener(_onSyncEngineChange);
     super.dispose();
+  }
+
+  void _onSyncEngineChange() {
+    if (mounted) setState(() {});
   }
 
   void _onAuthChange() {
@@ -84,7 +93,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _syncNow() async {
     setState(() => _statusMessage = 'Syncing…');
     try {
-      await widget.sync.fullSync();
+      // Flush pending writes first, then trigger a poll
+      if (widget.syncEngine != null) {
+        await widget.syncEngine!.flushNow();
+        // The SyncEngine's poll will fire automatically; just wait a moment
+        await Future.delayed(const Duration(milliseconds: 500));
+      } else {
+        await widget.sync.fullSync();
+      }
       setState(() => _statusMessage = 'Sync complete');
     } catch (e) {
       setState(() => _statusMessage = 'Sync failed: $e');
@@ -242,7 +258,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   icon: Icons.sync_rounded,
                   title: 'Sync Now',
                   subtitle: _syncStatusLabel(),
-                  subtitleColor: AppColors.secondaryContainer,
+                  subtitleColor: _syncStatusColor(),
                   onTap: _syncNow,
                 ),
               ],
@@ -279,6 +295,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   String _syncStatusLabel() {
+    // Prefer SyncEngine status (M2) if available — it has richer state
+    final engine = widget.syncEngine;
+    if (engine != null) {
+      final pending = engine.pendingCount;
+      final pendingSuffix = pending > 0 ? ' ($pending pending)' : '';
+      switch (engine.state) {
+        case SyncEngineState.idle:
+          final last = engine.lastSyncedAt;
+          if (last != null) {
+            final ago = DateTime.now().difference(last);
+            if (ago.inSeconds < 60) return 'Up to date${pendingSuffix}';
+            if (ago.inMinutes < 60) return 'Synced ${ago.inMinutes}m ago${pendingSuffix}';
+            return 'Synced ${ago.inHours}h ago${pendingSuffix}';
+          }
+          return 'Up to date${pendingSuffix}';
+        case SyncEngineState.syncing:
+          return 'Syncing…${pendingSuffix}';
+        case SyncEngineState.offline:
+          return 'Offline${pendingSuffix}';
+        case SyncEngineState.error:
+          return 'Sync error${pendingSuffix}';
+      }
+    }
+    // Fall back to VercelSyncService status (M1)
     switch (widget.sync.state) {
       case SyncState.idle:
         return 'Up to date';
@@ -291,6 +331,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
       case SyncState.offline:
         return 'Offline';
     }
+  }
+
+  Color _syncStatusColor() {
+    final engine = widget.syncEngine;
+    if (engine != null) {
+      switch (engine.state) {
+        case SyncEngineState.idle:
+          return AppColors.secondaryContainer;
+        case SyncEngineState.syncing:
+          return AppColors.secondaryContainer;
+        case SyncEngineState.offline:
+          return AppColors.error;
+        case SyncEngineState.error:
+          return AppColors.error;
+      }
+    }
+    return AppColors.secondaryContainer;
   }
 
   void _showDevicesSheet() {

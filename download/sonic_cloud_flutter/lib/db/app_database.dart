@@ -118,6 +118,25 @@ class AppDatabase {
       )
     ''');
 
+    // Pending writes queue for offline sync (M2).
+    // Each row represents a single API call the client wants to make but
+    // couldn't (or hasn't yet) because the network was unavailable or the
+    // debounce timer hasn't fired. The SyncEngine drains this queue in
+    // order when connectivity returns.
+    await db.execute('''
+      CREATE TABLE pending_writes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sequence INTEGER NOT NULL,
+        method TEXT NOT NULL,
+        path TEXT NOT NULL,
+        body_json TEXT,
+        created_at INTEGER NOT NULL
+      )
+    ''');
+    await db.execute(
+      'CREATE INDEX idx_pending_writes_sequence ON pending_writes(sequence ASC)',
+    );
+
     // Indices for fast lookups
     await db.execute('CREATE INDEX idx_tracks_artist ON tracks(artist)');
     await db.execute('CREATE INDEX idx_tracks_album ON tracks(album)');
@@ -240,6 +259,47 @@ class AppDatabase {
 
   Future<void> deleteSetting(String key) async {
     await _db!.delete('settings', where: 'key = ?', whereArgs: [key]);
+  }
+
+  // ── Pending writes (M2 offline sync queue) ───────────────────────────────
+  /// Enqueue a write that should be sent to the API. Returns the row id.
+  Future<int> enqueuePendingWrite({
+    required String method,
+    required String path,
+    String? bodyJson,
+  }) async {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    // sequence = current max + 1, so we can drain in FIFO order
+    final maxRow = await _db!.rawQuery('SELECT MAX(sequence) as s FROM pending_writes');
+    final nextSeq = (maxRow.first['s'] as int? ?? 0) + 1;
+    return _db!.insert('pending_writes', {
+      'sequence': nextSeq,
+      'method': method,
+      'path': path,
+      'body_json': bodyJson,
+      'created_at': now,
+    });
+  }
+
+  /// Return all pending writes in FIFO order.
+  Future<List<Map<String, Object?>>> allPendingWrites() async {
+    return _db!.query('pending_writes', orderBy: 'sequence ASC');
+  }
+
+  /// Remove a pending write by id (after successful flush).
+  Future<void> deletePendingWrite(int id) async {
+    await _db!.delete('pending_writes', where: 'id = ?', whereArgs: [id]);
+  }
+
+  /// Count of pending writes (for UI badge / sync status).
+  Future<int> pendingWriteCount() async {
+    final r = await _db!.rawQuery('SELECT COUNT(*) as n FROM pending_writes');
+    return (r.first['n'] as int?) ?? 0;
+  }
+
+  /// Delete all pending writes (used on sign-out).
+  Future<void> clearPendingWrites() async {
+    await _db!.delete('pending_writes');
   }
 
   // ── Lifecycle ───────────────────────────────────────────────────────────────
