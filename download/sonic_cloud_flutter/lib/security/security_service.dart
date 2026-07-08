@@ -5,11 +5,12 @@ import 'package:local_auth/local_auth.dart';
 
 import '../models/models.dart';
 
-// Conditional import: use the real FlutterSecureStorage on mobile/desktop,
-// a no-op stub on web (flutter_secure_storage_web uses dart:html which
-// breaks the dart2js compiler).
-import 'secure_storage_stub.dart'
-    if (dart.library.io) 'package:flutter_secure_storage/flutter_secure_storage.dart';
+// FlutterSecureStorage stub — the real flutter_secure_storage package is
+// commented out in pubspec.yaml because its web plugin breaks dart2js.
+// This stub provides a no-op implementation so SecurityService compiles.
+// When the real package is restored, swap this import for:
+//   import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'secure_storage_stub.dart';
 
 /// SecurityService — biometric app lock, PIN protection, secure cloud
 /// credential storage, and granular per-provider permissions.

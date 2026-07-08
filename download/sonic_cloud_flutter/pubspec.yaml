@@ -43,8 +43,13 @@ dependencies:
   shelf_web_socket: ^3.0.0
 
   # ── Security ─────────────────────────────────────────────────────────────────
+  # NOTE: flutter_secure_storage is commented out because its web plugin
+  # (flutter_secure_storage_web) uses dart:html + dart:js_util which break
+  # the dart2js release build. SecurityService (which uses it) is dead code
+  # — not wired into main.dart. If you need secure storage on mobile/desktop,
+  # uncomment this and add a conditional import to security_service.dart.
+  # flutter_secure_storage: ^9.2.2
   local_auth: ^2.2.0
-  flutter_secure_storage: ^9.2.2
   crypto: ^3.0.3
 
   # ── Utilities ────────────────────────────────────────────────────────────────
