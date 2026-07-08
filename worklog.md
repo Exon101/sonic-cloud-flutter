@@ -556,3 +556,49 @@ Stage Summary:
 - Cross-device sync now works in <45 seconds (was: only on manual refresh)
 - Cost: still $0/month (within Vercel + Turso free tiers)
 - Next up: M3 (email/password + Google OAuth) and M4 (polish + forking guide)
+
+---
+Task ID: 16
+Agent: main
+Task: Full-screen layout fix + M4 (forking guide + resume-from prompt)
+
+Work Log:
+- Fixed full-screen layout in web/index.html:
+  - Added viewport meta tag with viewport-fit=cover for notch-safe full screen on iPhone X+
+  - html, body: margin:0, padding:0, width:100%, height:100%, overflow:hidden, overscroll-behavior:none
+  - flt-glass-pane / #flt-element: width:100vw, height:100vh
+  - mobile-web-app-capable meta for Android PWA full-screen
+  - loading-container z-index:9999
+- Updated scripts/vercel_build.sh with post-build CSS enforcement: injects <style id="fullscreen-reset"> with !important rules into build/web/index.html if not already present
+- Created FORKING.md — comprehensive "Run your own Sonic Cloud backend in 10 minutes" guide:
+  - Step 1: Fork the repo (30 seconds)
+  - Step 2: Create Turso database (2 min) — CLI install, db create, token create, schema migration
+  - Step 3: Deploy to Vercel (3 min) — env vars (TURSO_DB_URL, TURSO_AUTH_TOKEN, SONIC_JWT_SECRET), rootDirectory
+  - Step 4: Verify it works (1 min) — curl smoke tests for signup/signin/library
+  - Step 5: Point Flutter app at your backend (optional)
+  - Optional: Enable Google Sign-In (free Google OAuth client ID)
+  - Optional: Custom domain
+  - Troubleshooting: 7 common issues with fixes (404, timeout, no persistence, 12-function limit, white screen, flutter_secure_storage, rootDirectory)
+  - Architecture diagram
+  - Cost breakdown (all within free tiers)
+- Updated DEPLOYMENT.md: added "Quick start: fork + deploy in 10 minutes" section pointing to FORKING.md
+- Added resume-from prompt to lib/main.dart:
+  - _checkResumeFromOtherDevice() runs after initial cloud sync
+  - Reads sync_state from the API — if there's a track playing on another device with position > 5s, shows a SnackBar:
+    * "Resume 'Track Title' from 1:23?" with a Resume action button
+    * If currently playing: "Now playing on another device: Title (1:23)" with "Listen here" action
+  - Tapping Resume loads the track, seeks to the saved position, opens Now Playing screen
+- Pushed commit 3ac6a96 to main; Vercel auto-deployed; deployment READY/PROMOTED
+- Verified live: full-screen CSS is in the built HTML (margin:0 !important, viewport-fit=cover, fullscreen-reset style block), API reports database=turso with 3 users, 5 tracks, 6 devices
+
+Stage Summary:
+- M4 of the backend sync plan is COMPLETE
+- All 4 milestones (M1-M4) are now done:
+  M1: Turso durable storage ✅ (commit cdbd37b)
+  M2: SyncEngine polling + offline queue ✅ (commit 48d14a4)
+  M3: Email/password + Google OAuth ✅ (commits 90daf83 → 20b3085)
+  M4: Forking guide + full-screen + resume prompt ✅ (commit 3ac6a96)
+- The app now runs full-screen with no white borders, notch-safe on mobile
+- Anyone can fork and run their own backend in <10 minutes with $0 cost
+- Cross-device sync works end-to-end: sign in on 2 devices → same library, playlists, favorites, ratings, playback position
+- Resume-from prompt shows when another device was playing
