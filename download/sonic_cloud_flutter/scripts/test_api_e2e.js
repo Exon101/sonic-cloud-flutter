@@ -10,15 +10,13 @@ const assert = require('assert');
 const { Readable } = require('stream');
 
 const status = require('../api/status');
-const signin = require('../api/auth/signin');
-const me = require('../api/auth/me');
+const auth = require('../api/auth');  // consolidated: signin/signup/oauth/me
 const library = require('../api/library/index');
 const libraryId = require('../api/library/[id]');
 const playlists = require('../api/playlists/index');
 const playlistsId = require('../api/playlists/[id]');
 const lyrics = require('../api/lyrics/index');
-const syncPush = require('../api/sync/push');
-const syncPull = require('../api/sync/pull');
+const sync = require('../api/sync');  // consolidated: push/pull
 const devices = require('../api/devices/index');
 
 let pass = 0, fail = 0;
@@ -105,7 +103,7 @@ function authHeader(token) { return { Authorization: 'Bearer ' + token }; }
   console.log('\n/auth/signin:');
   let anonToken, emailToken;
   await test('anonymous signin returns token + userId', async () => {
-    const r = await invoke(signin, 'POST', { body: { anonymous: true, deviceId: 'test-dev' } });
+    const r = await invoke(auth, 'POST', { query: { action: 'signin' }, body: { anonymous: true, deviceId: 'test-dev' } });
     assert.strictEqual(r.statusCode, 200);
     const b = r.json;
     assert.ok(b.token && b.token.length > 40);
@@ -113,19 +111,19 @@ function authHeader(token) { return { Authorization: 'Bearer ' + token }; }
     anonToken = b.token;
   });
   await test('email signin is idempotent (same email → same userId)', async () => {
-    const r1 = await invoke(signin, 'POST', { body: { email: 'alice@example.com' } });
-    const r2 = await invoke(signin, 'POST', { body: { email: 'ALICE@example.com' } });
+    const r1 = await invoke(auth, 'POST', { query: { action: 'signin' }, body: { email: 'alice@example.com' } });
+    const r2 = await invoke(auth, 'POST', { query: { action: 'signin' }, body: { email: 'ALICE@example.com' } });
     assert.strictEqual(r1.json.userId, r2.json.userId);
     emailToken = r2.json.token;
   });
   await test('GET returns 405', async () => {
-    const r = await invoke(signin, 'GET');
+    const r = await invoke(auth, 'GET', { query: { action: 'signin' } });
     assert.strictEqual(r.statusCode, 405);
   });
 
   console.log('\n/auth/me:');
   await test('returns user with valid token', async () => {
-    const r = await invoke(me, 'GET', { headers: authHeader(emailToken) });
+    const r = await invoke(auth, 'GET', { query: { action: 'me' }, headers: authHeader(emailToken) });
     assert.strictEqual(r.statusCode, 200);
     const b = r.json;
     // JWT-based auth: the user id is extracted from the token, email is null
@@ -134,11 +132,11 @@ function authHeader(token) { return { Authorization: 'Bearer ' + token }; }
     assert.ok(b.session.deviceId !== undefined);
   });
   await test('returns 401 without token', async () => {
-    const r = await invoke(me, 'GET');
+    const r = await invoke(auth, 'GET', { query: { action: 'me' } });
     assert.strictEqual(r.statusCode, 401);
   });
   await test('returns 401 with bogus token', async () => {
-    const r = await invoke(me, 'GET', { headers: authHeader('bogus') });
+    const r = await invoke(auth, 'GET', { query: { action: 'me' }, headers: authHeader('bogus') });
     assert.strictEqual(r.statusCode, 401);
   });
 
@@ -248,37 +246,40 @@ function authHeader(token) { return { Authorization: 'Bearer ' + token }; }
 
   console.log('\n/sync:');
   await test('push merges partial state', async () => {
-    const r1 = await invoke(syncPush, 'POST', {
+    const r1 = await invoke(sync, 'POST', {
+      query: { action: 'push' },
       headers: authHeader(anonToken),
       body: { queue: ['a', 'b'], settings: { theme: 'dark' } },
     });
     assert.strictEqual(r1.statusCode, 200);
-    const r2 = await invoke(syncPush, 'POST', {
+    const r2 = await invoke(sync, 'POST', {
+      query: { action: 'push' },
       headers: authHeader(anonToken),
       body: { settings: { accent: '#0FF' }, favorites: ['a'] },
     });
-    const sync = r2.json.sync;
-    assert.deepStrictEqual(sync.queue, ['a', 'b']);
-    assert.deepStrictEqual(sync.settings, { theme: 'dark', accent: '#0FF' });
-    assert.deepStrictEqual(sync.favorites, ['a']);
+    const syncState = r2.json.sync;
+    assert.deepStrictEqual(syncState.queue, ['a', 'b']);
+    assert.deepStrictEqual(syncState.settings, { theme: 'dark', accent: '#0FF' });
+    assert.deepStrictEqual(syncState.favorites, ['a']);
   });
   await test('pull returns the merged state', async () => {
-    const r = await invoke(syncPull, 'GET', { headers: authHeader(anonToken) });
+    const r = await invoke(sync, 'GET', { query: { action: 'pull' }, headers: authHeader(anonToken) });
     assert.strictEqual(r.statusCode, 200);
     const b = r.json;
     assert.deepStrictEqual(b.sync.queue, ['a', 'b']);
     assert.ok(b.serverTime > 0);
   });
   await test('pull with since=serverTime returns unchanged:true', async () => {
-    const first = await invoke(syncPull, 'GET', { headers: authHeader(anonToken) });
-    const r = await invoke(syncPull, 'GET', {
+    const first = await invoke(sync, 'GET', { query: { action: 'pull' }, headers: authHeader(anonToken) });
+    const r = await invoke(sync, 'GET', {
+      query: { action: 'pull', since: String(first.json.serverTime) },
       headers: authHeader(anonToken),
-      query: { since: String(first.json.serverTime) },
     });
     assert.strictEqual(r.json.unchanged, true);
   });
   await test('ratings clamp to 0..5', async () => {
-    const r = await invoke(syncPush, 'POST', {
+    const r = await invoke(sync, 'POST', {
+      query: { action: 'push' },
       headers: authHeader(anonToken),
       body: { ratings: { good: 4, bad: 99, neg: -3 } },
     });

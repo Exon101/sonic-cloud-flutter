@@ -4,9 +4,7 @@
 const assert = require('assert');
 const { Readable } = require('stream');
 
-const signin = require('../api/auth/signin');
-const signup = require('../api/auth/signup');
-const oauth = require('../api/auth/oauth');
+const auth = require('../api/auth');  // consolidated: signin/signup/oauth/me
 
 let pass = 0, fail = 0;
 async function test(name, fn) {
@@ -58,7 +56,8 @@ async function invoke(handler, method, opts = {}) {
   let signupToken;
 
   await test('signup creates a new user with email + password', async () => {
-    const r = await invoke(signup, 'POST', {
+    const r = await invoke(auth, 'POST', {
+      query: { action: 'signup' },
       body: { email: testEmail, password: 'SecurePass123!', deviceId: 'dev-signup', displayName: 'M3 Tester' },
     });
     assert.strictEqual(r.statusCode, 201, `expected 201, got ${r.statusCode}: ${r.body}`);
@@ -72,7 +71,8 @@ async function invoke(handler, method, opts = {}) {
   });
 
   await test('signup rejects duplicate email with 409', async () => {
-    const r = await invoke(signup, 'POST', {
+    const r = await invoke(auth, 'POST', {
+      query: { action: 'signup' },
       body: { email: testEmail, password: 'AnotherPass456!' },
     });
     assert.strictEqual(r.statusCode, 409);
@@ -80,7 +80,8 @@ async function invoke(handler, method, opts = {}) {
   });
 
   await test('signup rejects short password', async () => {
-    const r = await invoke(signup, 'POST', {
+    const r = await invoke(auth, 'POST', {
+      query: { action: 'signup' },
       body: { email: `short_${Date.now()}@example.com`, password: 'short' },
     });
     assert.strictEqual(r.statusCode, 400);
@@ -88,7 +89,8 @@ async function invoke(handler, method, opts = {}) {
   });
 
   await test('signup rejects invalid email', async () => {
-    const r = await invoke(signup, 'POST', {
+    const r = await invoke(auth, 'POST', {
+      query: { action: 'signup' },
       body: { email: 'not-an-email', password: 'SecurePass123!' },
     });
     assert.strictEqual(r.statusCode, 400);
@@ -97,7 +99,8 @@ async function invoke(handler, method, opts = {}) {
 
   console.log('\n/api/auth/signin (with password):');
   await test('signin with correct password succeeds', async () => {
-    const r = await invoke(signin, 'POST', {
+    const r = await invoke(auth, 'POST', {
+      query: { action: 'signin' },
       body: { email: testEmail, password: 'SecurePass123!', deviceId: 'dev-signin' },
     });
     assert.strictEqual(r.statusCode, 200, `expected 200, got ${r.statusCode}: ${r.body}`);
@@ -107,7 +110,8 @@ async function invoke(handler, method, opts = {}) {
   });
 
   await test('signin with wrong password returns 401', async () => {
-    const r = await invoke(signin, 'POST', {
+    const r = await invoke(auth, 'POST', {
+      query: { action: 'signin' },
       body: { email: testEmail, password: 'WrongPassword!' },
     });
     assert.strictEqual(r.statusCode, 401);
@@ -115,7 +119,8 @@ async function invoke(handler, method, opts = {}) {
   });
 
   await test('signin with email but no password for password-protected account returns 401', async () => {
-    const r = await invoke(signin, 'POST', {
+    const r = await invoke(auth, 'POST', {
+      query: { action: 'signin' },
       body: { email: testEmail },
     });
     assert.strictEqual(r.statusCode, 401);
@@ -123,7 +128,8 @@ async function invoke(handler, method, opts = {}) {
   });
 
   await test('signin with non-existent email + password returns 401 (no email leak)', async () => {
-    const r = await invoke(signin, 'POST', {
+    const r = await invoke(auth, 'POST', {
+      query: { action: 'signin' },
       body: { email: 'nonexistent@example.com', password: 'Anything123!' },
     });
     assert.strictEqual(r.statusCode, 401);
@@ -132,7 +138,8 @@ async function invoke(handler, method, opts = {}) {
 
   console.log('\n/api/auth/signin (anonymous — still works from M1):');
   await test('anonymous signin still works', async () => {
-    const r = await invoke(signin, 'POST', {
+    const r = await invoke(auth, 'POST', {
+      query: { action: 'signin' },
       body: { anonymous: true, deviceId: 'dev-anon' },
     });
     assert.strictEqual(r.statusCode, 200);
@@ -143,7 +150,8 @@ async function invoke(handler, method, opts = {}) {
 
   console.log('\n/api/auth/oauth (Google):');
   await test('oauth rejects missing idToken', async () => {
-    const r = await invoke(oauth, 'POST', {
+    const r = await invoke(auth, 'POST', {
+      query: { action: 'oauth' },
       body: { provider: 'google' },
     });
     assert.strictEqual(r.statusCode, 400);
@@ -151,7 +159,8 @@ async function invoke(handler, method, opts = {}) {
   });
 
   await test('oauth rejects unsupported provider', async () => {
-    const r = await invoke(oauth, 'POST', {
+    const r = await invoke(auth, 'POST', {
+      query: { action: 'oauth' },
       body: { provider: 'facebook', idToken: 'fake-token' },
     });
     assert.strictEqual(r.statusCode, 400);
@@ -159,7 +168,8 @@ async function invoke(handler, method, opts = {}) {
   });
 
   await test('oauth rejects invalid Google token', async () => {
-    const r = await invoke(oauth, 'POST', {
+    const r = await invoke(auth, 'POST', {
+      query: { action: 'oauth' },
       body: { provider: 'google', idToken: 'invalid-token-string' },
     });
     assert.strictEqual(r.statusCode, 401);
