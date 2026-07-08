@@ -82,12 +82,60 @@ class ApiAuthService extends ChangeNotifier {
     return _persistSession(res, isAnonymous: true);
   }
 
+  /// Legacy email-only signin (M1/M2 style — idempotent, no password).
+  /// Kept for backward compatibility. New callers should use [signUp] or
+  /// [signInWithPassword] instead.
   Future<UserAccount> signInWithEmail(String email) async {
     final deviceId = _ensureDeviceId();
     final res = await _client.post('auth/signin', body: {
       'email': email,
       'deviceId': deviceId,
     });
+    return _persistSession(res, isAnonymous: false, email: email);
+  }
+
+  /// Sign up with email + password (M3). Creates a new user account.
+  Future<UserAccount> signUp({
+    required String email,
+    required String password,
+    String? displayName,
+  }) async {
+    final deviceId = _ensureDeviceId();
+    final res = await _client.post('auth/signup', body: {
+      'email': email,
+      'password': password,
+      if (displayName != null) 'displayName': displayName,
+      'deviceId': deviceId,
+    });
+    return _persistSession(res, isAnonymous: false, email: email);
+  }
+
+  /// Sign in with email + password (M3). Verifies the password against the
+  /// stored scrypt hash on the server.
+  Future<UserAccount> signInWithPassword({
+    required String email,
+    required String password,
+  }) async {
+    final deviceId = _ensureDeviceId();
+    final res = await _client.post('auth/signin', body: {
+      'email': email,
+      'password': password,
+      'deviceId': deviceId,
+    });
+    return _persistSession(res, isAnonymous: false, email: email);
+  }
+
+  /// Sign in with Google OAuth (M3). The [idToken] comes from the
+  /// `google_sign_in` Flutter package. The server verifies it against
+  /// Google's tokeninfo endpoint and issues our own JWT.
+  Future<UserAccount> signInWithGoogle(String idToken) async {
+    final deviceId = _ensureDeviceId();
+    final res = await _client.post('auth/oauth', body: {
+      'provider': 'google',
+      'idToken': idToken,
+      'deviceId': deviceId,
+    });
+    final email = res['user']?['email'] as String? ?? '';
     return _persistSession(res, isAnonymous: false, email: email);
   }
 

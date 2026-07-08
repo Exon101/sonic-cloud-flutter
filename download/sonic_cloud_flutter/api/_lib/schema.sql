@@ -17,6 +17,9 @@ CREATE TABLE IF NOT EXISTS users (
   display_name TEXT,
   avatar_url   TEXT,
   tier         TEXT NOT NULL DEFAULT 'guest',
+  password_hash TEXT,                         -- scrypt hash (M3) — null for anonymous/OAuth-only
+  oauth_provider TEXT,                        -- 'google' | 'apple' | 'github' | null
+  oauth_subject TEXT,                         -- provider-specific user id
   settings     TEXT,                          -- JSON blob
   created_at   INTEGER NOT NULL,
   last_seen_at INTEGER NOT NULL

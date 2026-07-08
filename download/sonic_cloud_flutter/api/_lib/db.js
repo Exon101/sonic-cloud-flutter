@@ -66,7 +66,35 @@ async function ensureSchema() {
       if (!/already exists/i.test(e.message)) throw e;
     }
   }
+
+  // ── Migrations for tables that already exist (ALTER TABLE) ──────────────
+  // Add new columns if they don't exist. SQLite doesn't support IF NOT EXISTS
+  // on ALTER TABLE ADD COLUMN, so we check PRAGMA table_info first.
+  await migrateUsersTable(client);
+
   _initialized = true;
+}
+
+/// Add M3 columns (password_hash, oauth_provider, oauth_subject) to users
+/// table if they're missing. Idempotent — safe to run on every cold start.
+async function migrateUsersTable(client) {
+  const r = await client.execute({ sql: 'PRAGMA table_info(users)', args: [] });
+  const existing = new Set(r.rows.map(row => row.name));
+  const additions = [
+    ['password_hash', 'TEXT'],
+    ['oauth_provider', 'TEXT'],
+    ['oauth_subject', 'TEXT'],
+  ];
+  for (const [col, type] of additions) {
+    if (!existing.has(col)) {
+      try {
+        await client.execute(`ALTER TABLE users ADD COLUMN ${col} ${type}`);
+        console.log(`[db] Migrated users: added ${col} column`);
+      } catch (e) {
+        if (!/duplicate column/i.test(e.message)) throw e;
+      }
+    }
+  }
 }
 
 // Helper: convert a libSQL row (which is an array of typed values keyed by
@@ -85,15 +113,27 @@ const db = {
     const client = getClient();
     // Try insert; on conflict (email already exists for email signups) do nothing.
     await client.execute({
-      sql: `INSERT INTO users (id, email, is_anonymous, display_name, tier, settings, created_at, last_seen_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(id) DO UPDATE SET last_seen_at = excluded.last_seen_at`,
+      sql: `INSERT INTO users (id, email, is_anonymous, display_name, avatar_url, tier,
+                                password_hash, oauth_provider, oauth_subject,
+                                settings, created_at, last_seen_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+              last_seen_at = excluded.last_seen_at,
+              display_name = COALESCE(excluded.display_name, users.display_name),
+              avatar_url = COALESCE(excluded.avatar_url, users.avatar_url),
+              password_hash = COALESCE(excluded.password_hash, users.password_hash),
+              oauth_provider = COALESCE(excluded.oauth_provider, users.oauth_provider),
+              oauth_subject = COALESCE(excluded.oauth_subject, users.oauth_subject)`,
       args: [
         id,
         email,
         opts.isAnonymous ? 1 : 0,
         opts.displayName || null,
+        opts.avatarUrl || null,
         opts.tier || 'guest',
+        opts.passwordHash || null,
+        opts.oauthProvider || null,
+        opts.oauthSubject || null,
         opts.settings ? JSON.stringify(opts.settings) : null,
         now,
         now,
@@ -107,13 +147,52 @@ const db = {
     const client = getClient();
     const r = await client.execute({ sql: 'SELECT * FROM users WHERE id = ?', args: [id] });
     if (r.rows.length === 0) return null;
-    const u = row(r.rows[0]);
-    u.isAnonymous = !!u.is_anonymous;
-    u.createdAt = u.created_at;
-    u.lastSeenAt = u.last_seen_at;
-    u.settings = u.settings ? JSON.parse(u.settings) : {};
-    delete u.is_anonymous; delete u.created_at; delete u.last_seen_at;
-    return u;
+    return rowFromUserRow(r.rows[0]);
+  },
+
+  /// Look up a user by email — used for email+password signin.
+  async getUserByEmail(email) {
+    await ensureSchema();
+    const client = getClient();
+    const r = await client.execute({
+      sql: 'SELECT * FROM users WHERE email = ? COLLATE NOCASE',
+      args: [email],
+    });
+    return r.rows.length > 0 ? rowFromUserRow(r.rows[0]) : null;
+  },
+
+  /// Look up a user by OAuth provider + subject — used for OAuth signin.
+  /// Returns null if no user is linked to this provider yet.
+  async getUserByOAuth(provider, subject) {
+    await ensureSchema();
+    const client = getClient();
+    const r = await client.execute({
+      sql: 'SELECT * FROM users WHERE oauth_provider = ? AND oauth_subject = ?',
+      args: [provider, subject],
+    });
+    return r.rows.length > 0 ? rowFromUserRow(r.rows[0]) : null;
+  },
+
+  /// Set/update a user's password hash. Used by signup + password change.
+  async setPassword(userId, passwordHash) {
+    await ensureSchema();
+    const client = getClient();
+    await client.execute({
+      sql: 'UPDATE users SET password_hash = ?, last_seen_at = ? WHERE id = ?',
+      args: [passwordHash, Date.now(), userId],
+    });
+    return await this.getUser(userId);
+  },
+
+  /// Link an OAuth provider to an existing user (or update the link).
+  async linkOAuth(userId, provider, subject) {
+    await ensureSchema();
+    const client = getClient();
+    await client.execute({
+      sql: 'UPDATE users SET oauth_provider = ?, oauth_subject = ?, last_seen_at = ? WHERE id = ?',
+      args: [provider, subject, Date.now(), userId],
+    });
+    return await this.getUser(userId);
   },
 
   async updateUserSettings(id, settings) {
@@ -564,6 +643,24 @@ const db = {
 };
 
 // ─── Row mappers ────────────────────────────────────────────────────────────
+
+function rowFromUserRow(r) {
+  const u = row(r);
+  return {
+    id: u.id,
+    email: u.email,
+    isAnonymous: !!u.is_anonymous,
+    displayName: u.display_name,
+    avatarUrl: u.avatar_url,
+    tier: u.tier,
+    passwordHash: u.password_hash, // included for signin verification only — never returned to client
+    oauthProvider: u.oauth_provider,
+    oauthSubject: u.oauth_subject,
+    settings: u.settings ? JSON.parse(u.settings) : {},
+    createdAt: u.created_at,
+    lastSeenAt: u.last_seen_at,
+  };
+}
 
 function rowFromTrackRow(r) {
   const t = row(r);

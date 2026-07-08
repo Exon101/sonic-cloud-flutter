@@ -32,10 +32,13 @@ class SignInScreen extends StatefulWidget {
 
 class _SignInScreenState extends State<SignInScreen> {
   final _emailCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
   final _urlCtrl = TextEditingController();
   bool _isBusy = false;
   String? _error;
   bool _showAdvanced = false;
+  bool _isSignUp = false; // toggle between sign-in (default) and sign-up
+  bool _obscurePassword = true;
 
   @override
   void initState() {
@@ -46,19 +49,83 @@ class _SignInScreenState extends State<SignInScreen> {
   @override
   void dispose() {
     _emailCtrl.dispose();
+    _passwordCtrl.dispose();
     _urlCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _signInAnon() => _doSignIn(() => widget.auth.signInAnonymously());
 
-  Future<void> _signInEmail() async {
+  Future<void> _submitEmailPassword() async {
     final email = _emailCtrl.text.trim();
+    final password = _passwordCtrl.text;
     if (email.isEmpty || !email.contains('@')) {
       setState(() => _error = 'Enter a valid email address');
       return;
     }
-    await _doSignIn(() => widget.auth.signInWithEmail(email));
+    if (password.length < 8) {
+      setState(() => _error = 'Password must be at least 8 characters');
+      return;
+    }
+    if (_isSignUp) {
+      await _doSignIn(() => widget.auth.signUp(email: email, password: password));
+    } else {
+      await _doSignIn(() => widget.auth.signInWithPassword(email: email, password: password));
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    setState(() {
+      _isBusy = true;
+      _error = null;
+    });
+    try {
+      // Lazy-import google_sign_in so the package isn't required for the
+      // app to compile if the user hasn't added it to their build.
+      final googleSignIn = await _getGoogleSignIn();
+      if (googleSignIn == null) {
+        setState(() {
+          _error = 'Google Sign-In is not configured. Set GOOGLE_SIGN_IN_CLIENT_ID '
+              'in your app config to enable it. Email/password still works.';
+          _isBusy = false;
+        });
+        return;
+      }
+      final account = await googleSignIn.signIn();
+      if (account == null) {
+        setState(() => _isBusy = false);
+        return; // user cancelled
+      }
+      final auth = await account.authentication;
+      final idToken = auth.idToken;
+      if (idToken == null) {
+        setState(() {
+          _error = 'Google did not return an ID token. Try email/password instead.';
+          _isBusy = false;
+        });
+        return;
+      }
+      await widget.auth.signInWithGoogle(idToken);
+    } catch (e) {
+      setState(() {
+        _error = 'Google Sign-In failed: $e';
+        _isBusy = false;
+      });
+    }
+  }
+
+  /// Returns a GoogleSignIn instance configured with the client ID from the
+  /// environment, or null if Google Sign-In isn't configured.
+  Future<dynamic> _getGoogleSignIn() async {
+    try {
+      // ignore: depend_on_referenced_packages
+      final module = await import('package:google_sign_in/google_sign_in.dart');
+      final clientId = const String.fromEnvironment('GOOGLE_SIGN_IN_CLIENT_ID');
+      if (clientId.isEmpty) return null;
+      return module.GoogleSignIn(scopes: ['email'], serverClientId: clientId);
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> _doSignIn(Future<UserAccount> Function() action) async {
@@ -158,6 +225,60 @@ class _SignInScreenState extends State<SignInScreen> {
                     ),
                     const SizedBox(height: 32),
 
+                    // ── Sign in / Sign up toggle ─────────────────────────────
+                    Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceContainer.withOpacity(0.4),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      padding: const EdgeInsets.all(4),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => setState(() { _isSignUp = false; _error = null; }),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: !_isSignUp ? AppColors.secondaryContainer : null,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  'Sign In',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: !_isSignUp ? AppColors.surface : AppColors.onSurfaceVariant,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => setState(() { _isSignUp = true; _error = null; }),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: _isSignUp ? AppColors.secondaryContainer : null,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  'Sign Up',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: _isSignUp ? AppColors.surface : AppColors.onSurfaceVariant,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
                     // ── Email field ──────────────────────────────────────────
                     GlassCard(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -167,34 +288,88 @@ class _SignInScreenState extends State<SignInScreen> {
                         keyboardType: TextInputType.emailAddress,
                         autocorrect: false,
                         decoration: const InputDecoration(
-                          labelText: 'Email (optional)',
+                          labelText: 'Email',
                           labelStyle: TextStyle(color: AppColors.onSurfaceVariant),
                           border: InputBorder.none,
                           icon: Icon(Icons.email_outlined, color: AppColors.secondary),
                         ),
                         style: const TextStyle(color: AppColors.onSurface),
-                        onSubmitted: (_) => _signInEmail(),
+                        onSubmitted: (_) => _submitEmailPassword(),
                       ),
                     ),
                     const SizedBox(height: 12),
 
-                    // ── Primary CTA: email sign-in ───────────────────────────
+                    // ── Password field (M3) ─────────────────────────────────
+                    GlassCard(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      borderRadius: 16,
+                      child: TextField(
+                        controller: _passwordCtrl,
+                        obscureText: _obscurePassword,
+                        autocorrect: false,
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          labelStyle: const TextStyle(color: AppColors.onSurfaceVariant),
+                          border: InputBorder.none,
+                          icon: const Icon(Icons.lock_outline, color: AppColors.secondary),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                              color: AppColors.onSurfaceVariant,
+                              size: 20,
+                            ),
+                            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                          ),
+                        ),
+                        style: const TextStyle(color: AppColors.onSurface),
+                        onSubmitted: (_) => _submitEmailPassword(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // ── Primary CTA: email + password ────────────────────────
                     _SonicButton(
-                      label: 'Continue with Email',
-                      icon: Icons.mail_outline_rounded,
+                      label: _isSignUp ? 'Create Account' : 'Sign In',
+                      icon: _isSignUp ? Icons.person_add_rounded : Icons.login_rounded,
                       isLoading: _isBusy,
                       isPrimary: true,
-                      onPressed: _signInEmail,
+                      onPressed: _submitEmailPassword,
                     ),
                     const SizedBox(height: 12),
 
-                    // ── Secondary CTA: anonymous ─────────────────────────────
+                    // ── Divider ──────────────────────────────────────────────
+                    Row(
+                      children: [
+                        const Expanded(child: Divider(color: AppColors.outlineVariant)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Text(
+                            'or',
+                            style: TextStyle(color: AppColors.onSurfaceVariant, fontSize: 13),
+                          ),
+                        ),
+                        const Expanded(child: Divider(color: AppColors.outlineVariant)),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // ── Google Sign-In (M3) ─────────────────────────────────
                     _SonicButton(
-                      label: 'Continue as Guest',
-                      icon: Icons.person_outline_rounded,
+                      label: 'Continue with Google',
+                      icon: Icons.g_mobiledata_rounded,
                       isLoading: false,
                       isPrimary: false,
+                      onPressed: _isBusy ? null : _signInWithGoogle,
+                    ),
+                    const SizedBox(height: 12),
+
+                    // ── Anonymous guest ──────────────────────────────────────
+                    TextButton(
                       onPressed: _isBusy ? null : _signInAnon,
+                      child: Text(
+                        'Continue as Guest',
+                        style: TextStyle(color: AppColors.onSurfaceVariant, fontSize: 13),
+                      ),
                     ),
 
                     if (_error != null) ...[
