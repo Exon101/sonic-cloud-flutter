@@ -15,7 +15,8 @@
     "test": "node ../scripts/test_api_helpers.js && node ../scripts/test_api_e2e.js"
   },
   "dependencies": {
-    "@libsql/client": "^0.14.0"
+    "@libsql/client": "^0.14.0",
+    "@vercel/blob": "^0.23.0"
   },
   "keywords": ["sonic-cloud", "music", "vercel", "serverless", "api", "turso", "libsql"],
   "license": "MIT"

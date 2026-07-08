@@ -24,6 +24,7 @@ class MyLibraryScreen extends StatelessWidget {
   final VoidCallback onOpenSettings;
   final VoidCallback? onOpenBrowse;
   final VoidCallback? onOpenEqualizer;
+  final VoidCallback? onUploadMusic;
   /// Called when the user taps a specific track in the All Songs list.
   /// If null, falls back to [onOpenPlayer] (which plays the first track).
   final ValueChanged<Track>? onPlayTrack;
@@ -36,6 +37,7 @@ class MyLibraryScreen extends StatelessWidget {
     this.onOpenBrowse,
     this.onOpenEqualizer,
     this.onPlayTrack,
+    this.onUploadMusic,
   });
 
   @override
@@ -45,6 +47,14 @@ class MyLibraryScreen extends StatelessWidget {
       appBar: SonicTopAppBar(
         avatarUrl: MockData.userProfile.avatarUrl,
         actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.cloud_upload_rounded,
+              color: AppColors.primary,
+            ),
+            tooltip: 'Upload music',
+            onPressed: onUploadMusic,
+          ),
           IconButton(
             icon: const Icon(
               Icons.graphic_eq_rounded,

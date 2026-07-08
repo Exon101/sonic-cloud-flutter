@@ -13,6 +13,7 @@ import 'screens/library_browse/library_browse_screen.dart';
 import 'screens/my_library_screen.dart';
 import 'screens/now_playing_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/upload/upload_music_sheet.dart';
 import 'services/api_auth_service.dart';
 import 'services/api_client.dart';
 import 'services/api_library_sync.dart';
@@ -24,6 +25,7 @@ import 'services/playback_service.dart';
 import 'services/playlist_service.dart';
 import 'services/sync_engine.dart';
 import 'services/universal_library_service.dart';
+import 'services/upload_service.dart';
 import 'services/vercel_lyrics_provider.dart';
 import 'services/vercel_sync_service.dart';
 import 'theme/app_colors.dart';
@@ -133,6 +135,7 @@ class _HomeShellState extends State<_HomeShell> {
   late final ApiLibrarySync _librarySync;
   late final ApiPlaylistSync _playlistSync;
   late final SyncEngine _syncEngine;
+  late final UploadService _uploadService;
 
   /// The track currently playing or last played. Used by NowPlayingScreen as
   /// the fallback for art/title/duration while the audio source loads.
@@ -162,6 +165,7 @@ class _HomeShellState extends State<_HomeShell> {
       library: _library,
       playlists: _playlists,
     );
+    _uploadService = UploadService(widget.client);
 
     // Open the database, load saved tracks, then seed mock data if empty.
     // On web, sqflite is unavailable — fall back to mock data only.
@@ -331,6 +335,31 @@ class _HomeShellState extends State<_HomeShell> {
         .push(MaterialPageRoute(builder: (_) => EqualizerScreen(eq: _equalizer)));
   }
 
+  void _showUploadSheet() {
+    showUploadMusicSheet(
+      context: context,
+      uploadService: _uploadService,
+      onUploaded: (track) {
+        // Add the uploaded track to the local library
+        _library.upsertFromCloud(track);
+        // Push it to the cloud library via SyncEngine
+        _syncEngine.pushTrack(track);
+        // Show a success snackbar
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Uploaded: ${track.title}'),
+              action: SnackBarAction(
+                label: 'Play',
+                onPressed: () => _openPlayer(track),
+              ),
+            ),
+          );
+        }
+      },
+    );
+  }
+
   void _openLibraryBrowse() {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -360,6 +389,7 @@ class _HomeShellState extends State<_HomeShell> {
             onOpenBrowse: _openLibraryBrowse,
             onOpenEqualizer: _openEqualizer,
             onPlayTrack: (t) => _openPlayer(t),
+            onUploadMusic: () => _showUploadSheet(),
           ),
           const _PlayerPlaceholder(),
           CloudStorageScreen(
