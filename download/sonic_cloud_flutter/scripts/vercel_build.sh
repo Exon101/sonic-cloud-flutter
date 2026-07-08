@@ -75,6 +75,24 @@ if n > 0:
     print(f"  Stripped SW block from build/web/index.html ({n} match)")
 else:
     print(f"  No SW block found in build/web/index.html (already clean)")
+
+# ── Enforce full-screen CSS ──────────────────────────────────────────────────
+# Flutter's build process may strip or override the margin:0 on <body>. This
+# step ensures the full-screen reset is always present in the built output.
+html = idx.read_text()
+fullscreen_css = """
+    <style id="fullscreen-reset">
+    html, body { margin:0 !important; padding:0 !important; width:100% !important; height:100% !important; overflow:hidden !important; overscroll-behavior:none !important; }
+    flt-glass-pane, #flt-element { width:100vw !important; height:100vh !important; }
+    </style>
+"""
+if 'fullscreen-reset' not in html:
+    # Inject right before </head>
+    html = html.replace('</head>', f'{fullscreen_css}</head>')
+    idx.write_text(html)
+    print("  Injected full-screen CSS reset into build/web/index.html")
+else:
+    print("  Full-screen CSS reset already present")
 PY
 
 echo "▶ Vercel build complete: build/web"
