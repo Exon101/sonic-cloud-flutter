@@ -20,11 +20,6 @@
 
   <title>Sonic Cloud</title>
   <style>
-    /* ── Full-screen reset ────────────────────────────────────────────────────
-       Strip all default margins/padding so the Flutter canvas fills the
-       entire viewport with no white borders. overflow:hidden prevents
-       bounce-scroll on iOS and scrollbar flicker on desktop.
-    ──────────────────────────────────────────────────────────────────────── */
     html, body {
       margin: 0;
       padding: 0;
@@ -34,18 +29,10 @@
       overflow: hidden;
       overscroll-behavior: none;
     }
-
-    /* Flutter mounts its app inside a <flt-glass-pane> or #flt-element. Make
-       sure it fills the viewport. */
     flt-glass-pane, #flt-element, .flutter-view {
       width: 100vw !important;
       height: 100vh !important;
     }
-
-    /* ── Loading screen ───────────────────────────────────────────────────────
-       Shown before main.dart.js loads. Uses position:fixed + inset:0 so it
-       covers the full viewport including mobile notch areas.
-    ──────────────────────────────────────────────────────────────────────── */
     .loading-container {
       position: fixed;
       inset: 0;
@@ -69,20 +56,17 @@
   <div class="loading-container">
     <div class="loading-text">Sonic Cloud</div>
   </div>
+  <!-- Flutter web initialization — flutter.js provides _flutter.loader.loadEntrypoint() -->
+  <script src="flutter.js" defer></script>
   <script>
-    // Flutter's service worker (flutter_service_worker.js) is deprecated and
-    // will be removed in a future Flutter release. We load main.dart.js
-    // directly instead — see https://github.com/flutter/flutter/issues/156910
-    var scriptLoaded = false;
-    function loadMainDartJs() {
-      if (scriptLoaded) { return; }
-      scriptLoaded = true;
-      var scriptTag = document.createElement('script');
-      scriptTag.src = 'main.dart.js';
-      scriptTag.type = 'application/javascript';
-      document.body.append(scriptTag);
-    }
-    window.addEventListener('load', loadMainDartJs);
+    window.addEventListener('load', function () {
+      _flutter.loader.loadEntrypoint({
+        onEntrypointLoaded: async function(engineInitializer) {
+          let appRunner = await engineInitializer.initializeEngine();
+          await appRunner.runApp();
+        }
+      });
+    });
   </script>
 </body>
 </html>
