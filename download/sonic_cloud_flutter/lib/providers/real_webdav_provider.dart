@@ -1,9 +1,12 @@
-import 'dart:io';
-
 import 'package:webdav_client/webdav_client.dart' as wd;
 
 import '../models/models.dart';
 import '../providers/cloud_providers.dart';
+
+// Conditional import: dart:io on mobile/desktop, stub on web.
+// WebDAV file download/upload uses File — not supported on web.
+import '../platform/io_stub.dart'
+    if (dart.library.io) 'dart:io';
 
 /// Real WebDAV provider implementation backed by `webdav_client` 1.2.x.
 ///

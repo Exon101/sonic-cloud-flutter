@@ -1,9 +1,15 @@
 import 'dart:async';
-import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+// Platform detection without importing dart:io directly (which breaks web).
+// On web, kIsWeb is true and Platform is never accessed.
+import '../platform/io_stub.dart'
+    if (dart.library.io) 'dart:io';
 
 /// SQLite database for Sonic Cloud — persists tracks, playlists, play history,
 /// fingerprints, and cloud-provider configs across app restarts.
@@ -18,8 +24,25 @@ class AppDatabase {
   Database? _db;
 
   /// Open (or create) the database. Call once at app startup.
+  ///
+  /// Platform behavior:
+  ///   - Mobile (Android/iOS): uses sqflite's default platform implementation
+  ///   - Desktop (macOS/Windows/Linux): uses sqflite_common_ffi (SQLite via FFI)
+  ///   - Web: throws UnsupportedError (sqflite not available on web — the
+  ///     caller should catch this and fall back to in-memory storage)
   Future<void> open() async {
     if (_db != null) return;
+
+    if (kIsWeb) {
+      throw UnsupportedError('sqflite is not available on web — use in-memory storage');
+    }
+
+    // Desktop (macOS/Windows/Linux) needs sqflite_common_ffi
+    if (!kIsWeb && (Platform.isMacOS || Platform.isWindows || Platform.isLinux)) {
+      sqfliteFfiInit();
+      databaseFactory = databaseFactoryFfi;
+    }
+
     final dir = await getApplicationDocumentsDirectory();
     final path = p.join(dir.path, 'sonic_cloud.sqlite');
     _db = await openDatabase(path, version: 1, onCreate: _onCreate);

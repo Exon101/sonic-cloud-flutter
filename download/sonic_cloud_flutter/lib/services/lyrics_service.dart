@@ -1,8 +1,12 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 
 import '../models/models.dart';
+
+// Conditional import: use dart:io on mobile/desktop, no-op stub on web.
+// Sidecar .lrc files only exist on mobile/desktop — on web, the sidecar
+// read/write methods return false/empty gracefully.
+import '../platform/io_stub.dart'
+    if (dart.library.io) 'dart:io';
 
 /// LyricsService — parses and provides lyrics for a track.
 ///

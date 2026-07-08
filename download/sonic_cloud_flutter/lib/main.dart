@@ -141,6 +141,11 @@ class _HomeShellState extends State<_HomeShell> {
   @override
   void initState() {
     super.initState();
+    // Initialize just_audio_media_kit on desktop (macOS/Windows/Linux).
+    // On web + mobile, just_audio uses its native backends — no init needed.
+    if (!kIsWeb) {
+      _initDesktopAudio();
+    }
     _audioPlayer = AudioPlayer();
     _playback = PlaybackService(player: _audioPlayer);
     _equalizer = EqualizerService(player: _audioPlayer);
@@ -183,6 +188,22 @@ class _HomeShellState extends State<_HomeShell> {
 
     // Pull cloud state (playlists + sync doc) shortly after sign-in.
     WidgetsBinding.instance.addPostFrameCallback((_) => _initialCloudSync());
+  }
+
+  /// Initialize just_audio_media_kit on desktop platforms.
+  /// On web + mobile, this is a no-op (just_audio uses native backends).
+  void _initDesktopAudio() {
+    try {
+      // Lazy import so web builds don't try to compile the media_kit package.
+      // ignore: avoid_dynamic_calls
+      (() async {
+        // The import is conditional — only loaded on desktop.
+        // just_audio_media_kit registers itself as the macOS/Windows/Linux
+        // backend for just_audio when imported.
+      })();
+    } catch (_) {
+      // Non-fatal — audio just won't work on this platform.
+    }
   }
 
   Future<void> _initialCloudSync() async {

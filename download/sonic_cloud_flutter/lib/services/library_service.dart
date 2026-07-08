@@ -1,11 +1,15 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 
 import '../db/app_database.dart';
 import '../models/models.dart';
 import 'metadata_service.dart';
+
+// Conditional import: use dart:io on mobile/desktop, no-op stub on web.
+// This lets LibraryService compile on web — folder scanning silently
+// returns 0 tracks (web browsers can't enumerate local file systems).
+import '../platform/io_stub.dart'
+    if (dart.library.io) 'dart:io';
 
 /// LibraryService — scans local folders for audio files, builds aggregate
 /// indices (artists / albums / genres / years / composers / folders), and

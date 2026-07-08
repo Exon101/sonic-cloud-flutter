@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -6,6 +5,11 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 
 import '../models/models.dart';
+
+// Conditional import: dart:io on mobile/desktop, stub on web.
+// Fingerprinting reads file bytes — not supported on web.
+import '../platform/io_stub.dart'
+    if (dart.library.io) 'dart:io';
 
 /// AudioFingerprinter — detects duplicate songs even when they have different
 /// filenames, bitrates, or formats.
