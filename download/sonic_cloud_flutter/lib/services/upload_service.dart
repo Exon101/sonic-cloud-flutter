@@ -166,4 +166,72 @@ class UploadService extends ChangeNotifier {
     );
     return track.audioUrl;
   }
+
+  /// Uploads multiple files at once. The server handles ZIP extraction,
+  /// audio→track conversion, lyrics pairing, and metadata.json parsing.
+  ///
+  /// [files] — list of {bytes, name} for each file to upload
+  /// [onProgress] — optional callback (0.0 to 1.0)
+  ///
+  /// Returns {tracks: [...], lyrics: [...], errors: [...], totalSize}
+  Future<Map<String, dynamic>> uploadMultiple({
+    required List<({Uint8List bytes, String name})> files,
+    void Function(double progress)? onProgress,
+  }) async {
+    _isUploading = true;
+    _progress = 0;
+    _lastError = null;
+    notifyListeners();
+
+    try {
+      final uri = Uri.parse('${_client.apiBase}/upload');
+      final request = http.MultipartRequest('POST', uri);
+
+      if (_client.token != null) {
+        request.headers['Authorization'] = 'Bearer ${_client.token}';
+      }
+
+      for (final f in files) {
+        request.files.add(http.MultipartFile.fromBytes(
+          'files',
+          f.bytes,
+          filename: f.name,
+        ));
+      }
+
+      final streamedResponse = await request.send().timeout(
+        const Duration(minutes: 10),
+      );
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        String errorMsg;
+        try {
+          final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+          errorMsg = decoded['error']?.toString() ?? 'Upload failed';
+        } catch (_) {
+          errorMsg = 'Upload failed (${response.statusCode})';
+        }
+        _lastError = errorMsg;
+        throw Exception(errorMsg);
+      }
+
+      final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+      if (decoded['ok'] != true) {
+        _lastError = decoded['error']?.toString() ?? 'Upload failed';
+        throw Exception(_lastError);
+      }
+
+      _progress = 1.0;
+      _isUploading = false;
+      notifyListeners();
+      return decoded;
+    } catch (e) {
+      _lastError = e.toString();
+      _isUploading = false;
+      _progress = 0;
+      notifyListeners();
+      rethrow;
+    }
+  }
 }
