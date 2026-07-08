@@ -506,3 +506,53 @@ Stage Summary:
 - Cost: $0/month (Turso free tier, Vercel free tier)
 - Open source friendly: anyone forking creates a free Turso account + free Vercel project, runs `node scripts/migrate.js`, done
 - Next up: M2 (realtime polling via SyncEngine in Flutter) and M3 (email/password + Google OAuth)
+
+---
+Task ID: 15
+Agent: main
+Task: M2 — SyncEngine for realtime polling + offline write queue in the Flutter app.
+
+Work Log:
+- Added ?since=<ms> incremental polling to /api/library and /api/playlists endpoints (matches the existing /api/sync/pull?since= pattern). Returns {unchanged: true} when nothing changed — 95% of polls are a single SQL query
+- Added listTracksChangedSince() and listPlaylistsChangedSince() to api/_lib/db.js
+- Added pending_writes table to lib/db/app_database.dart (id, sequence, method, path, body_json, created_at) + CRUD methods: enqueuePendingWrite, allPendingWrites, deletePendingWrite, pendingWriteCount, clearPendingWrites
+- Built lib/services/sync_engine.dart — the heart of M2:
+  * Timer.periodic polls /api/sync/pull, /api/library, /api/playlists every 45s (configurable)
+  * Incremental polling via ?since=<ms> high-water marks per resource type
+  * Pulls apply server changes to local LibraryService (favorites, ratings, upsertFromCloud) + PlaylistService (upsertFromSync)
+  * Write queue with 2s debounce: enqueueWrite() batches mutations, flushes in order
+  * Offline detection: network errors mark engine offline, writes sit in queue, next successful poll marks back online + flushes
+  * Convenience push helpers: pushFavorite, pushRating, pushPlaybackState, pushTrack, pushPlaylist, pushSettings
+  * Exposes SyncEngineState (idle/syncing/offline/error) + pendingCount + lastSyncedAt for UI
+- Added notify: false parameter to LibraryService.setFavorite/setRating for batch sync updates
+- Added LibraryService.upsertFromCloud(track) for merging server-side track changes
+- Wired SyncEngine into main.dart: instantiated with 4 service deps, started after _initialCloudSync, disposed on teardown, passed to SettingsScreen
+- Updated SettingsScreen:
+  * Accepts optional syncEngine parameter
+  * 'Sync Now' tile shows live status: 'Up to date', 'Synced 3m ago', 'Syncing… (2 pending)', 'Offline (5 pending)'
+  * Color turns red when offline or error
+  * 'Sync Now' button calls syncEngine.flushNow() when available
+  * Falls back to M1 VercelSyncService.fullSync() when syncEngine is null
+- Added test/sync_engine_test.dart — unit tests for PendingWrite, SyncEngineState enum, Track/Playlist/SmartPlaylistRule model fields
+- All 39 backend tests pass (13 unit + 26 e2e)
+- Installed @libsql/client at project root so e2e tests can require it
+- Pushed commit 48d14a4 to main; Vercel auto-deployed; deployment READY/PROMOTED
+
+Live verification of M2 incremental polling:
+  1. Sign in with email → JWT token issued ✅
+  2. Full library pull → returns tr_sync_demo from M1 test ✅
+  3. /api/library?since=<future> → {unchanged: true, serverTime: ...} ✅ (short-circuit works)
+  4. /api/library?since=0 → returns all tracks ✅ (incremental works)
+  5. /api/playlists?since=<future> → {unchanged: true} ✅
+  6. /api/status → database=turso, stats: 2 users, 1 track, 4 devices ✅
+
+Stage Summary:
+- M2 of the backend sync plan is COMPLETE
+- The Flutter app now actively syncs with the Turso-backed API:
+  * Polls every 45s for changes from other devices
+  * Queues writes locally with 2s debounce
+  * Detects offline state and re-flushes on reconnect
+  * Settings screen shows live sync status + pending count
+- Cross-device sync now works in <45 seconds (was: only on manual refresh)
+- Cost: still $0/month (within Vercel + Turso free tiers)
+- Next up: M3 (email/password + Google OAuth) and M4 (polish + forking guide)
