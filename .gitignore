@@ -89,3 +89,5 @@ api/package-lock.json
 # Tooling
 skills/
 tool-results/
+.vercel
+.env*

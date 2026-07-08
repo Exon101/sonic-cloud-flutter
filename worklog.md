@@ -756,3 +756,44 @@ ZIP file structure supported:
   ├── track2.lrc       → paired with track2 by filename, stored in lyrics table
   ├── metadata.json    → provides title/artist/album/year for each track
   └── cover.jpg        → ignored (future: album art support)
+
+---
+Task ID: 20
+Agent: main
+Task: Set up Vercel Blob store for file uploads + verify end-to-end.
+
+Work Log:
+- Installed Vercel CLI (v54.21.1)
+- First attempt created a PRIVATE blob store (store_WRo73rzoSStjy9aB) — uploads failed with "Cannot use public access on a private store"
+- Deleted the private store + recreated with --access public (store_V6sgAQeCTssZGuTi)
+- Initial creation didn't auto-link to project ("Projects: –" in list-stores output)
+- Deleted again + recreated with --yes flag to auto-link: vercel blob create-store sonic-cloud-uploads --access public --yes
+- Store linked to project: BLOB_READ_WRITE_TOKEN env var auto-set for production + preview + development
+- Triggered redeploy (dpl_54UfR3D9WQDgbR2owjpRg5YUJHrb) — deployment READY/PROMOTED
+
+Live verification:
+  1. Sign in anonymously → get JWT ✅
+  2. Upload test.wav (144 bytes) → POST /api/upload multipart ✅
+     Track ID: tr_c923f7e91c9f4537
+     Title: Live Upload Test
+     Artist: Sonic Cloud
+     Format: wav
+     Blob URL: https://v6sgaqectsszguti.public.blob.vercel-storage.com/tracks/usr_.../tr_c923....wav
+     Cloud only: True
+  3. Upload second track → same user sees both ✅
+  4. /api/status: database=turso, 8 tracks total in DB ✅
+
+Cross-device upload test:
+  1. Sign up with email on Device A → token issued ✅
+  2. Upload "Cross Device Track" on Device A → stored in Vercel Blob + Turso ✅
+  3. Sign in with same email on Device B → same userId ✅
+  4. Device B lists library → sees Device A's uploaded track ✅
+     Blob URL is publicly streamable — just_audio can play it directly ✅
+
+Stage Summary:
+- Vercel Blob store "sonic-cloud-uploads" is live and connected to the project
+- BLOB_READ_WRITE_TOKEN env var is set for all 3 environments (production/preview/development)
+- Uploads work end-to-end: file → Vercel Blob (public URL) → Turso track record → streamable on all devices
+- Cross-device: upload on Device A → immediately visible + streamable on Device B (same email)
+- Free tier: 1GB storage + 10GB bandwidth/month
+- DB stats: 13 users, 8 tracks, 17 devices
