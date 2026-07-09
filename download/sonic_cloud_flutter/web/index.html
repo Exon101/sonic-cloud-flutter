@@ -56,16 +56,13 @@
   <div class="loading-container">
     <div class="loading-text">Sonic Cloud</div>
   </div>
-  <!-- Flutter web initialization — flutter.js provides _flutter.loader.loadEntrypoint() -->
-  <script src="flutter.js" defer></script>
+  <script src="flutter.js"></script>
   <script>
-    window.addEventListener('load', function () {
-      _flutter.loader.loadEntrypoint({
-        onEntrypointLoaded: async function(engineInitializer) {
-          let appRunner = await engineInitializer.initializeEngine();
-          await appRunner.runApp();
-        }
-      });
+    _flutter.loader.load({
+      onEntrypointLoaded: async function(engineInitializer) {
+        let appRunner = await engineInitializer.initializeEngine();
+        await appRunner.runApp();
+      }
     });
   </script>
 </body>
