@@ -138,7 +138,7 @@ class _BootstrapGateState extends State<_BootstrapGate> {
     if (_auth == null || !_auth!.isAuthenticated) {
       return SignInScreen(auth: _auth, client: _client);
     }
-    return _HomeShell(auth: _auth, client: _client);
+    return _HomeShell(auth: _auth!, client: _client);
   }
 }
 
