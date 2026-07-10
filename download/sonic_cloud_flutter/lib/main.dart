@@ -35,6 +35,37 @@ import 'widgets/glass_card.dart';
 /// Sonic Cloud v3 — entry point.
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // In release mode, ErrorWidget defaults to a blank screen.
+  // Override it to show the error message so we can debug blank-screen issues.
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    return Material(
+      color: const Color(0xFF1a1a1a),
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red, size: 48),
+              const SizedBox(height: 16),
+              Text(
+                'App Error',
+                style: TextStyle(color: Colors.red, fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                details.exception.toString(),
+                style: TextStyle(color: Colors.white70, fontSize: 12),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  };
+
   SharedPreferences? prefs;
   try {
     prefs = await SharedPreferences.getInstance().timeout(
