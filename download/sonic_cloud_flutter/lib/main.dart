@@ -112,7 +112,7 @@ class SonicCloudApp extends StatelessWidget {
     return MaterialApp(
       title: 'Sonic Cloud',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark(),
+      theme: ThemeData.dark(useMaterial3: true),
       home: _BootstrapGate(prefs: prefs),
     );
   }
@@ -182,8 +182,9 @@ class _BootstrapGateState extends State<_BootstrapGate> {
               const CircularProgressIndicator(color: Colors.white),
               const SizedBox(height: 16),
               Text(
-                'Loading Sonic Cloud…',
-                style: TextStyle(color: Colors.white70, fontSize: 14),
+                _initError != null ? 'Error: $_initError' : 'Loading Sonic Cloud…',
+                style: TextStyle(color: _initError != null ? Colors.red : Colors.white70, fontSize: 14),
+                textAlign: TextAlign.center,
               ),
             ],
           ),

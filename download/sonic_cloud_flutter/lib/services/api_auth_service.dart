@@ -52,9 +52,12 @@ class ApiAuthService extends ChangeNotifier {
     _deviceId = _prefs.getString(_kDeviceId);
 
     _client.setToken(token);
-    // Validate the token by calling /auth/me.
+    // Validate the token by calling /auth/me — with a short timeout so
+    // the app doesn't hang if the server is slow or unreachable.
     try {
-      final res = await _client.get('auth/me');
+      final res = await _client.get('auth/me').timeout(
+        const Duration(seconds: 5),
+      );
       final userJson = res['user'] as Map<String, dynamic>;
       _user = UserAccount(
         id: userJson['id'] as String,
