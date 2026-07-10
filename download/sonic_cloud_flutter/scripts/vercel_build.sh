@@ -12,7 +12,7 @@ fi
 
 flutter --version
 flutter pub get
-flutter build web --release --no-pwa || flutter build web --release
+flutter build web --release --no-pwa --web-renderer html || flutter build web --release --no-pwa || flutter build web --release
 
 # Strip ONLY the deprecated service worker file (NOT flutter.js!)
 echo "▶ Stripping deprecated service worker"
