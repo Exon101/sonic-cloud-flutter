@@ -33,18 +33,23 @@ import 'theme/app_theme.dart';
 import 'widgets/glass_card.dart';
 
 /// Sonic Cloud v3 — entry point.
-///
-/// Wires together every service at startup and exposes the bottom-nav shell.
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final prefs = await SharedPreferences.getInstance();
+  SharedPreferences? prefs;
+  try {
+    prefs = await SharedPreferences.getInstance().timeout(
+      const Duration(seconds: 5),
+    );
+  } catch (e) {
+    debugPrint('SharedPreferences failed: $e');
+  }
   runApp(SonicCloudApp(prefs: prefs));
 }
 
 class SonicCloudApp extends StatelessWidget {
-  const SonicCloudApp({super.key, required this.prefs});
+  const SonicCloudApp({super.key, this.prefs});
 
-  final SharedPreferences prefs;
+  final SharedPreferences? prefs;
 
   @override
   Widget build(BuildContext context) {
@@ -60,9 +65,9 @@ class SonicCloudApp extends StatelessWidget {
 /// Tiny loader that initializes the API client + auth service, then either
 /// shows the sign-in screen (if no session) or the home shell (if restored).
 class _BootstrapGate extends StatefulWidget {
-  const _BootstrapGate({required this.prefs});
+  const _BootstrapGate({this.prefs});
 
-  final SharedPreferences prefs;
+  final SharedPreferences? prefs;
 
   @override
   State<_BootstrapGate> createState() => _BootstrapGateState();
@@ -70,23 +75,38 @@ class _BootstrapGate extends StatefulWidget {
 
 class _BootstrapGateState extends State<_BootstrapGate> {
   late final ApiClient _client;
-  late final ApiAuthService _auth;
+  ApiAuthService? _auth;
   bool _ready = false;
+  String? _initError;
 
   @override
   void initState() {
     super.initState();
-    _client = ApiClient();
-    _auth = ApiAuthService(_client, widget.prefs);
-    _auth.addListener(_onAuthChange);
-    _auth.restoreSession().whenComplete(() {
+    _init();
+  }
+
+  void _init() async {
+    try {
+      _client = ApiClient();
+      // Retry SharedPreferences if it wasn't passed from main()
+      SharedPreferences prefs = widget.prefs ?? await SharedPreferences.getInstance();
+      _auth = ApiAuthService(_client, prefs);
+      _auth!.addListener(_onAuthChange);
+      await _auth!.restoreSession().timeout(
+        const Duration(seconds: 10),
+        onTimeout: () => false,
+      );
+    } catch (e) {
+      debugPrint('Bootstrap init error: $e');
+      _initError = e.toString();
+    } finally {
       if (mounted) setState(() => _ready = true);
-    });
+    }
   }
 
   @override
   void dispose() {
-    _auth.removeListener(_onAuthChange);
+    _auth?.removeListener(_onAuthChange);
     _client.dispose();
     super.dispose();
   }
@@ -98,12 +118,24 @@ class _BootstrapGateState extends State<_BootstrapGate> {
   @override
   Widget build(BuildContext context) {
     if (!_ready) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-        backgroundColor: AppColors.surface,
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(color: Colors.white),
+              const SizedBox(height: 16),
+              Text(
+                'Loading Sonic Cloud…',
+                style: TextStyle(color: Colors.white70, fontSize: 14),
+              ),
+            ],
+          ),
+        ),
+        backgroundColor: const Color(0xFF131318),
       );
     }
-    if (!_auth.isAuthenticated) {
+    if (_auth == null || !_auth!.isAuthenticated) {
       return SignInScreen(auth: _auth, client: _client);
     }
     return _HomeShell(auth: _auth, client: _client);

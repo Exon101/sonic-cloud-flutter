@@ -20,11 +20,11 @@ import '../../widgets/glass_card.dart';
 class SignInScreen extends StatefulWidget {
   const SignInScreen({
     super.key,
-    required this.auth,
+    this.auth,
     required this.client,
   });
 
-  final ApiAuthService auth;
+  final ApiAuthService? auth;
   final ApiClient client;
 
   @override
@@ -55,7 +55,7 @@ class _SignInScreenState extends State<SignInScreen> {
     super.dispose();
   }
 
-  Future<void> _signInAnon() => _doSignIn(() => widget.auth.signInAnonymously());
+  Future<void> _signInAnon() => _doSignIn(() => widget.auth!.signInAnonymously());
 
   Future<void> _submitEmailPassword() async {
     final email = _emailCtrl.text.trim();
@@ -69,9 +69,9 @@ class _SignInScreenState extends State<SignInScreen> {
       return;
     }
     if (_isSignUp) {
-      await _doSignIn(() => widget.auth.signUp(email: email, password: password));
+      await _doSignIn(() => widget.auth!.signUp(email: email, password: password));
     } else {
-      await _doSignIn(() => widget.auth.signInWithPassword(email: email, password: password));
+      await _doSignIn(() => widget.auth!.signInWithPassword(email: email, password: password));
     }
   }
 
@@ -106,7 +106,7 @@ class _SignInScreenState extends State<SignInScreen> {
         });
         return;
       }
-      await widget.auth.signInWithGoogle(idToken);
+      await widget.auth!.signInWithGoogle(idToken);
     } catch (e) {
       setState(() {
         _error = 'Google Sign-In failed: $e';
@@ -147,7 +147,7 @@ class _SignInScreenState extends State<SignInScreen> {
   Future<void> _applyUrl() async {
     final url = _urlCtrl.text.trim();
     if (url.isEmpty) return;
-    await widget.auth.setBaseUrl(url);
+    await widget.auth!.setBaseUrl(url);
     setState(() => _error = null);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
