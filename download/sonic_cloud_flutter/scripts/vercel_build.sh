@@ -12,7 +12,9 @@ fi
 
 flutter --version
 flutter pub get
-flutter build web --release --no-pwa --web-renderer html || flutter build web --release --no-pwa || flutter build web --release
+# Use --no-wasm to force dart2js (CanvasKit) instead of dart2wasm.
+# dart2wasm has rendering issues on some Vercel deployments.
+flutter build web --release --no-pwa --no-wasm
 
 # Strip ONLY the deprecated service worker file (NOT flutter.js!)
 echo "▶ Stripping deprecated service worker"
