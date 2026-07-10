@@ -33,11 +33,10 @@ import 'theme/app_theme.dart';
 import 'widgets/glass_card.dart';
 
 /// Sonic Cloud v3 — entry point.
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
   // In release mode, ErrorWidget defaults to a blank screen.
-  // Override it to show the error message so we can debug blank-screen issues.
   ErrorWidget.builder = (FlutterErrorDetails details) {
     return Material(
       color: const Color(0xFF1a1a1a),
@@ -49,16 +48,9 @@ void main() async {
             children: [
               const Icon(Icons.error_outline, color: Colors.red, size: 48),
               const SizedBox(height: 16),
-              Text(
-                'App Error',
-                style: TextStyle(color: Colors.red, fontSize: 18, fontWeight: FontWeight.bold),
-              ),
+              Text('App Error', style: const TextStyle(color: Colors.red, fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              Text(
-                details.exception.toString(),
-                style: TextStyle(color: Colors.white70, fontSize: 12),
-                textAlign: TextAlign.center,
-              ),
+              Text(details.exception.toString(), style: const TextStyle(color: Colors.white70, fontSize: 12), textAlign: TextAlign.center),
             ],
           ),
         ),
@@ -66,6 +58,39 @@ void main() async {
     );
   };
 
+  // Call runApp FIRST with a loading screen, then init async.
+  // This ensures Flutter renders immediately — no blank screen while
+  // SharedPreferences loads.
+  runApp(const _LoadingApp());
+  _initApp();
+}
+
+/// Temporary loading app shown while SharedPreferences loads.
+class _LoadingApp extends StatelessWidget {
+  const _LoadingApp();
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        backgroundColor: const Color(0xFF131318),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(color: Colors.white),
+              const SizedBox(height: 16),
+              Text('Loading Sonic Cloud…', style: TextStyle(color: Colors.white70, fontSize: 14)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Initialize SharedPreferences then swap to the real app.
+void _initApp() async {
   SharedPreferences? prefs;
   try {
     prefs = await SharedPreferences.getInstance().timeout(
